@@ -1,3 +1,8 @@
+---
+name: tldr-cli
+description: TLDR CLI komut referansi. tree, structure, search, extract, context, cfg, dfg, slice, calls, impact, dead, arch, imports, importers, diagnostics, change-impact komutlari.
+---
+
 # TLDR CLI - Code Analysis Tool
 
 You have `tldr` available on PATH for token-efficient code analysis.

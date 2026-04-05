@@ -1,3 +1,8 @@
+---
+name: handoff-templates
+description: Agent arasi iletisim sablonlari. Standard handoff, QA verdict (PASS/FAIL), escalation, bug report, security finding ve status update formatlari.
+---
+
 # Handoff Templates - Agent Arasi Iletisim Standartlari
 
 Agent'lar arasi mesajlarda bu sablonlari kullan.

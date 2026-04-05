@@ -12,6 +12,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Skill marketplace
 - Agent performance dashboard
 
+## [2.2.4] - 2026-04-06
+
+### Added
+- **1 new skill**: content-marketing (AI slop detection with 30+ patterns, 5-dimension content scoring, watermark cleaning, copywriting formulas AIDA/PAS/BAB, programmatic SEO, content cluster strategy)
+
+### Changed
+- **Token optimization**: Moved 3 rules to skills (commit-trailers, tldr-cli, handoff-templates) saving ~3,400 tokens/session
+- Updated counts: 139 agents, 283 skills, 60 hooks, 20 rules
+
+### Removed
+- 3 rules moved to skills (still available as skills, no longer injected every session)
+
 ## [2.2.3] - 2026-04-05
 
 ### Added

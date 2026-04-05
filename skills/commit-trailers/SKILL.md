@@ -1,4 +1,9 @@
-# Commit Trailers — Structured Decision Context
+---
+name: commit-trailers
+description: Commit mesajlarina yapilandirilmis karar trailer'lari ekle. Constraint, Rejected, Confidence, Scope-risk, Not-tested trailer'lari ile karar baglamini koru.
+---
+
+# Commit Trailers -- Structured Decision Context
 
 Supplement conventional commits with structured trailers that preserve the reasoning
 behind a change. Future maintainers (and future agents) read commit history to
@@ -121,5 +126,5 @@ Not-tested: sustained 10K+ req/min behavior — requires dedicated load test env
 
 - `safety-and-quality.md` defines the base commit format (`<type>: <description>`)
 - This rule adds optional trailers on top of that format
-- `full-autonomy.md` requires commit approval — trailers give the user the context to approve confidently
+- `full-autonomy.md` requires commit approval — trailers give Batuhan the context to approve confidently
 - Trailers are the commit-level equivalent of Priority Notes in the notepad system
