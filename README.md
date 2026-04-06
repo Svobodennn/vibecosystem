@@ -262,9 +262,9 @@ Agent error → error-ledger.jsonl → skill-matrix.json
 | Component | Count | Description |
 |-----------|-------|-------------|
 | `agents/` | 138 | Markdown agent definitions with specialized prompts |
-| `skills/` | 245 | Reusable knowledge — TDD, security, patterns, frameworks |
+| `skills/` | 283 | Reusable knowledge — TDD, security, patterns, frameworks |
 | `hooks/src/` | 60 | TypeScript hooks — sensors, learners, validators |
-| `rules/` | 23 | Behavioral guidelines — coding style, safety, QA |
+| `rules/` | 20 | Behavioral guidelines — coding style, safety, QA |
 
 ---
 
