@@ -52,6 +52,14 @@ After setup, you say "build a feature" and 20+ agents coordinate across 5 phases
 
 ## Quick Start
 
+### One-liner
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/vibeeval/vibecosystem/main/install-remote.sh | bash
+```
+
+### Manual
+
 ```bash
 git clone https://github.com/vibeeval/vibecosystem.git
 cd vibecosystem
@@ -59,6 +67,37 @@ cd vibecosystem
 ```
 
 That's it. Use Claude Code normally. The team activates.
+
+### vibeco CLI
+
+After install, the `vibeco` command is available:
+
+```bash
+vibeco stats                          # ecosystem statistics
+vibeco list agents --search security  # browse components
+vibeco profile frontend               # switch profile (saves tokens)
+vibeco doctor                         # health check
+vibeco dashboard                      # start monitoring UI
+vibeco update                         # pull latest & reinstall
+```
+
+### Profiles
+
+Save tokens by loading only what you need:
+
+| Profile | Agents | Skills | Use case |
+|---------|--------|--------|----------|
+| `minimal` | ~15 | ~40 | Core only (review, test, verify) |
+| `frontend` | ~30 | ~60 | React/Next.js/CSS/a11y |
+| `backend` | ~44 | ~74 | API/DB/security |
+| `fullstack` | ~59 | ~96 | Frontend + Backend |
+| `devops` | ~33 | ~61 | CI/CD/K8s/cloud |
+| `all` | 139 | 283 | Everything (default) |
+
+```bash
+vibeco profile frontend  # switch to frontend profile
+vibeco profile all       # back to everything
+```
 
 ## How It Works
 

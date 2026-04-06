@@ -14,10 +14,12 @@ SKIPPED=0
 for arg in "$@"; do
   case $arg in
     --force) FORCE=true ;;
+    --non-interactive) NON_INTERACTIVE=true ;;
     --help|-h)
-      echo "Usage: ./install.sh [--force]"
+      echo "Usage: ./install.sh [--force] [--non-interactive]"
       echo ""
-      echo "  --force    Overwrite existing files (default: skip existing)"
+      echo "  --force            Overwrite existing files (default: skip existing)"
+      echo "  --non-interactive  Skip confirmation prompt"
       echo ""
       echo "Without --force, only NEW files are added. Your existing agents,"
       echo "skills, hooks, and rules are preserved."
@@ -41,9 +43,11 @@ else
   echo "Mode: MERGE (default) — existing files will be preserved"
 fi
 echo ""
-read -p "Continue? (y/N) " -n 1 -r
-echo
-[[ $REPLY =~ ^[Yy]$ ]] || exit 0
+if [ "$NON_INTERACTIVE" != true ]; then
+  read -p "Continue? (y/N) " -n 1 -r
+  echo
+  [[ $REPLY =~ ^[Yy]$ ]] || exit 0
+fi
 
 # Backup (only in force mode, since merge mode doesn't touch existing files)
 if [ "$FORCE" = true ]; then
@@ -157,6 +161,29 @@ if [ -d "$REPO_DIR/.github/workflows" ]; then
     smart_copy_file "$f" "$CLAUDE_DIR/.github/workflows/$name"
   done
   echo "  Note: Copy claude-*.yml to your project's .github/workflows/ to activate"
+fi
+
+# Profiles
+echo "Installing profiles..."
+mkdir -p "$CLAUDE_DIR/profiles"
+for f in "$REPO_DIR/profiles/"*.json; do
+  [ -f "$f" ] || continue
+  name=$(basename "$f")
+  smart_copy_file "$f" "$CLAUDE_DIR/profiles/$name"
+done
+
+# vibeco CLI
+echo "Setting up vibeco CLI..."
+VIBECO_SRC="$REPO_DIR/tools/vibeco/vibeco.mjs"
+if [ -f "$VIBECO_SRC" ]; then
+  mkdir -p "$HOME/.local/bin"
+  chmod +x "$VIBECO_SRC"
+  ln -sf "$VIBECO_SRC" "$HOME/.local/bin/vibeco"
+  if echo "$PATH" | grep -q "$HOME/.local/bin"; then
+    echo "  vibeco CLI ready"
+  else
+    echo "  Add to PATH: export PATH=\"\$HOME/.local/bin:\$PATH\""
+  fi
 fi
 
 echo ""

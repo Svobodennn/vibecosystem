@@ -7,10 +7,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Planned
-- Public repo launch
 - Community contribution workflow
 - Skill marketplace
 - Agent performance dashboard
+
+## [2.3.0] - 2026-04-07
+
+### Added
+- **vibeco CLI** (`tools/vibeco/vibeco.mjs`): Zero-dependency Node.js CLI for the ecosystem
+  - `vibeco help` - command reference
+  - `vibeco stats` - agent/skill/hook/rule counts, error rates, instinct counts
+  - `vibeco list <agents|skills|hooks|rules> [--search term]` - browse and search components
+  - `vibeco dashboard` - start monitoring UI as background process
+  - `vibeco doctor` - 11-point health check (directory, counts, hooks, dashboard, memory, PATH, Node.js)
+  - `vibeco profile <name>` - switch between preset profiles
+  - `vibeco update` - pull latest and reinstall
+- **6 preset profiles** (`profiles/*.json`): Token-saving component selection
+  - `minimal` (~15 agents, ~40 skills) - core review/test/verify only
+  - `frontend` (~30 agents, ~60 skills) - React/Next.js/CSS/a11y
+  - `backend` (~44 agents, ~74 skills) - API/DB/security
+  - `fullstack` (~59 agents, ~96 skills) - frontend + backend combined
+  - `devops` (~33 agents, ~61 skills) - CI/CD/K8s/cloud
+  - `all` (139 agents, 283 skills) - everything (default)
+- **One-liner remote install** (`install-remote.sh`): `curl -fsSL https://raw.githubusercontent.com/vibeeval/vibecosystem/main/install-remote.sh | bash`
+
+### Changed
+- `install.sh`: Added `--non-interactive` flag, profiles directory installation, vibeco CLI symlink setup
+- README: Added one-liner install, vibeco CLI reference, profiles table
 
 ## [2.2.4] - 2026-04-06
 

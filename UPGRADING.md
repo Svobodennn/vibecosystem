@@ -177,7 +177,7 @@ cd ~/.claude/hooks && npm run build
 - [claude-code-security-review](https://github.com/anthropics/claude-code-security-review) - Hard exclusion list, diff-aware review
 - [crewAI](https://github.com/crewAIInc/crewAI) (45.9K stars) - Dynamic delegation, event-driven flow
 - [pydantic-ai](https://github.com/pydantic/pydantic-ai) (15.7K stars) - ModelRetry, structured output validation
-- [karpathy/autoresearch](https://github.com/karpathy/autoresearch) (42K stars) - Autonomous experiment loop
+- [pydantic/pydantic-ai](https://github.com/pydantic/pydantic-ai) (15.7K stars) - Structured output validation patterns
 
 ### v1.3.0 (2026-03-24)
 
