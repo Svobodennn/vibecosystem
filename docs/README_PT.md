@@ -71,7 +71,7 @@ Phase 5 (Final):        self-learner + technical-writer
 
 ### 3. Carregamento adaptativo de hooks
 
-63 hooks existem, mas nao rodam todos ao mesmo tempo. A intencao determina quais hooks sao acionados.
+66 hooks existem, mas nao rodam todos ao mesmo tempo. A intencao determina quais hooks sao acionados.
 
 <img src="../assets/gif4-hooks.gif" alt="Adaptive Hooks" width="700">
 
@@ -124,7 +124,7 @@ Bug reproduction → replay          (backup: sleuth)
 │                                                         │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
 │  │  Hooks   │  │  Agents  │  │  Skills  │              │
-│  │  (63)    │→ │  (139)   │← │  (284)   │              │
+│  │  (66)    │→ │  (139)   │← │  (285)   │              │
 │  └────┬─────┘  └────┬─────┘  └──────────┘              │
 │       │              │                                   │
 │       ▼              ▼                                   │

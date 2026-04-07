@@ -71,7 +71,7 @@ Phase 5 (Final):        self-learner + technical-writer
 
 ### 3. Adaptief laden van hooks
 
-Er bestaan 63 hooks, maar ze draaien niet allemaal tegelijk. De intentie bepaalt welke hooks worden geactiveerd.
+Er bestaan 66 hooks, maar ze draaien niet allemaal tegelijk. De intentie bepaalt welke hooks worden geactiveerd.
 
 <img src="../assets/gif4-hooks.gif" alt="Adaptive Hooks" width="700">
 
@@ -124,7 +124,7 @@ Bug reproduction → replay          (backup: sleuth)
 │                                                         │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
 │  │  Hooks   │  │  Agents  │  │  Skills  │              │
-│  │  (63)    │→ │  (139)   │← │  (284)   │              │
+│  │  (66)    │→ │  (139)   │← │  (285)   │              │
 │  └────┬─────┘  └────┬─────┘  └──────────┘              │
 │       │              │                                   │
 │       ▼              ▼                                   │

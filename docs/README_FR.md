@@ -71,7 +71,7 @@ Phase 5 (Final):        self-learner + technical-writer
 
 ### 3. Chargement adaptatif des hooks
 
-63 hooks existent, mais ils ne s'executent pas tous en meme temps. L'intention determine quels hooks se declenchent.
+66 hooks existent, mais ils ne s'executent pas tous en meme temps. L'intention determine quels hooks se declenchent.
 
 <img src="../assets/gif4-hooks.gif" alt="Adaptive Hooks" width="700">
 
@@ -124,7 +124,7 @@ Bug reproduction → replay          (backup: sleuth)
 │                                                         │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
 │  │  Hooks   │  │  Agents  │  │  Skills  │              │
-│  │  (63)    │→ │  (139)   │← │  (284)   │              │
+│  │  (66)    │→ │  (139)   │← │  (285)   │              │
 │  └────┬─────┘  └────┬─────┘  └──────────┘              │
 │       │              │                                   │
 │       ▼              ▼                                   │

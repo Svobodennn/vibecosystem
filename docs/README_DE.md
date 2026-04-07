@@ -71,7 +71,7 @@ Phase 5 (Final):        self-learner + technical-writer
 
 ### 3. Adaptives Hook-Loading
 
-63 hooks existieren, aber sie laufen nicht alle gleichzeitig. Die Absicht bestimmt, welche Hooks ausgeloest werden.
+66 hooks existieren, aber sie laufen nicht alle gleichzeitig. Die Absicht bestimmt, welche Hooks ausgeloest werden.
 
 <img src="../assets/gif4-hooks.gif" alt="Adaptive Hooks" width="700">
 
@@ -124,7 +124,7 @@ Bug reproduction → replay          (backup: sleuth)
 │                                                         │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
 │  │  Hooks   │  │  Agents  │  │  Skills  │              │
-│  │  (63)    │→ │  (139)   │← │  (284)   │              │
+│  │  (66)    │→ │  (139)   │← │  (285)   │              │
 │  └────┬─────┘  └────┬─────┘  └──────────┘              │
 │       │              │                                   │
 │       ▼              ▼                                   │
