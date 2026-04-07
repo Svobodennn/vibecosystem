@@ -18,17 +18,17 @@
 
 | Metriek | Aantal |
 |---------|--------|
-| Agents | **137** |
+| Agents | **139** |
 | Skills | **283** |
-| Hooks | **53** |
-| Rules | **22** |
+| Hooks | **60** |
+| Rules | **20** |
 | Handmatig werk | **0** |
 
 ---
 
 ## Wat is dit?
 
-vibecosystem maakt van Claude Code een compleet AI-softwareteam. Geen enkele assistent -- een **team** van 136 gespecialiseerde agents die plannen, bouwen, reviewen, testen en leren van elke fout.
+vibecosystem maakt van Claude Code een compleet AI-softwareteam. Geen enkele assistent -- een **team** van 139 gespecialiseerde agents die plannen, bouwen, reviewen, testen en leren van elke fout.
 
 Geen eigen model. Geen eigen API. Alleen het hook- + agent- + rules-systeem van Claude Code, tot het uiterste benut.
 
@@ -124,13 +124,13 @@ Bug reproduction → replay          (backup: sleuth)
 │                                                         │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
 │  │  Hooks   │  │  Agents  │  │  Skills  │              │
-│  │  (53)    │→ │  (139)   │← │  (283)   │              │
+│  │  (60)    │→ │  (139)   │← │  (283)   │              │
 │  └────┬─────┘  └────┬─────┘  └──────────┘              │
 │       │              │                                   │
 │       ▼              ▼                                   │
 │  ┌──────────┐  ┌──────────┐                              │
 │  │  Rules   │  │  Memory  │                              │
-│  │  (22)    │  │ (PgSQL)  │                              │
+│  │  (20)    │  │ (PgSQL)  │                              │
 │  └──────────┘  └──────────┘                              │
 │                                                         │
 │  ┌──────────────────────────────────────┐                │

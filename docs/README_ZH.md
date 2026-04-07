@@ -4,7 +4,7 @@
 
 **基于 Claude Code 构建的 AI 软件团队。**
 
-139 个 Agent。260 项 Skill。53 个 Hook。零人工干预。
+139 个 Agent。283 项 Skill。60 个 Hook。零人工干预。
 
 ## 概览
 
@@ -12,13 +12,13 @@
 |--------|-------|
 | Agents | **139** |
 | Skills | **283** |
-| Hooks | **53** |
-| Rules | **22** |
+| Hooks | **60** |
+| Rules | **20** |
 | 人工操作 | **0** |
 
 ## 这是什么？
 
-vibecosystem 将 Claude Code 变成了一支完整的 AI 软件团队。不是一个助手，而是由 136 个专业 agent 组成的**团队** -- 它们负责规划、构建、审查、测试，并从每一个错误中学习。
+vibecosystem 将 Claude Code 变成了一支完整的 AI 软件团队。不是一个助手，而是由 139 个专业 agent 组成的**团队** -- 它们负责规划、构建、审查、测试，并从每一个错误中学习。
 
 无需自定义模型。无需自定义 API。仅凭 Claude Code 的 hook + agent + rules 系统，发挥到极致。
 
@@ -59,7 +59,7 @@ Phase 5 (Final):        self-learner + technical-writer
 
 ### 3. 自适应 Hook 加载
 
-53 个 hook 并非同时运行。用户意图决定哪些 hook 被触发。
+60 个 hook 并非同时运行。用户意图决定哪些 hook 被触发。
 
 <img src="../assets/gif4-hooks.gif" alt="Adaptive Hooks" width="700">
 
@@ -110,13 +110,13 @@ Bug reproduction → replay          (backup: sleuth)
 │                                                         │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
 │  │  Hooks   │  │  Agents  │  │  Skills  │              │
-│  │  (53)    │→ │  (139)   │← │  (283)   │              │
+│  │  (60)    │→ │  (139)   │← │  (283)   │              │
 │  └────┬─────┘  └────┬─────┘  └──────────┘              │
 │       │              │                                   │
 │       ▼              ▼                                   │
 │  ┌──────────┐  ┌──────────┐                              │
 │  │  Rules   │  │  Memory  │                              │
-│  │  (22)    │  │ (PgSQL)  │                              │
+│  │  (20)    │  │ (PgSQL)  │                              │
 │  └──────────┘  └──────────┘                              │
 │                                                         │
 │  ┌──────────────────────────────────────┐                │

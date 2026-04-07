@@ -1,6 +1,6 @@
 {
   "name": "vibecosystem-dashboard",
-  "version": "2.0.0",
+  "version": "2.3.0",
   "description": "vibecosystem Agent Monitoring Dashboard - Real-time agent timeline, error tracking, session stats",
   "main": "server.js",
   "scripts": {

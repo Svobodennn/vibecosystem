@@ -5,7 +5,7 @@
  ║                                               ║
  ║   v i b e c o s y s t e m                     ║
  ║   ─────────────────────────                   ║
- ║   AI Software Team · v2.0                     ║
+ ║   AI Software Team · v2.3                     ║
  ║                                               ║
  ║   139 agents  ·  283 skills  ·  60 hooks      ║
  ║                                               ║

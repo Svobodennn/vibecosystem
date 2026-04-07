@@ -20,7 +20,7 @@
 
 </div>
 
-vibecosystem turns Claude Code into a full AI software team — 138 specialized agents that plan, build, review, test, and learn from every mistake. No configuration needed — just install and code.
+vibecosystem turns Claude Code into a full AI software team — 139 specialized agents that plan, build, review, test, and learn from every mistake. No configuration needed — just install and code.
 
 > **v2.0**: 13 new agents (sast-scanner, mutation-tester, graph-analyst, mcp-manager, community-manager, benchmark, dependency-auditor, api-designer, incident-responder, data-modeler, test-architect, release-engineer, documentation-architect) + 23 new skills (SAST, compliance, product, marketing, MCP) + 4 new hooks + Agent Monitoring Dashboard + GitHub Actions CI/CD + MCP Auto-Discovery. See [UPGRADING.md](UPGRADING.md) for details.
 
@@ -31,6 +31,8 @@ vibecosystem turns Claude Code into a full AI software team — 138 specialized 
 > **v2.2**: 5 features from Claude Code source — Agent Memory (persistent per-agent memory), Magic Docs (auto-updating docs), Dream Consolidation (cross-session memory cleanup), Smart Recall (frontmatter-based memory scoring), Plugin Toggle (hook enable/disable CLI). +7 hooks, skill references for 21 agents.
 
 > **v2.2.1**: Monetization stack — 1 new agent (monetization-expert), 2 new skills (paywall-optimizer, codex-orchestration), 3 updated skills (revenuecat-patterns, paywall-strategy, subscription-pricing). AI-powered paywall optimization with 14-category benchmarks, RevenueCat SDK patterns, Codex + Claude Code orchestration.
+
+> **v2.3**: `vibeco` CLI tool (stats, doctor, profiles, dashboard), 6 preset profiles for token savings, one-liner install (`curl | bash`).
 
 ## The Problem
 
@@ -238,13 +240,13 @@ Agent error → error-ledger.jsonl → skill-matrix.json
 │                                                         │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
 │  │  Hooks   │  │  Agents  │  │  Skills  │              │
-│  │  (60)    │→ │  (137)   │← │  (271)   │              │
+│  │  (60)    │→ │  (139)   │← │  (283)   │              │
 │  └────┬─────┘  └────┬─────┘  └──────────┘              │
 │       │              │                                   │
 │       ▼              ▼                                   │
 │  ┌──────────┐  ┌──────────┐                              │
 │  │  Rules   │  │  Memory  │                              │
-│  │  (23)    │  │ (PgSQL)  │                              │
+│  │  (20)    │  │ (PgSQL)  │                              │
 │  └──────────┘  └──────────┘                              │
 │                                                         │
 │  ┌──────────────────────────────────────┐                │
@@ -283,7 +285,7 @@ Agent error → error-ledger.jsonl → skill-matrix.json
 
 | Feature | vibecosystem | Single Claude Code | Cursor | aider |
 |---------|:----------:|:------------------:|:------:|:-----:|
-| Specialized agents | **137** | 0 | 0 | 0 |
+| Specialized agents | **139** | 0 | 0 | 0 |
 | Self-learning | **Yes** | No | No | No |
 | Agent swarm coordination | **Yes** | No | No | No |
 | Cross-project learning | **Yes** | No | No | No |
@@ -300,7 +302,7 @@ Agent error → error-ledger.jsonl → skill-matrix.json
 
 | Component | Count | Description |
 |-----------|-------|-------------|
-| `agents/` | 138 | Markdown agent definitions with specialized prompts |
+| `agents/` | 139 | Markdown agent definitions with specialized prompts |
 | `skills/` | 283 | Reusable knowledge — TDD, security, patterns, frameworks |
 | `hooks/src/` | 60 | TypeScript hooks — sensors, learners, validators |
 | `rules/` | 20 | Behavioral guidelines — coding style, safety, QA |
@@ -401,7 +403,7 @@ Contributions welcome! Areas where help is needed:
 
 ### Nedir?
 
-vibecosystem, Claude Code'u tam bir AI yazilim ekibine donusturur. Tek bir asistan degil — planlayan, gelistiren, review yapan, test eden ve her hatasindan ogrenen **136 uzman agent'lik bir ekip**.
+vibecosystem, Claude Code'u tam bir AI yazilim ekibine donusturur. Tek bir asistan degil — planlayan, gelistiren, review yapan, test eden ve her hatasindan ogrenen **139 uzman agent'lik bir ekip**.
 
 Ozel model yok. Ozel API yok. Sadece Claude Code'un hook + agent + rules sistemi, sonuna kadar kullanilmis.
 

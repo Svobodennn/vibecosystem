@@ -18,17 +18,17 @@
 
 | Kennzahl | Anzahl |
 |----------|--------|
-| Agents | **137** |
+| Agents | **139** |
 | Skills | **283** |
-| Hooks | **53** |
-| Rules | **22** |
+| Hooks | **60** |
+| Rules | **20** |
 | Manuelle Arbeit | **0** |
 
 ---
 
 ## Was ist das?
 
-vibecosystem verwandelt Claude Code in ein vollstaendiges KI-Softwareteam. Kein einzelner Assistent -- ein **Team** aus 136 spezialisierten Agents, die planen, entwickeln, reviewen, testen und aus jedem Fehler lernen.
+vibecosystem verwandelt Claude Code in ein vollstaendiges KI-Softwareteam. Kein einzelner Assistent -- ein **Team** aus 139 spezialisierten Agents, die planen, entwickeln, reviewen, testen und aus jedem Fehler lernen.
 
 Kein eigenes Modell. Keine eigene API. Nur das Hook- + Agent- + Rules-System von Claude Code, bis ans Limit ausgereizt.
 
@@ -124,13 +124,13 @@ Bug reproduction → replay          (backup: sleuth)
 │                                                         │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
 │  │  Hooks   │  │  Agents  │  │  Skills  │              │
-│  │  (53)    │→ │  (139)   │← │  (283)   │              │
+│  │  (60)    │→ │  (139)   │← │  (283)   │              │
 │  └────┬─────┘  └────┬─────┘  └──────────┘              │
 │       │              │                                   │
 │       ▼              ▼                                   │
 │  ┌──────────┐  ┌──────────┐                              │
 │  │  Rules   │  │  Memory  │                              │
-│  │  (22)    │  │ (PgSQL)  │                              │
+│  │  (20)    │  │ (PgSQL)  │                              │
 │  └──────────┘  └──────────┘                              │
 │                                                         │
 │  ┌──────────────────────────────────────┐                │
