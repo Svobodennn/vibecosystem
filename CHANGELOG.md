@@ -11,6 +11,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Skill marketplace
 - Agent performance dashboard
 
+## [2.4.0] - 2026-04-07
+
+### Added
+- **Terminal HUD / Statusline** (`hooks/src/statusline-writer.ts`): Real-time session state in `~/.claude/statusline.json`
+  - Tracks: agent spawns/completions/errors, tool count, session duration, active profile, current intent
+  - Compatible with Claude Code's native `statusLine` config for terminal display
+  - Shared utilities in `hooks/src/shared/statusline.ts`
+- **Prompt Auto-Improver** (`hooks/src/prompt-improver.ts`): Enriches vague prompts with context
+  - Triggers on short prompts (< 10 words) with vague verbs ("fix", "do", "make")
+  - Injects recently changed files, last error from Canavar, current intent
+  - Does NOT modify user prompt - only adds `additionalContext`
+- **Persistent Planning System** (`hooks/src/plan-tracker.ts` + `skills/persistent-planning/`):
+  - 3-file planning: `thoughts/PLAN.md` (active plan), `thoughts/PROGRESS.md` (auto-tracked commits), `thoughts/CONTEXT.md` (project context)
+  - Session start: auto-injects active plan into context
+  - After commits: auto-appends to PROGRESS.md with hash, message, timestamp
+  - Based on planning-with-files pattern (96.7% task completion rate)
+
+### Context
+Features prioritized from competitive analysis of 20+ Claude Code ecosystem repos (143K stars leader). Terminal HUD (17K stars for claude-hud), prompt improvement (1.3K stars), and persistent planning (18K stars) were the highest-ROI gaps identified.
+
 ## [2.3.1] - 2026-04-07
 
 ### Added

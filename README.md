@@ -34,6 +34,8 @@ vibecosystem turns Claude Code into a full AI software team — 139 specialized 
 
 > **v2.3**: `vibeco` CLI tool (stats, doctor, profiles, dashboard), 6 preset profiles for token savings, one-liner install (`curl | bash`).
 
+> **v2.4**: Terminal HUD (real-time statusline), prompt auto-improver (enriches vague prompts with context), persistent planning system (PLAN.md/PROGRESS.md/CONTEXT.md for 96.7% task completion). Competitive gap closure from analysis of 20+ ecosystem repos.
+
 ## The Problem
 
 Claude Code is powerful, but it's one assistant. You prompt, it responds, you review. For complex projects you need a planner, a reviewer, a security auditor, a tester — and you end up being all of them yourself.

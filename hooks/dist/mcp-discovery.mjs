@@ -177,7 +177,7 @@ function main() {
   lines.push("~/.mcp.json dosyasina ekleyerek aktive edebilirsiniz.");
   lines.push("---");
   console.log(JSON.stringify({
-    result: "",
+    result: "continue",
     systemMessage: lines.join("\n")
   }));
 }
