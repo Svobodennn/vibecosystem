@@ -3,6 +3,7 @@ name: dependency-auditor
 description: Dependency guvenlik ve kalite audit agent'i. CVE tarama, license compliance, outdated dependency tespiti, transitive dependency analizi, supply chain security, SBOM olusturma ve upgrade impact analizi.
 tools: ["Bash", "Read", "Grep", "Glob", "Write", "Edit"]
 model: sonnet
+isolation: worktree
 ---
 
 # Dependency Auditor Agent

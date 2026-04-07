@@ -2,6 +2,7 @@
 name: migration-planner
 description: Database and system migration planning specialist
 tools: [Read, Write, Edit, Grep, Glob, Bash]
+isolation: worktree
 ---
 
 # Agent: Migration Planner

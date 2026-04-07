@@ -6,8 +6,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Agents](https://img.shields.io/badge/agents-139-blue.svg)](#agents)
-[![Skills](https://img.shields.io/badge/skills-284-green.svg)](#skills)
-[![Hooks](https://img.shields.io/badge/hooks-63-orange.svg)](#hooks)
+[![Skills](https://img.shields.io/badge/skills-285-green.svg)](#skills)
+[![Hooks](https://img.shields.io/badge/hooks-66-orange.svg)](#hooks)
 [![Rules](https://img.shields.io/badge/rules-20-red.svg)](#rules)
 [![Validate](https://github.com/vibeeval/vibecosystem/actions/workflows/validate.yml/badge.svg)](https://github.com/vibeeval/vibecosystem/actions/workflows/validate.yml)
 [![Works with Cursor](https://img.shields.io/badge/works%20with-Cursor-00b4d8.svg)](#multi-cli)
@@ -36,6 +36,8 @@ vibecosystem turns Claude Code into a full AI software team — 139 specialized 
 
 > **v2.4**: Terminal HUD (real-time statusline), prompt auto-improver (enriches vague prompts with context), persistent planning system (PLAN.md/PROGRESS.md/CONTEXT.md for 96.7% task completion). Competitive gap closure from analysis of 20+ ecosystem repos.
 
+> **v3.0**: `npx vibecosystem init` npm installer, `plugin.json` for official plugin ecosystem, worktree isolation on 60 producer agents, multi-LLM model routing (Haiku/Sonnet/Opus tiers), knowledge graph integration (6-71x token savings), dashboard v2 with token/cost tracking.
+
 ## The Problem
 
 Claude Code is powerful, but it's one assistant. You prompt, it responds, you review. For complex projects you need a planner, a reviewer, a security auditor, a tester — and you end up being all of them yourself.
@@ -45,8 +47,8 @@ Claude Code is powerful, but it's one assistant. You prompt, it responds, you re
 vibecosystem is a complete [Claude Code](https://docs.anthropic.com/en/docs/claude-code) ecosystem that creates a self-organizing AI team:
 
 1. <a name="agents"></a>**139 agents** — specialized roles from frontend-dev to security-analyst
-2. <a name="skills"></a>**284 skills** — reusable knowledge from TDD workflows to Kubernetes patterns
-3. <a name="hooks"></a>**63 hooks** — TypeScript sensors that observe, filter, and inject context
+2. <a name="skills"></a>**285 skills** — reusable knowledge from TDD workflows to Kubernetes patterns
+3. <a name="hooks"></a>**66 hooks** — TypeScript sensors that observe, filter, and inject context
 4. <a name="rules"></a>**20 rules** — behavioral guidelines that shape every agent's output
 5. **Self-learning** — every error becomes a rule, automatically
 
@@ -55,6 +57,12 @@ After setup, you say "build a feature" and 20+ agents coordinate across 5 phases
 <a name="english"></a>
 
 ## Quick Start
+
+### npm (recommended)
+
+```bash
+npx vibecosystem init
+```
 
 ### One-liner
 
@@ -226,7 +234,7 @@ Agent error → error-ledger.jsonl → skill-matrix.json
 
 ### Adaptive Hook Loading
 
-63 hooks exist but they don't all run at once. Intent determines which hooks fire.
+66 hooks exist but they don't all run at once. Intent determines which hooks fire.
 
 ![Hooks](assets/gif4-hooks.gif)
 
@@ -242,7 +250,7 @@ Agent error → error-ledger.jsonl → skill-matrix.json
 │                                                         │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
 │  │  Hooks   │  │  Agents  │  │  Skills  │              │
-│  │  (63)    │→ │  (139)   │← │  (284)   │              │
+│  │  (66)    │→ │  (139)   │← │  (285)   │              │
 │  └────┬─────┘  └────┬─────┘  └──────────┘              │
 │       │              │                                   │
 │       ▼              ▼                                   │
@@ -357,7 +365,7 @@ vibecosystem works with multiple AI coding tools:
 |-----|-----------|-------------------|--------------|
 | **Claude Code** | `./install.sh` | `CLAUDE.md` | Full support (agents + skills + hooks + rules) |
 | **Cursor IDE** | `./install-cursor.sh` | `AGENTS.md` + `.cursor/rules/` | 6 MDC rules + AGENTS.md + skills |
-| **Codex CLI** (OpenAI) | `./install-codex.sh` | `AGENTS.md` | Skills only (284 skills) |
+| **Codex CLI** (OpenAI) | `./install-codex.sh` | `AGENTS.md` | Skills only (285 skills) |
 | **OpenCode** | Manual | `AGENTS.md` | Skills only |
 
 ```bash

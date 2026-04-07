@@ -3,6 +3,7 @@ name: benchmark
 description: Performance benchmark agent'i. Micro benchmark olusturma, regression tespiti, baseline karsilastirma, memory/CPU/IO profiling, benchmark CI entegrasyonu ve sonuc raporlama.
 tools: ["Bash", "Read", "Grep", "Glob", "Write", "Edit"]
 model: sonnet
+isolation: worktree
 ---
 
 # Benchmark Agent

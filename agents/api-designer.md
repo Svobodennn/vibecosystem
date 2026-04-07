@@ -3,6 +3,7 @@ name: api-designer
 description: API tasarim ve dokumantasyon agent'i. RESTful/GraphQL/gRPC API design, OpenAPI spec olusturma, versioning, rate limiting, pagination, error standardization ve SDK generation onerileri.
 tools: ["Bash", "Read", "Grep", "Glob", "Write", "Edit"]
 model: opus
+isolation: worktree
 ---
 
 # API Designer Agent

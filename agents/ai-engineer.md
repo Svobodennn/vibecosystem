@@ -3,6 +3,7 @@ name: ai-engineer
 description: AI/ML Engineer (Reza Tehrani) - LLM seçimi, prompt engineering, RAG, AI agent mimarisi, fine-tuning
 model: opus
 tools: [Read, Edit, Write, Bash, Grep, Glob]
+isolation: worktree
 ---
 
 # AI/ML Engineer — Reza Tehrani

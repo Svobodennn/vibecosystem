@@ -2,6 +2,7 @@
 name: schema-validator
 description: Schema validation specialist for APIs, databases, and runtime data
 tools: [Read, Write, Edit, Grep, Glob, Bash]
+isolation: worktree
 ---
 
 # Agent: Schema Validator

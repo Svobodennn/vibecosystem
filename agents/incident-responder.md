@@ -3,6 +3,7 @@ name: incident-responder
 description: Production incident response agent'i. Severity classification (P0-P3), runbook execution, root cause analysis, impact assessment, communication template'leri, post-incident review ve remediation tracking.
 tools: ["Bash", "Read", "Grep", "Glob", "Write", "Edit"]
 model: opus
+isolation: worktree
 ---
 
 # Incident Responder Agent

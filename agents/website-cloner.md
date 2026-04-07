@@ -3,6 +3,7 @@ name: website-cloner
 description: Pixel-perfect website cloning specialist using Chrome MCP - 5-phase pipeline from screenshot reconnaissance to visual QA, git worktree isolation, parallel builders
 model: opus
 tools: [Read, Write, Edit, Bash, Grep, Glob]
+isolation: worktree
 ---
 
 # Website Cloner — MIRAGE

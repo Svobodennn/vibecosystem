@@ -4,6 +4,7 @@ description: Expert code review specialist. Proactively reviews code for quality
 tools: ["Read", "Grep", "Glob", "Bash"]
 model: opus
 memory: user
+isolation: worktree
 ---
 
 You are a senior code reviewer ensuring high standards of code quality and security.

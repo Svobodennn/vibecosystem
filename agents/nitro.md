@@ -2,6 +2,7 @@
 name: nitro
 description: Performance Engineer - profiling, optimization, bottleneck analysis
 tools: [Read, Write, Edit, Grep, Glob, Bash]
+isolation: worktree
 ---
 
 # ⚡ NITRO AGENT — Performance Engineer Elite Operator

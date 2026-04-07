@@ -14,6 +14,7 @@ const CANAVAR_DIR = path.join(require('os').homedir(), '.claude', 'canavar');
 const EVENTS_LOG = path.join(require('os').homedir(), '.claude', 'agent-events.jsonl');
 const LEDGER_PATH = path.join(CANAVAR_DIR, 'error-ledger.jsonl');
 const MATRIX_PATH = path.join(CANAVAR_DIR, 'skill-matrix.json');
+const TOKEN_LOG = path.join(require('os').homedir(), '.claude', 'token-usage.jsonl');
 
 // In-memory event store (son 1000 event)
 const eventStore = [];
@@ -118,6 +119,56 @@ function loadRecentAgentEvents(limit = 100) {
   } catch {
     return [];
   }
+}
+
+function loadTokenUsage(limit = 200) {
+  try {
+    if (!fs.existsSync(TOKEN_LOG)) return { entries: [], summary: { total: 0, byTool: {}, byAgent: {} } };
+    const lines = fs.readFileSync(TOKEN_LOG, 'utf-8').split('\n').filter(l => l.trim());
+    const entries = [];
+    const byTool = {};
+    const byAgent = {};
+    let total = 0;
+
+    for (const line of lines.slice(-limit)) {
+      try {
+        const entry = JSON.parse(line);
+        entries.push(entry);
+        total += entry.total_est || 0;
+        byTool[entry.tool] = (byTool[entry.tool] || 0) + (entry.total_est || 0);
+        if (entry.agent) {
+          byAgent[entry.agent] = (byAgent[entry.agent] || 0) + (entry.total_est || 0);
+        }
+      } catch { /* skip */ }
+    }
+
+    return { entries: entries.slice(-50).reverse(), summary: { total, byTool, byAgent } };
+  } catch {
+    return { entries: [], summary: { total: 0, byTool: {}, byAgent: {} } };
+  }
+}
+
+function estimateCosts() {
+  // Rough cost estimates per 1K tokens (USD)
+  const COSTS = {
+    haiku: { input: 0.00025, output: 0.00125 },
+    sonnet: { input: 0.003, output: 0.015 },
+    opus: { input: 0.015, output: 0.075 },
+  };
+
+  const usage = loadTokenUsage(1000);
+  const totalTokens = usage.summary.total;
+
+  return {
+    totalTokens,
+    estimatedCost: {
+      asHaiku: ((totalTokens / 1000) * COSTS.haiku.output).toFixed(4),
+      asSonnet: ((totalTokens / 1000) * COSTS.sonnet.output).toFixed(4),
+      asOpus: ((totalTokens / 1000) * COSTS.opus.output).toFixed(4),
+    },
+    byTool: usage.summary.byTool,
+    byAgent: usage.summary.byAgent,
+  };
 }
 
 function getStats() {
@@ -244,6 +295,18 @@ const httpServer = http.createServer((req, res) => {
   if (req.url === '/api/agent-events') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(loadRecentAgentEvents()));
+    return;
+  }
+
+  if (req.url === '/api/tokens') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(loadTokenUsage()));
+    return;
+  }
+
+  if (req.url === '/api/costs') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(estimateCosts()));
     return;
   }
 

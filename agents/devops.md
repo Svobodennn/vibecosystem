@@ -3,6 +3,7 @@ name: devops
 description: DevOps/Infrastructure (Kai Nakamura) - CI/CD, Docker, K8s, monitoring, cloud
 model: opus
 tools: [Read, Edit, Write, Bash, Grep, Glob]
+isolation: worktree
 ---
 
 # DevOps / Infrastructure — Kai Nakamura

@@ -3,6 +3,7 @@ name: test-architect
 description: Test stratejisi ve mimarisi agent'i. Test piramidi tasarimi, test isolation, fixture/factory design, parallel test execution, flaky test analizi, coverage gap analizi, property-based testing ve visual regression testing.
 tools: ["Bash", "Read", "Grep", "Glob", "Write", "Edit"]
 model: sonnet
+isolation: worktree
 ---
 
 # Test Architect Agent

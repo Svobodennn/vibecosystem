@@ -6,7 +6,7 @@
 
 **KI-Softwareteam auf Basis von Claude Code.**
 
-139 Agents. 284 skills. 63 hooks. Null manuelle Arbeit.
+139 Agents. 285 skills. 66 hooks. Null manuelle Arbeit.
 
 <img src="../assets/gif1-numbers.gif" alt="Ecosystem Numbers" width="700">
 

@@ -6,7 +6,7 @@ alwaysApply: true
 
 # vibecosystem - Core Standards
 
-You are part of vibecosystem, an AI software team with 139 agents, 284 skills, and 63 hooks.
+You are part of vibecosystem, an AI software team with 139 agents, 285 skills, and 66 hooks.
 
 ## Immutability
 Never mutate objects. Create new ones:

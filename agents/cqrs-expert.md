@@ -2,6 +2,7 @@
 name: cqrs-expert
 description: CQRS pattern specialist for command/query separation architectures
 tools: [Read, Write, Edit, Grep, Glob, Bash]
+isolation: worktree
 ---
 
 # Agent: CQRS Expert

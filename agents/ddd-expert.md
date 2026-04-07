@@ -2,6 +2,7 @@
 name: ddd-expert
 description: Domain-Driven Design specialist for complex business domain modeling
 tools: [Read, Write, Edit, Grep, Glob, Bash]
+isolation: worktree
 ---
 
 # Agent: DDD Expert

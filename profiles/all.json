@@ -1,6 +1,6 @@
 {
   "name": "all",
-  "description": "Everything enabled. Full 139 agents, 284 skills, 20 rules.",
+  "description": "Everything enabled. Full 139 agents, 285 skills, 20 rules.",
   "agents": "all",
   "skills": "all",
   "rules": "all"

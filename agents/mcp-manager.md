@@ -3,6 +3,7 @@ name: mcp-manager
 description: MCP (Model Context Protocol) server yonetim agent'i. MCP server kesfetme, kurulum, konfigurasyonu, health check ve troubleshooting. Proje tipine gore MCP stack onerisi yapar.
 tools: ["Bash", "Read", "Grep", "Glob", "Write", "Edit"]
 model: sonnet
+isolation: worktree
 ---
 
 # MCP Manager Agent

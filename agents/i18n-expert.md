@@ -2,6 +2,7 @@
 name: i18n-expert
 description: Internationalization and localization specialist for multi-language applications
 tools: [Read, Write, Edit, Grep, Glob, Bash]
+isolation: worktree
 ---
 
 # Agent: i18n Expert

@@ -2,6 +2,7 @@
 name: api-doc-generator
 description: API documentation generation and management specialist
 tools: [Read, Write, Edit, Grep, Glob, Bash]
+isolation: worktree
 ---
 
 # Agent: API Doc Generator

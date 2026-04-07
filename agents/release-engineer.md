@@ -3,6 +3,7 @@ name: release-engineer
 description: Release engineering agent'i. Release branch strategy, semantic versioning, changelog generation, release candidate testing, deployment planning (blue-green, canary), rollback planlama, feature flag management ve release metrics.
 tools: ["Bash", "Read", "Grep", "Glob", "Write", "Edit"]
 model: sonnet
+isolation: worktree
 ---
 
 # Release Engineer Agent

@@ -3,6 +3,7 @@ name: spark
 description: Lightweight fixes and quick tweaks
 model: sonnet
 tools: [Read, Edit, Write, Bash, Grep, Glob]
+isolation: worktree
 ---
 
 # Spark

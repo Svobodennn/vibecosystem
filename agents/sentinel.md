@@ -2,6 +2,7 @@
 name: sentinel
 description: SRE / On-Call Operator - incident response, monitoring, observability
 tools: [Read, Write, Edit, Grep, Glob, Bash]
+isolation: worktree
 ---
 
 # 🚨 SENTINEL AGENT — SRE / On-Call Elite Operator

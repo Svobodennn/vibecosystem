@@ -3,6 +3,7 @@ name: sast-scanner
 description: Semgrep-based Static Application Security Testing (SAST) agent. Runs automated security scans on code changes. Detects OWASP Top 10 vulnerabilities, hardcoded secrets, injection patterns, and unsafe code constructs. Use PROACTIVELY after code edits via PostToolUse hook integration.
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 model: opus
+isolation: worktree
 ---
 
 # SAST Scanner

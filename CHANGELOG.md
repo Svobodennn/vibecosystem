@@ -9,7 +9,43 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Planned
 - Community contribution workflow
 - Skill marketplace
-- Agent performance dashboard
+- Anthropic marketplace submission
+
+## [3.0.0] - 2026-04-07
+
+### Added
+- **npm package**: `npx vibecosystem init` one-command install (`bin/cli.mjs`)
+  - Profile selection: `npx vibecosystem init --profile frontend`
+  - Health check: `npx vibecosystem doctor`
+  - Force mode: `npx vibecosystem init --force`
+- **plugin.json**: Official Claude Code plugin manifest for ecosystem compatibility
+- **Worktree isolation**: `isolation: worktree` added to 60 producer agents for true parallel execution
+  - Producer agents (code writers) get worktree isolation
+  - Consumer agents (readers, orchestrators) remain shared
+- **Model routing hook** (`hooks/src/model-router.ts`): Multi-LLM tier routing
+  - Tier 1 (Haiku): doc-updater, technical-writer, babel, i18n-expert, etc.
+  - Tier 2 (Sonnet): code-reviewer, frontend-dev, backend-dev, etc. (default)
+  - Tier 3 (Opus): architect, planner, kraken, sleuth, etc.
+  - Recommends via additionalContext, never forces
+- **Knowledge graph skill** (`skills/knowledge-graph/SKILL.md`): codebase-memory MCP integration
+  - 6-71x token savings vs raw file reading
+  - Auto-index on session start via graph-indexer hook
+  - Search, architecture, call-path tracing
+- **Graph indexer hook** (`hooks/src/graph-indexer.ts`): Auto-suggests indexing on session start
+- **Token tracker hook** (`hooks/src/token-tracker.ts`): Estimates token usage per tool call
+  - Writes to `~/.claude/token-usage.jsonl`
+  - Broadcasts to dashboard WebSocket
+- **Dashboard v2 endpoints**: `/api/tokens`, `/api/costs` for token/cost tracking
+  - Per-tool and per-agent token breakdown
+  - Cost estimates for Haiku/Sonnet/Opus tiers
+
+### Changed
+- Updated counts: 139 agents, 285 skills, 66 hooks, 20 rules
+- Root `package.json` added for npm distribution
+- `.npmignore` added for clean npm packaging
+
+### Context
+Competitive analysis of 20+ Claude Code ecosystem repos identified critical gaps: no npm distribution (every 10K+ star repo has it), no plugin.json (invisible to official ecosystem), no worktree isolation (free parallelism), no model routing (70-85% cost savings possible), no knowledge graph (6-71x token savings). This release closes all gaps.
 
 ## [2.4.1] - 2026-04-07
 

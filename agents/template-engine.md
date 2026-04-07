@@ -2,6 +2,7 @@
 name: template-engine
 description: Project scaffolding and template management specialist
 tools: [Read, Write, Edit, Grep, Glob, Bash]
+isolation: worktree
 ---
 
 # Agent: Template Engine

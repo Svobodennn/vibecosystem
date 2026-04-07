@@ -2,6 +2,7 @@
 name: event-sourcing-expert
 description: Event sourcing pattern specialist for event-driven architectures
 tools: [Read, Write, Edit, Grep, Glob, Bash]
+isolation: worktree
 ---
 
 # Agent: Event Sourcing Expert

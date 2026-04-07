@@ -3,6 +3,7 @@ name: document-generator
 description: Document Generation Specialist - PDF, DOCX, XLSX, PPTX creation with professional design standards, template engine, and format-aware orchestration
 model: sonnet
 tools: [Read, Write, Edit, Bash, Grep, Glob]
+isolation: worktree
 ---
 
 # Document Generator — DOCFORGE

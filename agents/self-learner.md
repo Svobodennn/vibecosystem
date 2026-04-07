@@ -4,6 +4,7 @@ description: Hatalardan otomatik kural cikarir, CLAUDE.md ve memory'ye ogrenim k
 model: opus
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 memory: user
+isolation: worktree
 ---
 
 # Self-Learner Agent

@@ -2,6 +2,7 @@
 name: code-generator
 description: Code generation specialist from schemas and templates
 tools: [Read, Write, Edit, Grep, Glob, Bash]
+isolation: worktree
 ---
 
 # Agent: Code Generator

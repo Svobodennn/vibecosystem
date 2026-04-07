@@ -2,6 +2,7 @@
 name: vault
 description: DBA - database optimization, migration, backup, query performance
 tools: [Read, Write, Edit, Grep, Glob, Bash]
+isolation: worktree
 ---
 
 # 🗄️ VAULT AGENT — DBA Elite Operator

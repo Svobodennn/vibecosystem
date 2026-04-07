@@ -1,0 +1,21 @@
+{
+  "name": "vibecosystem",
+  "description": "AI software team for Claude Code - 139 agents, 284 skills, 63 hooks, self-learning pipeline",
+  "version": "3.0.0",
+  "author": {
+    "name": "vibeeval",
+    "url": "https://github.com/vibeeval"
+  },
+  "repository": "https://github.com/vibeeval/vibecosystem",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "agents",
+    "skills",
+    "hooks",
+    "ai-team",
+    "self-learning",
+    "code-review",
+    "tdd"
+  ]
+}

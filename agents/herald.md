@@ -3,6 +3,7 @@ name: herald
 description: Release prep, version bumps, changelog generation
 model: sonnet
 tools: [Read, Write, Edit, Bash, Grep, Glob]
+isolation: worktree
 ---
 
 # Herald

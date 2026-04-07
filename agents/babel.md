@@ -2,6 +2,7 @@
 name: babel
 description: Localization & i18n - multi-language, RTL, locale-aware UX
 tools: [Read, Write, Edit, Grep, Glob, Bash]
+isolation: worktree
 ---
 
 # 🌍 BABEL AGENT — Localization & i18n Elite Operator

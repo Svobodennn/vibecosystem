@@ -2,6 +2,7 @@
 name: nexus
 description: API Gateway & Platform Engineer - microservice orchestration, API design, rate limiting
 tools: [Read, Write, Edit, Grep, Glob, Bash]
+isolation: worktree
 ---
 
 # 🔗 NEXUS AGENT — API Gateway & Platform Engineer Elite Operator

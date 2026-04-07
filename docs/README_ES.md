@@ -6,7 +6,7 @@
 
 **Equipo de software IA construido sobre Claude Code.**
 
-139 agents. 284 skills. 63 hooks. Cero trabajo manual.
+139 agents. 285 skills. 66 hooks. Cero trabajo manual.
 
 <img src="../assets/gif1-numbers.gif" alt="Ecosystem Numbers" width="700">
 

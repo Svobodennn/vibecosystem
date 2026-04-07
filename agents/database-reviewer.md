@@ -4,6 +4,7 @@ description: PostgreSQL database specialist for query optimization, schema desig
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 model: opus
 memory: user
+isolation: worktree
 ---
 
 # Database Reviewer

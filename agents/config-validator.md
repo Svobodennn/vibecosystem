@@ -2,6 +2,7 @@
 name: config-validator
 description: Configuration validation and environment management specialist
 tools: [Read, Write, Edit, Grep, Glob, Bash]
+isolation: worktree
 ---
 
 # Agent: Config Validator

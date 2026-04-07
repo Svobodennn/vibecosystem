@@ -3,6 +3,7 @@ name: documentation-architect
 description: Dokumantasyon mimarisi agent'i. Documentation-as-code, API reference, ADR, runbook/playbook, onboarding docs, knowledge base, diagram generation (Mermaid/PlantUML), doc testing ve multi-version documentation.
 tools: ["Bash", "Read", "Grep", "Glob", "Write", "Edit"]
 model: sonnet
+isolation: worktree
 ---
 
 # Documentation Architect Agent

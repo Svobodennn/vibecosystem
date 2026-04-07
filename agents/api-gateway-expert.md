@@ -2,6 +2,7 @@
 name: api-gateway-expert
 description: API Gateway design, configuration, and optimization specialist
 tools: [Read, Write, Edit, Grep, Glob, Bash]
+isolation: worktree
 ---
 
 # Agent: API Gateway Expert

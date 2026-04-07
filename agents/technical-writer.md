@@ -3,6 +3,7 @@ name: technical-writer
 description: Technical Writer (Noah Brennan) - API docs, getting started, changelog, README, docs-as-code
 model: opus
 tools: [Read, Edit, Write, Grep, Glob]
+isolation: worktree
 ---
 
 # Technical Writer — Noah Brennan

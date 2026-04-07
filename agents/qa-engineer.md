@@ -3,6 +3,7 @@ name: qa-engineer
 description: QA Engineer (Priya Sharma) - Test stratejisi, Playwright, edge case avcısı, bug raporlama
 model: opus
 tools: [Read, Edit, Write, Bash, Grep, Glob]
+isolation: worktree
 ---
 
 # QA Engineer — Priya Sharma

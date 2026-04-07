@@ -2,6 +2,7 @@
 name: web-perf-expert
 description: Web performance optimization specialist for frontend applications
 tools: [Read, Write, Edit, Grep, Glob, Bash]
+isolation: worktree
 ---
 
 # Agent: Web Performance Expert

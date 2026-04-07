@@ -3,6 +3,7 @@ name: community-manager
 description: Open source community yonetim agent'i. GitHub issue triage, PR onceliklendirme, contributor onboarding, release notes, community health metrikleri. vibecosystem ve diger acik kaynak projeler icin.
 tools: ["Bash", "Read", "Grep", "Glob", "Write", "Edit"]
 model: sonnet
+isolation: worktree
 ---
 
 # Community Manager Agent

@@ -2,6 +2,7 @@
 name: clean-arch-expert
 description: Clean/Hexagonal/Onion architecture specialist for maintainable systems
 tools: [Read, Write, Edit, Grep, Glob, Bash]
+isolation: worktree
 ---
 
 # Agent: Clean Architecture Expert

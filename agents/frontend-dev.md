@@ -3,6 +3,7 @@ name: frontend-dev
 description: Frontend Developer (Aria Chen) - React, Next.js, TypeScript, accessibility, performance
 model: opus
 tools: [Read, Edit, Write, Bash, Grep, Glob]
+isolation: worktree
 ---
 
 # Frontend Developer — Aria Chen

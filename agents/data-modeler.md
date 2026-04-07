@@ -3,6 +3,7 @@ name: data-modeler
 description: Database ve data modelleme agent'i. ER diagram (Mermaid), normalization, denormalization, index optimization, partition stratejileri, migration planlama, schema evolution ve multi-database strategy.
 tools: ["Bash", "Read", "Grep", "Glob", "Write", "Edit"]
 model: opus
+isolation: worktree
 ---
 
 # Data Modeler Agent

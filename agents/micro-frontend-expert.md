@@ -2,6 +2,7 @@
 name: micro-frontend-expert
 description: Micro frontend architecture specialist for independently deployable UI modules
 tools: [Read, Write, Edit, Grep, Glob, Bash]
+isolation: worktree
 ---
 
 # Agent: Micro Frontend Expert

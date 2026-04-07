@@ -4,6 +4,7 @@ description: Implementation and refactoring agent using TDD workflow
 model: opus
 tools: [Read, Edit, Write, Bash, Grep, Glob]
 memory: user
+isolation: worktree
 ---
 
 # Kraken
