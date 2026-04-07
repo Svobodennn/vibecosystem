@@ -6,7 +6,7 @@
 
 **Equipo de software IA construido sobre Claude Code.**
 
-139 agents. 283 skills. 60 hooks. Cero trabajo manual.
+139 agents. 284 skills. 63 hooks. Cero trabajo manual.
 
 <img src="../assets/gif1-numbers.gif" alt="Ecosystem Numbers" width="700">
 
@@ -19,8 +19,8 @@
 | Metrica | Cantidad |
 |---------|----------|
 | Agents | **139** |
-| Skills | **283** |
-| Hooks | **60** |
+| Skills | **284** |
+| Hooks | **63** |
 | Rules | **20** |
 | Trabajo manual | **0** |
 
@@ -71,7 +71,7 @@ Phase 5 (Final):        self-learner + technical-writer
 
 ### 3. Carga adaptativa de hooks
 
-Existen 60 hooks, pero no se ejecutan todos a la vez. La intencion determina cuales se activan.
+Existen 63 hooks, pero no se ejecutan todos a la vez. La intencion determina cuales se activan.
 
 <img src="../assets/gif4-hooks.gif" alt="Adaptive Hooks" width="700">
 
@@ -124,7 +124,7 @@ Bug reproduction → replay          (backup: sleuth)
 │                                                         │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
 │  │  Hooks   │  │  Agents  │  │  Skills  │              │
-│  │  (60)    │→ │  (139)   │← │  (283)   │              │
+│  │  (63)    │→ │  (139)   │← │  (284)   │              │
 │  └────┬─────┘  └────┬─────┘  └──────────┘              │
 │       │              │                                   │
 │       ▼              ▼                                   │

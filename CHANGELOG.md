@@ -11,6 +11,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Skill marketplace
 - Agent performance dashboard
 
+## [2.4.1] - 2026-04-07
+
+### Fixed
+- **CI pipeline**: Added `hooks/package-lock.json` to repo (was in `.gitignore`, causing `npm ci` to fail on every push since v2.3.1)
+- **Asset counts**: Updated 283->284 skills, 60->63 hooks across README, 12 translations, install scripts, profiles, AGENTS.md, and Cursor/Codex configs
+- **README badge anchors**: Added `<a name>` targets for `#agents`, `#skills`, `#hooks`, `#rules` badge links
+- **validate.yml**: Fixed skill counting (was checking `prompt.md`, now checks `SKILL.md`) and added hook count to asset report
+
 ## [2.4.0] - 2026-04-07
 
 ### Added

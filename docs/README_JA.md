@@ -4,15 +4,15 @@
 
 **Claude Code 上に構築された AI ソフトウェアチーム。**
 
-139 の Agent。283 の Skill。60 の Hook。手作業ゼロ。
+139 の Agent。284 の Skill。63 の Hook。手作業ゼロ。
 
 ## 一目でわかる概要
 
 | 指標 | 数 |
 |--------|-------|
 | Agents | **139** |
-| Skills | **283** |
-| Hooks | **60** |
+| Skills | **284** |
+| Hooks | **63** |
 | Rules | **20** |
 | 手作業 | **0** |
 
@@ -59,7 +59,7 @@ Phase 5 (Final):        self-learner + technical-writer
 
 ### 3. 適応型 Hook ローディング
 
-60 の hook がありますが、すべてが同時に実行されるわけではありません。ユーザーの意図に応じて、必要な hook だけが発火します。
+63 の hook がありますが、すべてが同時に実行されるわけではありません。ユーザーの意図に応じて、必要な hook だけが発火します。
 
 <img src="../assets/gif4-hooks.gif" alt="Adaptive Hooks" width="700">
 
@@ -110,7 +110,7 @@ Bug reproduction → replay          (backup: sleuth)
 │                                                         │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
 │  │  Hooks   │  │  Agents  │  │  Skills  │              │
-│  │  (60)    │→ │  (139)   │← │  (283)   │              │
+│  │  (63)    │→ │  (139)   │← │  (284)   │              │
 │  └────┬─────┘  └────┬─────┘  └──────────┘              │
 │       │              │                                   │
 │       ▼              ▼                                   │

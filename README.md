@@ -6,8 +6,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Agents](https://img.shields.io/badge/agents-139-blue.svg)](#agents)
-[![Skills](https://img.shields.io/badge/skills-283-green.svg)](#skills)
-[![Hooks](https://img.shields.io/badge/hooks-60-orange.svg)](#hooks)
+[![Skills](https://img.shields.io/badge/skills-284-green.svg)](#skills)
+[![Hooks](https://img.shields.io/badge/hooks-63-orange.svg)](#hooks)
 [![Rules](https://img.shields.io/badge/rules-20-red.svg)](#rules)
 [![Validate](https://github.com/vibeeval/vibecosystem/actions/workflows/validate.yml/badge.svg)](https://github.com/vibeeval/vibecosystem/actions/workflows/validate.yml)
 [![Works with Cursor](https://img.shields.io/badge/works%20with-Cursor-00b4d8.svg)](#multi-cli)
@@ -44,10 +44,10 @@ Claude Code is powerful, but it's one assistant. You prompt, it responds, you re
 
 vibecosystem is a complete [Claude Code](https://docs.anthropic.com/en/docs/claude-code) ecosystem that creates a self-organizing AI team:
 
-1. **139 agents** — specialized roles from frontend-dev to security-analyst
-2. **283 skills** — reusable knowledge from TDD workflows to Kubernetes patterns
-3. **60 hooks** — TypeScript sensors that observe, filter, and inject context
-4. **20 rules** — behavioral guidelines that shape every agent's output
+1. <a name="agents"></a>**139 agents** — specialized roles from frontend-dev to security-analyst
+2. <a name="skills"></a>**284 skills** — reusable knowledge from TDD workflows to Kubernetes patterns
+3. <a name="hooks"></a>**63 hooks** — TypeScript sensors that observe, filter, and inject context
+4. <a name="rules"></a>**20 rules** — behavioral guidelines that shape every agent's output
 5. **Self-learning** — every error becomes a rule, automatically
 
 After setup, you say "build a feature" and 20+ agents coordinate across 5 phases.
@@ -226,7 +226,7 @@ Agent error → error-ledger.jsonl → skill-matrix.json
 
 ### Adaptive Hook Loading
 
-60 hooks exist but they don't all run at once. Intent determines which hooks fire.
+63 hooks exist but they don't all run at once. Intent determines which hooks fire.
 
 ![Hooks](assets/gif4-hooks.gif)
 
@@ -242,7 +242,7 @@ Agent error → error-ledger.jsonl → skill-matrix.json
 │                                                         │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
 │  │  Hooks   │  │  Agents  │  │  Skills  │              │
-│  │  (60)    │→ │  (139)   │← │  (283)   │              │
+│  │  (63)    │→ │  (139)   │← │  (284)   │              │
 │  └────┬─────┘  └────┬─────┘  └──────────┘              │
 │       │              │                                   │
 │       ▼              ▼                                   │
@@ -357,7 +357,7 @@ vibecosystem works with multiple AI coding tools:
 |-----|-----------|-------------------|--------------|
 | **Claude Code** | `./install.sh` | `CLAUDE.md` | Full support (agents + skills + hooks + rules) |
 | **Cursor IDE** | `./install-cursor.sh` | `AGENTS.md` + `.cursor/rules/` | 6 MDC rules + AGENTS.md + skills |
-| **Codex CLI** (OpenAI) | `./install-codex.sh` | `AGENTS.md` | Skills only (283 skills) |
+| **Codex CLI** (OpenAI) | `./install-codex.sh` | `AGENTS.md` | Skills only (284 skills) |
 | **OpenCode** | Manual | `AGENTS.md` | Skills only |
 
 ```bash

@@ -4,15 +4,15 @@
 
 **Claude Code 위에 구축된 AI 소프트웨어 팀.**
 
-139개의 Agent. 283개의 Skill. 60개의 Hook. 수동 작업 제로.
+139개의 Agent. 284개의 Skill. 63개의 Hook. 수동 작업 제로.
 
 ## 한눈에 보기
 
 | 지표 | 수량 |
 |--------|-------|
 | Agents | **139** |
-| Skills | **283** |
-| Hooks | **60** |
+| Skills | **284** |
+| Hooks | **63** |
 | Rules | **20** |
 | 수동 작업 | **0** |
 
@@ -59,7 +59,7 @@ Phase 5 (Final):        self-learner + technical-writer
 
 ### 3. 적응형 Hook 로딩
 
-60개의 hook이 있지만 동시에 전부 실행되지는 않습니다. 사용자의 의도에 따라 필요한 hook만 실행됩니다.
+63개의 hook이 있지만 동시에 전부 실행되지는 않습니다. 사용자의 의도에 따라 필요한 hook만 실행됩니다.
 
 <img src="../assets/gif4-hooks.gif" alt="Adaptive Hooks" width="700">
 
@@ -110,7 +110,7 @@ Bug reproduction → replay          (backup: sleuth)
 │                                                         │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
 │  │  Hooks   │  │  Agents  │  │  Skills  │              │
-│  │  (60)    │→ │  (139)   │← │  (283)   │              │
+│  │  (63)    │→ │  (139)   │← │  (284)   │              │
 │  └────┬─────┘  └────┬─────┘  └──────────┘              │
 │       │              │                                   │
 │       ▼              ▼                                   │

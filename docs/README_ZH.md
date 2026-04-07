@@ -4,15 +4,15 @@
 
 **基于 Claude Code 构建的 AI 软件团队。**
 
-139 个 Agent。283 项 Skill。60 个 Hook。零人工干预。
+139 个 Agent。284 项 Skill。63 个 Hook。零人工干预。
 
 ## 概览
 
 | 指标 | 数量 |
 |--------|-------|
 | Agents | **139** |
-| Skills | **283** |
-| Hooks | **60** |
+| Skills | **284** |
+| Hooks | **63** |
 | Rules | **20** |
 | 人工操作 | **0** |
 
@@ -59,7 +59,7 @@ Phase 5 (Final):        self-learner + technical-writer
 
 ### 3. 自适应 Hook 加载
 
-60 个 hook 并非同时运行。用户意图决定哪些 hook 被触发。
+63 个 hook 并非同时运行。用户意图决定哪些 hook 被触发。
 
 <img src="../assets/gif4-hooks.gif" alt="Adaptive Hooks" width="700">
 
@@ -110,7 +110,7 @@ Bug reproduction → replay          (backup: sleuth)
 │                                                         │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
 │  │  Hooks   │  │  Agents  │  │  Skills  │              │
-│  │  (60)    │→ │  (139)   │← │  (283)   │              │
+│  │  (63)    │→ │  (139)   │← │  (284)   │              │
 │  └────┬─────┘  └────┬─────┘  └──────────┘              │
 │       │              │                                   │
 │       ▼              ▼                                   │

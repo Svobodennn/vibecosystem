@@ -15,5 +15,6 @@ node_modules/
 *.key
 .idea/
 .vscode/settings.json
-package-lock.json
+# Root package-lock.json only (hooks/ needs its own for CI)
+/package-lock.json
 plugin-config.json

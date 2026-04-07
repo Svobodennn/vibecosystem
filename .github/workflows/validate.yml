@@ -32,10 +32,12 @@ jobs:
       - name: Count assets
         run: |
           agents=$(ls agents/*.md 2>/dev/null | wc -l)
-          skills=$(find skills -name "prompt.md" 2>/dev/null | wc -l)
+          skills=$(find skills -maxdepth 1 -type d 2>/dev/null | tail -n +2 | wc -l)
+          hooks=$(ls hooks/src/*.ts 2>/dev/null | wc -l)
           rules=$(ls rules/*.md 2>/dev/null | wc -l)
           echo "Agents: $agents"
-          echo "Skills with prompt.md: $skills"
+          echo "Skills: $skills"
+          echo "Hooks: $hooks"
           echo "Rules: $rules"
 
   validate-skills:
@@ -46,9 +48,9 @@ jobs:
 
       - name: Check skill frontmatter
         run: |
-          echo "Checking skill prompt.md frontmatter..."
+          echo "Checking skill SKILL.md frontmatter..."
           errors=0
-          for f in $(find skills -name "prompt.md"); do
+          for f in $(find skills -maxdepth 2 -name "SKILL.md"); do
             if ! head -1 "$f" | grep -q "^---"; then
               echo "WARNING: $f missing YAML frontmatter"
               errors=$((errors + 1))
