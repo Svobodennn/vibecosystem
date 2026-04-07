@@ -9,7 +9,7 @@ import { execSync, spawn } from 'node:child_process';
 import { createConnection } from 'node:net';
 import { get } from 'node:http';
 
-const VERSION = '2.3.0';
+const VERSION = '2.3.1';
 const CLAUDE_DIR = join(homedir(), '.claude');
 const PROFILES_DIR = join(CLAUDE_DIR, 'profiles');
 const PLUGIN_CONFIG = join(CLAUDE_DIR, 'plugin-config.json');
