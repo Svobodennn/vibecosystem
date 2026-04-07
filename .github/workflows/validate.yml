@@ -72,6 +72,22 @@ jobs:
           additional_files: 'install.sh'
           severity: warning
 
+  test-hooks:
+    name: Test Hooks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: cd hooks && npm ci
+
+      - name: Run tests
+        run: cd hooks && npm test
+
   markdown-lint:
     name: Markdown Lint
     runs-on: ubuntu-latest

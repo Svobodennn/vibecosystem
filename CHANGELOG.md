@@ -11,6 +11,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Skill marketplace
 - Agent performance dashboard
 
+## [2.3.1] - 2026-04-07
+
+### Added
+- **54 unit tests** for hook utilities (vitest): plugin-check, session-id, project-identity, frontmatter parsing
+  - `cd hooks && npm test` now passes with 54 tests across 4 files
+- **`vibeco search`** command: fuzzy search across agents and skills by name/description
+- **ARCHITECTURE.md**: Complete system architecture document with Mermaid diagrams, hook lifecycle, agent routing, self-learning pipeline, profile system, and contributor guide
+- **CODE_OF_CONDUCT.md**: Contributor Covenant v2.1
+- **GitHub issue templates**: Upgraded from .md to YAML forms with dropdowns, component selection, and version fields
+
+### Changed
+- **CONTRIBUTING.md**: Expanded from 52 to 120+ lines with hook development guide, skill authoring guide, agent creation guide, testing instructions, and vibeco CLI reference
+- **validate.yml**: Added `test-hooks` CI job that runs `npm test` on every push/PR
+- **vibeco CLI**: Added `search` command to help text and command router
+
 ## [2.3.0] - 2026-04-07
 
 ### Added

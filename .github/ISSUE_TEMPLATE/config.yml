@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/vibeeval/vibecosystem/blob/main/SECURITY.md
+    about: Report security vulnerabilities privately (do NOT open a public issue)
+  - name: Questions & Help
+    url: https://x.com/vibeeval
+    about: Ask questions or get help on Twitter/X

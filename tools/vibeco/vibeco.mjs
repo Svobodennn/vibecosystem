@@ -131,10 +131,12 @@ ${bold('COMMANDS')}
   ${green('doctor')}                        Health check
   ${green('profile')} ${dim('<name>')}                Set active profile
     ${dim('minimal | frontend | backend | fullstack | devops | all')}
+  ${green('search')} ${dim('<term> [term2 ...]')}          Search agents and skills by keyword
   ${green('update')}                        Pull latest & reinstall
 
 ${bold('EXAMPLES')}
   ${dim('$')} vibeco stats
+  ${dim('$')} vibeco search database
   ${dim('$')} vibeco list agents --search security
   ${dim('$')} vibeco profile frontend
   ${dim('$')} vibeco doctor
@@ -461,6 +463,96 @@ async function doctor() {
   console.log(`  Health: ${bold(`${pass}/${total}`)} (${score}%) ${status}\n`);
 }
 
+function search() {
+  const terms = process.argv.slice(3);
+  if (terms.length === 0) {
+    console.log(`${red('Usage:')} vibeco search <term> [term2 ...]`);
+    return;
+  }
+
+  const lowerTerms = terms.map(t => t.toLowerCase());
+  const exactPhrase = lowerTerms.join(' ');
+
+  function score(name, desc) {
+    const lName = name.toLowerCase();
+    const lDesc = desc.toLowerCase();
+    let s = 0;
+    if (lName.includes(exactPhrase)) s += 10;
+    for (const word of lowerTerms) {
+      if (lName.includes(word)) s += 5;
+      if (lDesc.includes(word)) s += 3;
+    }
+    return s;
+  }
+
+  // Load agents
+  const agents = [];
+  const agentsDir = join(CLAUDE_DIR, 'agents');
+  try {
+    for (const file of readdirSync(agentsDir).filter(f => f.endsWith('.md')).sort()) {
+      const name = basename(file, '.md');
+      const content = readFileSync(join(agentsDir, file), 'utf-8');
+      const fm = parseFrontmatter(content);
+      const desc = fm.description || '';
+      const s = score(name, desc);
+      if (s > 0) agents.push({ name, desc, score: s });
+    }
+  } catch {}
+  agents.sort((a, b) => b.score - a.score);
+  const topAgents = agents.slice(0, 10);
+
+  // Load skills
+  const skills = [];
+  const skillsDir = join(CLAUDE_DIR, 'skills');
+  try {
+    for (const entry of readdirSync(skillsDir).sort()) {
+      const skillDir = join(skillsDir, entry);
+      if (!statSync(skillDir).isDirectory()) continue;
+      const skillFile = existsSync(join(skillDir, 'SKILL.md')) ? 'SKILL.md' : 'prompt.md';
+      const filePath = join(skillDir, skillFile);
+      let desc = '';
+      if (existsSync(filePath)) {
+        const content = readFileSync(filePath, 'utf-8');
+        const fm = parseFrontmatter(content);
+        desc = fm.description || '';
+      }
+      const s = score(entry, desc);
+      if (s > 0) skills.push({ name: entry, desc, score: s });
+    }
+  } catch {}
+  skills.sort((a, b) => b.score - a.score);
+  const topSkills = skills.slice(0, 10);
+
+  const totalMatches = agents.length + skills.length;
+  if (totalMatches === 0) {
+    console.log(`\n${dim(`No results for "${terms.join(' ')}"`)}\n`);
+    return;
+  }
+
+  function printSection(title, items) {
+    if (items.length === 0) return;
+    const shown = items.length;
+    const total = title === 'Agents' ? agents.length : skills.length;
+    const label = shown < total ? `${shown} of ${total} matches` : `${shown} match${shown !== 1 ? 'es' : ''}`;
+    console.log(`  ${bold(title)} ${dim(`(${label})`)}`);
+    const maxName = Math.min(Math.max(...items.map(i => i.name.length), 10), 35);
+    for (const item of items) {
+      const paddedName = item.name.padEnd(maxName);
+      const shortDesc = item.desc.length > 60 ? item.desc.slice(0, 57) + '...' : item.desc;
+      if (shortDesc) {
+        console.log(`    ${cyan(paddedName)}  ${dim(shortDesc)}`);
+      } else {
+        console.log(`    ${cyan(paddedName)}`);
+      }
+    }
+    console.log();
+  }
+
+  console.log();
+  printSection('Agents', topAgents);
+  printSection('Skills', topSkills);
+}
+
 async function update() {
   const repoDir = getRepoDir();
   if (!repoDir) {
@@ -500,6 +592,7 @@ const COMMANDS = {
   version,
   stats,
   list,
+  search,
   dashboard,
   profile,
   doctor,
