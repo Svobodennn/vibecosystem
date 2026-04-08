@@ -1,6 +1,6 @@
 {
   "name": "vibecosystem",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "AI software team for Claude Code - 139 agents, 284 skills, 63 hooks",
   "type": "module",
   "bin": {
