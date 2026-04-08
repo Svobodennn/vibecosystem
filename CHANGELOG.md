@@ -10,6 +10,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Community contribution workflow
 - Skill marketplace
 
+## [3.1.0] - 2026-04-08
+
+### Added
+- **Achievement System** (`skills/achievements/` + `hooks/src/achievement-tracker.ts`): Steam-style gamification
+  - 25 achievements across 5 skill trees (Code Warrior, Bug Slayer, Architecture Master, Security Guardian, Team Player)
+  - XP, levels (1-50), daily streaks with multipliers
+  - State in `~/.claude/achievements.json`
+- **Experiment Loop** (`skills/experiment-loop/`): Autonomous optimize-test-keep/discard loop
+  - Hypothesize > Modify > Test > Evaluate > Decide, max 10 per run
+  - Git stash safety, results in `thoughts/EXPERIMENTS.md`
+- **Darwinian Skill Evolution** (`skills/skill-evolution/`): Self-improving skills
+  - 5-dimension scoring (accuracy, relevance, token efficiency, satisfaction, reusability)
+  - Crystallization at 90+ score, auto-repair below 30
+- **Self-Healing Codebase** (`skills/self-healing/`): Auto-repair pipeline
+  - 4-phase: Detect > Diagnose > Fix > Validate, confidence gate at 80%
+  - Git stash safety, scope limits (never auto-fix security/DB/auth)
+- **Agent Tamagotchi** (`skills/agent-tamagotchi/` + `hooks/src/tamagotchi-engine.ts`): Terminal pet
+  - 12 species deterministic from username, 5 stats, 7 moods
+  - Reacts to workflow: happy on test pass, sad on build fail
+- **Auto Art Director** (`skills/art-director/`): AI image generation direction
+  - 5-component prompt formula (Subject, Style, Composition, Lighting, Technical)
+  - Templates for banners, diagrams, social media, presentations
+
+### Changed
+- Updated counts: 139 agents, 293 skills, 71 hooks, 20 rules
+
 ## [3.0.1] - 2026-04-08
 
 ### Added
