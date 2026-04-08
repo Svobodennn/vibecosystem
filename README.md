@@ -47,8 +47,8 @@ Claude Code is powerful, but it's one assistant. You prompt, it responds, you re
 vibecosystem is a complete [Claude Code](https://docs.anthropic.com/en/docs/claude-code) ecosystem that creates a self-organizing AI team:
 
 1. <a name="agents"></a>**139 agents** — specialized roles from frontend-dev to security-analyst
-2. <a name="skills"></a>**285 skills** — reusable knowledge from TDD workflows to Kubernetes patterns
-3. <a name="hooks"></a>**66 hooks** — TypeScript sensors that observe, filter, and inject context
+2. <a name="skills"></a>**288 skills** — reusable knowledge from TDD workflows to Kubernetes patterns
+3. <a name="hooks"></a>**69 hooks** — TypeScript sensors that observe, filter, and inject context
 4. <a name="rules"></a>**20 rules** — behavioral guidelines that shape every agent's output
 5. **Self-learning** — every error becomes a rule, automatically
 
@@ -234,7 +234,7 @@ Agent error → error-ledger.jsonl → skill-matrix.json
 
 ### Adaptive Hook Loading
 
-66 hooks exist but they don't all run at once. Intent determines which hooks fire.
+69 hooks exist but they don't all run at once. Intent determines which hooks fire.
 
 ![Hooks](assets/gif4-hooks.gif)
 
@@ -365,7 +365,7 @@ vibecosystem works with multiple AI coding tools:
 |-----|-----------|-------------------|--------------|
 | **Claude Code** | `./install.sh` | `CLAUDE.md` | Full support (agents + skills + hooks + rules) |
 | **Cursor IDE** | `./install-cursor.sh` | `AGENTS.md` + `.cursor/rules/` | 6 MDC rules + AGENTS.md + skills |
-| **Codex CLI** (OpenAI) | `./install-codex.sh` | `AGENTS.md` | Skills only (285 skills) |
+| **Codex CLI** (OpenAI) | `./install-codex.sh` | `AGENTS.md` | Skills only (288 skills) |
 | **OpenCode** | Manual | `AGENTS.md` | Skills only |
 
 ```bash

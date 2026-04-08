@@ -9,6 +9,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Planned
 - Community contribution workflow
 - Skill marketplace
+
+## [3.0.1] - 2026-04-08
+
+### Added
+- **Memory Palace system** (`skills/memory-palace/SKILL.md`): Hierarchical memory organization
+  - Wings (projects) > Rooms (domains) > Drawers (decisions)
+  - Flat JSONL storage in `~/.claude/palace/`
+  - Auto room detection from 10 domain categories
+- **Session Compression** (`skills/session-compression/SKILL.md`): ACDE format for context compression
+  - Actions, Context, Decisions, Entities extraction
+  - 10-30x token reduction while preserving all actionable info
+- **Layered Recall** (`skills/layered-recall/SKILL.md`): 4-layer progressive memory loading
+  - L1: Identity (always, ~200 tokens), L2: Facts (per-project, ~500 tokens)
+  - L3: Room recall (on-demand), L4: Deep search (explicit)
+  - 4-6x token savings vs loading everything
+- **Palace auto-save hook** (`hooks/src/palace-auto-save.ts`): Auto-detects decisions/discoveries from agent outputs
+- **Session compressor hook** (`hooks/src/session-compressor.ts`): ACDE compression before context window fills
+- **Palace recall hook** (`hooks/src/palace-recall.ts`): Loads Layer 1-2 memories at session start
+
+### Changed
+- Updated counts: 139 agents, 288 skills, 69 hooks, 20 rules
 - Anthropic marketplace submission
 
 ## [3.0.0] - 2026-04-07
