@@ -4,7 +4,7 @@
 
 **فريق برمجيات ذكاء اصطناعي مبني على Claude Code.**
 
-139 Agent. 285 skill. 66 hook. بدون أي عمل يدوي.
+139 Agent. 295 skill. 73 hook. بدون أي عمل يدوي.
 
 ## نظرة سريعة
 
@@ -59,7 +59,7 @@ Phase 5 (Final):        self-learner + technical-writer
 
 ### 3. التحميل التكيفي للـ Hook
 
-يوجد 66 hook لكنها لا تعمل جميعها في آن واحد. نية المستخدم هي التي تحدد أي hook يتم تشغيله.
+يوجد 73 hook لكنها لا تعمل جميعها في آن واحد. نية المستخدم هي التي تحدد أي hook يتم تشغيله.
 
 <img src="../assets/gif4-hooks.gif" alt="Adaptive Hooks" width="700">
 

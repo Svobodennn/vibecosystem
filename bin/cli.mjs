@@ -66,8 +66,8 @@ function install(options = {}) {
   console.log('======================\n');
   console.log(`Installing into ${c('cyan', '~/.claude/')}:`);
   console.log(`  - 139 agents  -> ~/.claude/agents/`);
-  console.log(`  - 284 skills  -> ~/.claude/skills/`);
-  console.log(`  - 63 hooks    -> ~/.claude/hooks/`);
+  console.log(`  - 295 skills  -> ~/.claude/skills/`);
+  console.log(`  - 73 hooks    -> ~/.claude/hooks/`);
   console.log(`  - 20 rules    -> ~/.claude/rules/`);
   console.log(`\nMode: ${force ? c('yellow', 'OVERWRITE') : c('green', 'MERGE')} | Profile: ${c('blue', profile)}\n`);
 
@@ -247,7 +247,7 @@ ${c('bold', 'PROFILES')}
   backend    44 agents, ~74 skills   API/DB/security
   fullstack  59 agents, ~96 skills   Frontend + backend combined
   devops     33 agents, ~61 skills   CI/CD/K8s/cloud
-  all        139 agents, 293 skills  Everything (default)
+  all        139 agents, 295 skills  Everything (default)
 
 ${c('dim', 'https://github.com/vibeeval/vibecosystem')}
 `);
