@@ -6,8 +6,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Agents](https://img.shields.io/badge/agents-139-blue.svg)](#agents)
-[![Skills](https://img.shields.io/badge/skills-285-green.svg)](#skills)
-[![Hooks](https://img.shields.io/badge/hooks-66-orange.svg)](#hooks)
+[![Skills](https://img.shields.io/badge/skills-293-green.svg)](#skills)
+[![Hooks](https://img.shields.io/badge/hooks-71-orange.svg)](#hooks)
 [![Rules](https://img.shields.io/badge/rules-20-red.svg)](#rules)
 [![Validate](https://github.com/vibeeval/vibecosystem/actions/workflows/validate.yml/badge.svg)](https://github.com/vibeeval/vibecosystem/actions/workflows/validate.yml)
 [![Works with Cursor](https://img.shields.io/badge/works%20with-Cursor-00b4d8.svg)](#multi-cli)
@@ -104,7 +104,7 @@ Save tokens by loading only what you need:
 | `backend` | ~44 | ~74 | API/DB/security |
 | `fullstack` | ~59 | ~96 | Frontend + Backend |
 | `devops` | ~33 | ~61 | CI/CD/K8s/cloud |
-| `all` | 139 | 283 | Everything (default) |
+| `all` | 139 | 293 | Everything (default) |
 
 ```bash
 vibeco profile frontend  # switch to frontend profile
@@ -250,7 +250,7 @@ Agent error → error-ledger.jsonl → skill-matrix.json
 │                                                         │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
 │  │  Hooks   │  │  Agents  │  │  Skills  │              │
-│  │  (66)    │→ │  (139)   │← │  (285)   │              │
+│  │  (71)    │→ │  (139)   │← │  (293)   │              │
 │  └────┬─────┘  └────┬─────┘  └──────────┘              │
 │       │              │                                   │
 │       ▼              ▼                                   │
@@ -313,8 +313,8 @@ Agent error → error-ledger.jsonl → skill-matrix.json
 | Component | Count | Description |
 |-----------|-------|-------------|
 | `agents/` | 139 | Markdown agent definitions with specialized prompts |
-| `skills/` | 283 | Reusable knowledge — TDD, security, patterns, frameworks |
-| `hooks/src/` | 60 | TypeScript hooks — sensors, learners, validators |
+| `skills/` | 293 | Reusable knowledge — TDD, security, patterns, frameworks |
+| `hooks/src/` | 71 | TypeScript hooks — sensors, learners, validators |
 | `rules/` | 20 | Behavioral guidelines — coding style, safety, QA |
 
 ---

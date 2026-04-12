@@ -2,38 +2,21 @@
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
+var VALID_AGENT_NAME = /^[a-zA-Z0-9_-]+$/;
 var TIER_MODELS = {
-  1: "haiku",
   2: "sonnet",
   3: "opus"
 };
 var TIER_LABELS = {
-  1: "lightweight (docs, scaffold, i18n)",
   2: "standard (dev, review, test)",
   3: "complex (architecture, investigation, large refactor)"
 };
 var DEFAULT_TIERS = {
-  // Tier 1 - Lightweight
-  "doc-updater": 1,
-  "technical-writer": 1,
-  "scribe": 1,
-  "catalyst": 1,
-  "template-engine": 1,
-  "code-generator": 1,
-  "babel": 1,
-  "i18n-expert": 1,
-  "copywriter": 1,
-  "herald": 1,
-  "api-doc-generator": 1,
-  "schema-validator": 1,
-  "config-validator": 1,
-  "community-manager": 1,
-  // Tier 3 - Complex
-  "architect": 3,
-  "planner": 3,
+  architect: 3,
+  planner: 3,
   "tech-lead": 3,
-  "kraken": 3,
-  "sleuth": 3,
+  kraken: 3,
+  sleuth: 3,
   "ai-engineer": 3,
   "ddd-expert": 3,
   "clean-arch-expert": 3,
@@ -55,6 +38,7 @@ function parseFrontmatter(content) {
   return result;
 }
 function getAgentTier(agentName) {
+  if (!VALID_AGENT_NAME.test(agentName)) return 2;
   const agentPaths = [
     join(homedir(), ".claude", "agents", `${agentName}.md`),
     join(process.cwd(), "agents", `${agentName}.md`)
@@ -64,50 +48,44 @@ function getAgentTier(agentName) {
       try {
         const content = readFileSync(agentPath, "utf-8");
         const fm = parseFrontmatter(content);
-        if (fm.tier) return fm.tier;
+        if (fm.tier && (fm.tier === 2 || fm.tier === 3)) return fm.tier;
       } catch {
       }
     }
   }
   return DEFAULT_TIERS[agentName] || 2;
 }
-async function main() {
+function runHook() {
   let input;
   try {
-    input = readFileSync("/dev/stdin", "utf-8");
+    input = readFileSync(0, "utf-8");
   } catch {
-    process.exit(0);
+    return;
   }
   let data;
   try {
     data = JSON.parse(input);
   } catch {
-    process.exit(0);
-  }
-  if (data.tool_name !== "Agent") {
-    console.log(JSON.stringify({ result: "approve" }));
     return;
   }
+  if (data.tool_name !== "Agent") return;
   const agentType = data.tool_input?.subagent_type;
-  if (!agentType) {
-    console.log(JSON.stringify({ result: "approve" }));
-    return;
-  }
-  if (data.tool_input?.model) {
-    console.log(JSON.stringify({ result: "approve" }));
-    return;
-  }
+  if (!agentType || typeof agentType !== "string") return;
+  if (data.tool_input?.model) return;
   const tier = getAgentTier(agentType);
+  if (tier === 2) return;
   const recommendedModel = TIER_MODELS[tier];
   const tierLabel = TIER_LABELS[tier];
-  if (tier === 2) {
-    console.log(JSON.stringify({ result: "approve" }));
-    return;
-  }
-  const context = `[Model Router] Agent "${agentType}" is tier ${tier} (${tierLabel}). Recommended model: ${recommendedModel}. Set model: "${recommendedModel}" for optimal cost/quality balance.`;
+  const context = `[Model Router] Agent "${agentType}" is tier ${tier} (${tierLabel}). Recommended model: ${recommendedModel}.`;
   console.log(JSON.stringify({
-    result: "approve",
-    additionalContext: context
+    hookSpecificOutput: {
+      hookEventName: "PreToolUse",
+      additionalContext: context
+    }
   }));
 }
-main().catch(() => process.exit(0));
+try {
+  runHook();
+} catch {
+  process.exit(0);
+}

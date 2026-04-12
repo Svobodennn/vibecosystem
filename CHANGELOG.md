@@ -10,6 +10,41 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Community contribution workflow
 - Skill marketplace
 
+## [3.1.1] - 2026-04-12
+
+### Fixed - Security (HIGH)
+- **Path traversal in palace hooks** (H1): Added `sanitizeProjectName()` and `getSafeProjectName()` to `hooks/src/shared/project-identity.ts`. Now all palace hooks (palace-auto-save, palace-recall, session-compressor, graph-indexer) sanitize project names and verify resolved paths stay within PALACE_DIR
+- **Path traversal in model-router** (H2): Added whitelist regex `^[a-zA-Z0-9_-]+$` for agent names to prevent arbitrary `.md` file reads
+
+### Fixed - Bugs
+- **Wrong hook output format**: 4 hooks used `result: 'approve'` (not a valid output). Fixed to use `hookSpecificOutput` or silent exit: tamagotchi-engine, palace-auto-save, model-router, token-tracker
+- **Silent SessionStart failure**: palace-recall and graph-indexer read only legacy `event.type` field, not canonical `event.source`. Fixed to support both
+- **Non-portable stdin**: 7 hooks used `/dev/stdin` (breaks on Windows). Fixed to use FD 0: `readFileSync(0, 'utf-8')`
+- **Duplicate project detection**: 4 hooks reimplemented `getProjectName()`. Now all use shared `getSafeProjectName()` from `shared/project-identity.ts`
+- **bin/cli.mjs --profile flag was cosmetic**: Now actually reads profile JSON, computes disabled agent/skill sets, writes to `plugin-config.json`
+- **bin/cli.mjs --profile bounds check**: Added validation for missing/invalid profile values
+- **Tamagotchi switch case `const` leak**: Wrapped `case 'Agent'` in braces
+- **Tamagotchi float drift**: Integer-based stat decay instead of 0.1 increments
+- **Palace room detection false positives**: Requires 2+ keyword matches instead of 1
+
+### Fixed - Version/Count Consistency
+- `plugin.json`: version 3.0.0 -> 3.1.1, description updated to "293 skills, 71 hooks"
+- `package.json`: version 3.1.0 -> 3.1.1, description updated, removed references to missing `CLAUDE.md` and `hooks/hooks.json` from `files[]`
+- `README.md`: badges updated (skills 285 -> 293, hooks 66 -> 71), ASCII diagram, profile table, directory table all corrected
+- `rules/vibecosystem-welcome.md`: banner v2.3 -> v3.1
+- `tools/vibeco/vibeco.mjs`, `bin/cli.mjs`: VERSION constants aligned to 3.1.1
+
+### Fixed - Stub Skills
+- `skills/phase-gated-commits/SKILL.md`: Filled in with pattern, rules, template, integration
+- `skills/plan-documentation/SKILL.md`: Filled in with structure, completion docs, lifecycle
+
+### Fixed - CI Hardening
+- `.github/workflows/claude-fix.yml`: `contains(label.name, 'claude-fix')` -> `label.name == 'claude-fix'` (exact match, prevents substring bypass)
+- `.github/workflows/validate.yml`: `ludeeus/action-shellcheck@master` pinned to `@2.0.0` (no floating refs)
+
+### Context
+Comprehensive review by 4 parallel agents (Explore, security-reviewer, code-reviewer, janitor) found ~90 issues. This release addresses all P0 (release blockers) and P1 (correctness) findings. P2/P3 cleanup (dead code in hooks/src/shared/, stale agent matrix, 45 skills using `prompt.md` instead of `SKILL.md`) scheduled for v3.2.0.
+
 ## [3.1.0] - 2026-04-08
 
 ### Added

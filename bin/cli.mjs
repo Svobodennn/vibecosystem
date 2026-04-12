@@ -4,16 +4,17 @@
 // npx vibecosystem [command] [options]
 
 import { existsSync, mkdirSync, cpSync, readdirSync, statSync, readFileSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
-import { join, basename, dirname } from 'node:path';
+import { join, dirname } from 'node:path';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { createInterface } from 'node:readline';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const REPO_DIR = join(__dirname, '..');
 const CLAUDE_DIR = join(homedir(), '.claude');
-const VERSION = '3.1.0';
+const VERSION = '3.1.1';
+
+const VALID_PROFILES = new Set(['minimal', 'frontend', 'backend', 'fullstack', 'devops', 'all']);
 
 const COLORS = {
   reset: '\x1b[0m',
@@ -27,11 +28,6 @@ const COLORS = {
 };
 
 function c(color, text) { return `${COLORS[color]}${text}${COLORS.reset}`; }
-
-function ask(question) {
-  const rl = createInterface({ input: process.stdin, output: process.stdout });
-  return new Promise(resolve => rl.question(question, answer => { rl.close(); resolve(answer); }));
-}
 
 function countFiles(dir, pattern) {
   try {
@@ -164,13 +160,45 @@ function install(options = {}) {
   }
   console.log(c('green', ' done'));
 
-  // Apply profile
+  // Apply profile - writes disabled lists to plugin-config.json
   if (profile !== 'all') {
     process.stdout.write(`Applying profile: ${profile}...`);
     const profileFile = join(CLAUDE_DIR, 'profiles', `${profile}.json`);
     if (existsSync(profileFile)) {
-      // Profile logic handled by vibeco CLI
-      console.log(c('green', ' done'));
+      try {
+        const profileData = JSON.parse(readFileSync(profileFile, 'utf-8'));
+        const enabledAgents = new Set(profileData.agents || []);
+        const enabledSkills = new Set(profileData.skills || []);
+
+        // Compute disabled sets
+        const allAgents = readdirSync(join(CLAUDE_DIR, 'agents'))
+          .filter(f => f.endsWith('.md'))
+          .map(f => f.replace(/\.md$/, ''));
+        const allSkills = readdirSync(join(CLAUDE_DIR, 'skills'))
+          .filter(f => statSync(join(CLAUDE_DIR, 'skills', f)).isDirectory());
+
+        const disabledAgents = enabledAgents.size > 0
+          ? allAgents.filter(a => !enabledAgents.has(a))
+          : [];
+        const disabledSkills = enabledSkills.size > 0
+          ? allSkills.filter(s => !enabledSkills.has(s))
+          : [];
+
+        const pluginConfig = {
+          profile,
+          disabledAgents,
+          disabledSkills,
+          appliedAt: new Date().toISOString(),
+        };
+
+        writeFileSync(
+          join(CLAUDE_DIR, 'plugin-config.json'),
+          JSON.stringify(pluginConfig, null, 2)
+        );
+        console.log(c('green', ' done'));
+      } catch (err) {
+        console.log(c('yellow', ` failed: ${err.message}`));
+      }
     } else {
       console.log(c('yellow', ` profile not found, using all`));
     }
@@ -219,7 +247,7 @@ ${c('bold', 'PROFILES')}
   backend    44 agents, ~74 skills   API/DB/security
   fullstack  59 agents, ~96 skills   Frontend + backend combined
   devops     33 agents, ~61 skills   CI/CD/K8s/cloud
-  all        139 agents, 284 skills  Everything (default)
+  all        139 agents, 293 skills  Everything (default)
 
 ${c('dim', 'https://github.com/vibeeval/vibecosystem')}
 `);
@@ -258,7 +286,21 @@ switch (command) {
   case 'init': {
     const force = args.includes('--force');
     const profileIdx = args.indexOf('--profile');
-    const profile = profileIdx !== -1 ? args[profileIdx + 1] : 'all';
+    let profile = 'all';
+    if (profileIdx !== -1) {
+      const next = args[profileIdx + 1];
+      if (!next || next.startsWith('--')) {
+        console.error(c('red', 'Error: --profile requires a value'));
+        console.error(`  Valid: ${[...VALID_PROFILES].join(', ')}`);
+        process.exit(1);
+      }
+      if (!VALID_PROFILES.has(next)) {
+        console.error(c('red', `Error: invalid profile "${next}"`));
+        console.error(`  Valid: ${[...VALID_PROFILES].join(', ')}`);
+        process.exit(1);
+      }
+      profile = next;
+    }
     install({ force, profile });
     break;
   }

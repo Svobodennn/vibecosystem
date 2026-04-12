@@ -1,7 +1,7 @@
 {
   "name": "vibecosystem",
-  "description": "AI software team for Claude Code - 139 agents, 284 skills, 63 hooks, self-learning pipeline",
-  "version": "3.0.0",
+  "description": "AI software team for Claude Code - 139 agents, 293 skills, 71 hooks, self-learning pipeline",
+  "version": "3.1.1",
   "author": {
     "name": "vibeeval",
     "url": "https://github.com/vibeeval"

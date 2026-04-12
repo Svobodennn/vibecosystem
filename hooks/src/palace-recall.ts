@@ -10,42 +10,40 @@
  * Only Layers 1-2 are loaded at session start for token efficiency.
  */
 
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { join, basename } from 'node:path';
+import { readFileSync, existsSync } from 'node:fs';
+import { join, resolve, sep } from 'node:path';
 import { homedir } from 'node:os';
+import { getSafeProjectName } from './shared/project-identity.js';
 
 interface SessionEvent {
-  type: string;
+  type?: string;    // legacy field
+  source?: string;  // canonical field
   session_id?: string;
 }
 
 const PALACE_DIR = join(homedir(), '.claude', 'palace');
 
-function getProjectName(): string {
-  const projectDir = process.env.CLAUDE_PROJECT_DIR || process.cwd();
-  const pkgPath = join(projectDir, 'package.json');
-  if (existsSync(pkgPath)) {
-    try {
-      const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
-      if (pkg.name) return pkg.name.replace(/^@[^/]+\//, '');
-    } catch {}
-  }
-  return basename(projectDir);
+/** Verify a path stays within PALACE_DIR. */
+function safePalacePath(filename: string): string | null {
+  const candidate = resolve(join(PALACE_DIR, filename));
+  const root = resolve(PALACE_DIR);
+  if (!candidate.startsWith(root + sep) && candidate !== root) return null;
+  return candidate;
 }
 
 function loadLayer2(project: string): string[] {
-  const wingFile = join(PALACE_DIR, `${project}.jsonl`);
-  if (!existsSync(wingFile)) return [];
+  const wingFile = safePalacePath(`${project}.jsonl`);
+  if (!wingFile || !existsSync(wingFile)) return [];
 
   try {
     const lines = readFileSync(wingFile, 'utf-8').split('\n').filter(l => l.trim());
     const facts: string[] = [];
     const seen = new Set<string>();
 
-    // Read last 50 entries, deduplicate by content prefix
     for (const line of lines.slice(-50).reverse()) {
       try {
         const entry = JSON.parse(line);
+        if (typeof entry.content !== 'string' || typeof entry.room !== 'string') continue;
         const key = `${entry.room}:${entry.content.slice(0, 50)}`;
         if (seen.has(key)) continue;
         seen.add(key);
@@ -53,18 +51,18 @@ function loadLayer2(project: string): string[] {
         if (entry.type === 'decision' || entry.type === 'constraint') {
           facts.push(`[${entry.room}] ${entry.content}`);
         }
-      } catch {}
+      } catch { /* skip bad line */ }
     }
 
-    return facts.slice(0, 10); // Max 10 critical facts
+    return facts.slice(0, 10);
   } catch {
     return [];
   }
 }
 
 function loadLastSession(project: string): string | null {
-  const sessionsFile = join(PALACE_DIR, `${project}-sessions.jsonl`);
-  if (!existsSync(sessionsFile)) return null;
+  const sessionsFile = safePalacePath(`${project}-sessions.jsonl`);
+  if (!sessionsFile || !existsSync(sessionsFile)) return null;
 
   try {
     const lines = readFileSync(sessionsFile, 'utf-8').split('\n').filter(l => l.trim());
@@ -73,14 +71,14 @@ function loadLastSession(project: string): string | null {
     const last = JSON.parse(lines[lines.length - 1]);
     const parts: string[] = [];
 
-    if (last.acde?.actions?.length) {
+    if (Array.isArray(last.acde?.actions) && last.acde.actions.length) {
       parts.push('Last session: ' + last.acde.actions.slice(0, 3).join(', '));
     }
-    if (last.acde?.entities?.length) {
+    if (Array.isArray(last.acde?.entities) && last.acde.entities.length) {
       parts.push('Files: ' + last.acde.entities.slice(0, 5).join(', '));
     }
 
-    return parts.join(' | ');
+    return parts.length ? parts.join(' | ') : null;
   } catch {
     return null;
   }
@@ -100,51 +98,39 @@ function getRoomSummary(project: string): string {
   }
 }
 
-async function main() {
+function runHook(): void {
   let input: string;
   try {
-    input = readFileSync('/dev/stdin', 'utf-8');
-  } catch { process.exit(0); }
+    input = readFileSync(0, 'utf-8');
+  } catch { return; }
 
   let event: SessionEvent;
   try {
     event = JSON.parse(input);
-  } catch { process.exit(0); }
+  } catch { return; }
 
-  if (event.type !== 'startup' && event.type !== 'resume') {
-    process.exit(0);
-  }
+  // Support both canonical `source` and legacy `type` fields
+  const phase = event.source ?? event.type;
+  if (phase !== 'startup' && phase !== 'resume') return;
 
-  const project = getProjectName();
+  if (!existsSync(PALACE_DIR)) return;
 
-  // Check if palace exists for this project
-  if (!existsSync(PALACE_DIR)) {
-    process.exit(0);
-  }
-
+  const project = getSafeProjectName();
   const facts = loadLayer2(project);
   const lastSession = loadLastSession(project);
   const rooms = getRoomSummary(project);
 
-  if (facts.length === 0 && !lastSession) {
-    process.exit(0);
-  }
+  if (facts.length === 0 && !lastSession) return;
 
   const parts: string[] = [`[Memory Palace] Project: ${project}`];
 
   if (rooms) parts.push(rooms);
-
-  if (lastSession) {
-    parts.push('');
-    parts.push(lastSession);
-  }
+  if (lastSession) { parts.push(''); parts.push(lastSession); }
 
   if (facts.length > 0) {
     parts.push('');
     parts.push('Critical Facts:');
-    for (const fact of facts) {
-      parts.push(`  ${fact}`);
-    }
+    for (const fact of facts) parts.push(`  ${fact}`);
   }
 
   parts.push('');
@@ -155,4 +141,4 @@ async function main() {
   }));
 }
 
-main().catch(() => process.exit(0));
+try { runHook(); } catch { process.exit(0); }

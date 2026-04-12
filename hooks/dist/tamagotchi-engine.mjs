@@ -85,7 +85,7 @@ function determineMood(state, event) {
 function updateStats(state, event) {
   const output = String(event.tool_output || "").toLowerCase();
   switch (event.tool_name) {
-    case "Agent":
+    case "Agent": {
       state.stats.chaos = clamp(state.stats.chaos + 2);
       const agentType = String(event.tool_input?.subagent_type || "");
       if (["architect", "planner", "tech-lead"].includes(agentType)) {
@@ -95,6 +95,7 @@ function updateStats(state, event) {
         state.stats.debugging = clamp(state.stats.debugging + 3);
       }
       break;
+    }
     case "Bash":
       if (output.includes("test") && output.includes("pass")) {
         state.stats.speed = clamp(state.stats.speed + 2);
@@ -116,22 +117,24 @@ function updateStats(state, event) {
       break;
   }
   for (const key of Object.keys(state.stats)) {
-    if (state.stats[key] > 55) state.stats[key] = clamp(state.stats[key] - 0.1);
-    if (state.stats[key] < 45) state.stats[key] = clamp(state.stats[key] + 0.1);
+    const val = Math.round(state.stats[key]);
+    if (val > 55) state.stats[key] = clamp(val - 1);
+    else if (val < 45) state.stats[key] = clamp(val + 1);
+    else state.stats[key] = val;
   }
 }
-async function main() {
+function runHook() {
   let input;
   try {
-    input = readFileSync("/dev/stdin", "utf-8");
+    input = readFileSync(0, "utf-8");
   } catch {
-    process.exit(0);
+    return;
   }
   let event;
   try {
     event = JSON.parse(input);
   } catch {
-    process.exit(0);
+    return;
   }
   const state = loadState();
   state.sessionEvents++;
@@ -143,11 +146,15 @@ async function main() {
   if (state.sessionEvents % 20 === 0) {
     const topStat = Object.entries(state.stats).sort(([, a], [, b]) => b - a)[0];
     console.log(JSON.stringify({
-      result: "approve",
-      additionalContext: `${state.emoji} ${state.species} Lv.${state.level} | ${topStat[0]}:${Math.round(topStat[1])} | mood: ${state.mood}`
+      hookSpecificOutput: {
+        hookEventName: "PostToolUse",
+        additionalContext: `${state.emoji} ${state.species} Lv.${state.level} | ${topStat[0]}:${Math.round(topStat[1])} | mood: ${state.mood}`
+      }
     }));
-  } else {
-    console.log(JSON.stringify({ result: "approve" }));
   }
 }
-main().catch(() => process.exit(0));
+try {
+  runHook();
+} catch {
+  process.exit(0);
+}

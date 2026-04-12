@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   claude-fix:
-    if: contains(github.event.label.name, 'claude-fix')
+    if: github.event.label.name == 'claude-fix'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

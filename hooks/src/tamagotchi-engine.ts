@@ -137,7 +137,7 @@ function updateStats(state: TamagotchiState, event: ToolEvent): void {
   const output = String(event.tool_output || '').toLowerCase();
 
   switch (event.tool_name) {
-    case 'Agent':
+    case 'Agent': {
       state.stats.chaos = clamp(state.stats.chaos + 2);
       const agentType = String(event.tool_input?.subagent_type || '');
       if (['architect', 'planner', 'tech-lead'].includes(agentType)) {
@@ -147,6 +147,7 @@ function updateStats(state: TamagotchiState, event: ToolEvent): void {
         state.stats.debugging = clamp(state.stats.debugging + 3);
       }
       break;
+    }
 
     case 'Bash':
       if (output.includes('test') && output.includes('pass')) {
@@ -171,25 +172,26 @@ function updateStats(state: TamagotchiState, event: ToolEvent): void {
       break;
   }
 
-  // Decay toward 50 (regression to mean)
+  // Decay toward 50 (integer arithmetic to avoid float drift)
   for (const key of Object.keys(state.stats) as Array<keyof typeof state.stats>) {
-    if (state.stats[key] > 55) state.stats[key] = clamp(state.stats[key] - 0.1);
-    if (state.stats[key] < 45) state.stats[key] = clamp(state.stats[key] + 0.1);
+    const val = Math.round(state.stats[key]);
+    if (val > 55) state.stats[key] = clamp(val - 1);
+    else if (val < 45) state.stats[key] = clamp(val + 1);
+    else state.stats[key] = val;
   }
 }
 
-async function main() {
+function runHook(): void {
   let input: string;
-  try { input = readFileSync('/dev/stdin', 'utf-8'); } catch { process.exit(0); }
+  try { input = readFileSync(0, 'utf-8'); } catch { return; }
 
   let event: ToolEvent;
-  try { event = JSON.parse(input); } catch { process.exit(0); }
+  try { event = JSON.parse(input); } catch { return; }
 
   const state = loadState();
   state.sessionEvents++;
   state.lastFed = new Date().toISOString();
 
-  // Update stats and mood
   updateStats(state, event);
   state.mood = determineMood(state, event);
   state.level = calculateLevel(state);
@@ -202,12 +204,12 @@ async function main() {
       .sort(([, a], [, b]) => b - a)[0];
 
     console.log(JSON.stringify({
-      result: 'approve',
-      additionalContext: `${state.emoji} ${state.species} Lv.${state.level} | ${topStat[0]}:${Math.round(topStat[1])} | mood: ${state.mood}`,
+      hookSpecificOutput: {
+        hookEventName: 'PostToolUse',
+        additionalContext: `${state.emoji} ${state.species} Lv.${state.level} | ${topStat[0]}:${Math.round(topStat[1])} | mood: ${state.mood}`,
+      },
     }));
-  } else {
-    console.log(JSON.stringify({ result: 'approve' }));
   }
 }
 
-main().catch(() => process.exit(0));
+try { runHook(); } catch { process.exit(0); }
