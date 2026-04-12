@@ -56,7 +56,7 @@ echo "  2) frontend   - React/Next.js focused (~30 agents)"
 echo "  3) backend    - API/DB/infra focused (~40 agents)"
 echo "  4) fullstack  - Frontend + Backend (~60 agents)"
 echo "  5) devops     - CI/CD/Cloud focused (~33 agents)"
-echo "  6) all        - Everything (139 agents, 293 skills)"
+echo "  6) all        - Everything (139 agents, 295 skills)"
 echo ""
 read -p "Select [1-6, default 6]: " CHOICE
 

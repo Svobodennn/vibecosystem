@@ -8,7 +8,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Planned
 - Community contribution workflow
-- Skill marketplace
+- agentskills.io format migration (v4.0)
+
+## [3.2.0] - 2026-04-12
+
+### Added - Autonomous Skill Evolution Loop
+- **skill-compounder hook** (`hooks/src/skill-compounder.ts`): Stop hook that analyzes completed sessions for repeated successful patterns and error-recovery sequences. Auto-generates SKILL.md drafts in `~/.claude/skills-drafts/` with confidence scores. Zero manual review needed.
+- **skill-curator hook** (`hooks/src/skill-curator.ts`): SessionStart hook that reviews drafts, promotes high-confidence ones (>= 80) to active skills, archives low-quality (< 50), and detects duplicates. Completes the autonomous observe -> draft -> review -> promote loop.
+- **skill-curator skill** (`skills/skill-curator/SKILL.md`): Documents the lifecycle and criteria.
+
+### Added - 3-Depth Progressive Recall
+- **recall-layers shared module** (`hooks/src/shared/recall-layers.ts`): Three-depth fetch pattern for memory queries:
+  - Depth 1: IDs only (~10 tokens per match) - cheapest, for filtering
+  - Depth 2: Summary (room, type, preview) - middle layer
+  - Depth 3: Full content (~500+ tokens) - only for confirmed matches
+- **layered-recall skill updated**: Now documents both 4 scope layers AND 3 depth layers for 10-50x token savings via fetch-on-confirmation pattern.
+
+### Added - Pre-Research Topic Resolution
+- **topic-resolver skill** (`skills/topic-resolver/SKILL.md`): Maps vague queries to concrete entities (GitHub orgs, X handles, subreddits, docs URLs) BEFORE searching. Caps at 8 entities.
+- **oracle agent updated**: Now runs topic-resolver as Step 0 before any search. Adds Recommended Skills section referencing topic-resolver and knowledge-graph.
+
+### Changed
+- Updated counts: 139 agents, 295 skills, 73 hooks, 20 rules
+- Version bumped: 3.1.1 -> 3.2.0
+
+### Context
+This release closes the **autonomous self-improvement loop**: vibecosystem now observes your sessions, detects procedural patterns, generates skill drafts automatically, reviews them on next session start, and promotes the best ones without any manual review. Combined with 3-depth progressive recall, this creates a system where skills compound in quality over time with zero user intervention.
 
 ## [3.1.1] - 2026-04-12
 

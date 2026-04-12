@@ -1,0 +1,244 @@
+/**
+ * skill-compounder.ts - Autonomous Skill Generation Hook
+ *
+ * Stop hook that analyzes completed session for procedural patterns
+ * and auto-generates SKILL.md drafts in ~/.claude/skills-drafts/.
+ *
+ * How it works:
+ *  1. Reads recent tool calls from agent-events.jsonl
+ *  2. Looks for repeated success sequences (same pattern >=3 times)
+ *  3. Looks for novel problem-solving sequences (tool errors followed by fixes)
+ *  4. Generates SKILL.md draft with confidence score
+ *  5. Writes to ~/.claude/skills-drafts/<name>-<hash>.md
+ *
+ * skill-curator agent reviews these drafts on next session start.
+ */
+
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
+import { homedir } from 'node:os';
+import { createHash } from 'node:crypto';
+
+interface StopEvent {
+  session_id?: string;
+}
+
+interface AgentEvent {
+  type?: string;
+  agentType?: string;
+  tool?: string;
+  success?: boolean;
+  duration?: number;
+  timestamp?: string;
+  session_id?: string;
+}
+
+interface PatternCandidate {
+  name: string;
+  description: string;
+  sequence: string[];
+  occurrences: number;
+  confidence: number;
+  category: string;
+}
+
+const DRAFTS_DIR = join(homedir(), '.claude', 'skills-drafts');
+const EVENTS_LOG = join(homedir(), '.claude', 'agent-events.jsonl');
+
+// Minimum criteria for a pattern to become a draft
+const MIN_OCCURRENCES = 3;
+const MIN_CONFIDENCE = 60;
+const MIN_SEQUENCE_LENGTH = 3;
+
+function loadRecentEvents(sessionId: string, limit = 500): AgentEvent[] {
+  if (!existsSync(EVENTS_LOG)) return [];
+
+  try {
+    const content = readFileSync(EVENTS_LOG, 'utf-8');
+    const lines = content.split('\n').filter(l => l.trim());
+    const events: AgentEvent[] = [];
+
+    for (const line of lines.slice(-limit)) {
+      try {
+        const ev = JSON.parse(line);
+        if (ev.session_id === sessionId) {
+          events.push(ev);
+        }
+      } catch { /* skip */ }
+    }
+
+    return events;
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Detect repeated successful tool call sequences.
+ * Looks for the same (tool, agent) chain appearing multiple times.
+ */
+function detectRepeatedPatterns(events: AgentEvent[]): PatternCandidate[] {
+  const sequences = new Map<string, number>();
+  const window = 4; // Look at 4-step windows
+
+  for (let i = 0; i <= events.length - window; i++) {
+    const slice = events.slice(i, i + window);
+    // Only count successful sequences
+    if (slice.some(e => e.success === false)) continue;
+
+    const key = slice.map(e => `${e.tool || e.type}:${e.agentType || 'user'}`).join('>');
+    sequences.set(key, (sequences.get(key) || 0) + 1);
+  }
+
+  const candidates: PatternCandidate[] = [];
+  for (const [sequence, count] of sequences.entries()) {
+    if (count < MIN_OCCURRENCES) continue;
+
+    const steps = sequence.split('>');
+    const confidence = Math.min(100, 50 + count * 15);
+
+    candidates.push({
+      name: `pattern-${createHash('md5').update(sequence).digest('hex').slice(0, 6)}`,
+      description: `Procedural pattern: ${steps.map(s => s.split(':')[0]).join(' -> ')}`,
+      sequence: steps,
+      occurrences: count,
+      confidence,
+      category: 'repeated-workflow',
+    });
+  }
+
+  return candidates;
+}
+
+/**
+ * Detect error-recovery patterns: failure followed by successful retry.
+ * These are valuable because they encode "how to recover from X error".
+ */
+function detectRecoveryPatterns(events: AgentEvent[]): PatternCandidate[] {
+  const recoveries: PatternCandidate[] = [];
+
+  for (let i = 0; i < events.length - 1; i++) {
+    const fail = events[i];
+    const next = events[i + 1];
+
+    if (fail.success === false && next.success === true && fail.tool === next.tool) {
+      const key = `${fail.tool}-recovery`;
+      recoveries.push({
+        name: `recovery-${fail.tool || 'unknown'}-${createHash('md5').update(key).digest('hex').slice(0, 4)}`,
+        description: `Recovery pattern: when ${fail.tool} fails, retry with adjusted parameters`,
+        sequence: [`${fail.tool}:fail`, `${next.tool}:success`],
+        occurrences: 1,
+        confidence: 70,
+        category: 'error-recovery',
+      });
+    }
+  }
+
+  return recoveries;
+}
+
+function generateSkillDraft(pattern: PatternCandidate, sessionId: string): string {
+  const timestamp = new Date().toISOString();
+  const frontmatter = [
+    '---',
+    `name: ${pattern.name}`,
+    `description: "${pattern.description}. Auto-generated from session observation. Confidence: ${pattern.confidence}%."`,
+    `category: ${pattern.category}`,
+    `confidence: ${pattern.confidence}`,
+    `occurrences: ${pattern.occurrences}`,
+    `source_session: ${sessionId}`,
+    `generated_at: ${timestamp}`,
+    `status: draft`,
+    '---',
+    '',
+  ].join('\n');
+
+  const body = [
+    `# ${pattern.name}`,
+    '',
+    '## Auto-Generated Skill Draft',
+    '',
+    `This skill was automatically generated by skill-compounder from session \`${sessionId}\`.`,
+    '',
+    '## Pattern Observed',
+    '',
+    '```',
+    pattern.sequence.join(' -> '),
+    '```',
+    '',
+    `**Occurrences:** ${pattern.occurrences}`,
+    `**Confidence:** ${pattern.confidence}%`,
+    `**Category:** ${pattern.category}`,
+    '',
+    '## Review Status',
+    '',
+    'This is a DRAFT awaiting skill-curator review. It will be:',
+    '- Promoted to `~/.claude/skills/` if confidence >= 80 and pattern is meaningful',
+    '- Merged with similar drafts if duplicates exist',
+    '- Archived if quality is insufficient',
+    '',
+    '## Next Steps',
+    '',
+    '1. skill-curator agent reviews this draft on next session start',
+    '2. Agent determines if pattern is a reusable workflow',
+    '3. If yes, draft is rewritten as a proper skill with usage guidance',
+    '4. If no, draft is moved to drafts-archive/',
+  ].join('\n');
+
+  return frontmatter + body;
+}
+
+function saveDraft(pattern: PatternCandidate, sessionId: string): boolean {
+  mkdirSync(DRAFTS_DIR, { recursive: true });
+
+  const filename = `${pattern.name}.md`;
+  const path = join(DRAFTS_DIR, filename);
+
+  // Don't overwrite existing drafts
+  if (existsSync(path)) return false;
+
+  try {
+    writeFileSync(path, generateSkillDraft(pattern, sessionId));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function runHook(): void {
+  let input: string;
+  try {
+    input = readFileSync(0, 'utf-8');
+  } catch { return; }
+
+  let event: StopEvent;
+  try {
+    event = JSON.parse(input);
+  } catch { return; }
+
+  const sessionId = event.session_id || 'unknown';
+  if (sessionId === 'unknown') return;
+
+  const events = loadRecentEvents(sessionId);
+  if (events.length < 10) return; // Not enough data
+
+  const repeated = detectRepeatedPatterns(events);
+  const recoveries = detectRecoveryPatterns(events);
+
+  const candidates = [...repeated, ...recoveries]
+    .filter(p => p.confidence >= MIN_CONFIDENCE)
+    .filter(p => p.sequence.length >= MIN_SEQUENCE_LENGTH || p.category === 'error-recovery');
+
+  let savedCount = 0;
+  for (const candidate of candidates) {
+    if (saveDraft(candidate, sessionId)) savedCount++;
+  }
+
+  if (savedCount > 0) {
+    console.log(JSON.stringify({
+      systemMessage: `[skill-compounder] Generated ${savedCount} skill draft${savedCount === 1 ? '' : 's'} for review. Location: ~/.claude/skills-drafts/`,
+    }));
+  }
+}
+
+try { runHook(); } catch { process.exit(0); }

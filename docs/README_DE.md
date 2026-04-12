@@ -6,7 +6,7 @@
 
 **KI-Softwareteam auf Basis von Claude Code.**
 
-139 Agents. 293 skills. 71 hooks. Null manuelle Arbeit.
+139 Agents. 295 skills. 73 hooks. Null manuelle Arbeit.
 
 <img src="../assets/gif1-numbers.gif" alt="Ecosystem Numbers" width="700">
 
@@ -71,7 +71,7 @@ Phase 5 (Final):        self-learner + technical-writer
 
 ### 3. Adaptives Hook-Loading
 
-71 hooks existieren, aber sie laufen nicht alle gleichzeitig. Die Absicht bestimmt, welche Hooks ausgeloest werden.
+73 hooks existieren, aber sie laufen nicht alle gleichzeitig. Die Absicht bestimmt, welche Hooks ausgeloest werden.
 
 <img src="../assets/gif4-hooks.gif" alt="Adaptive Hooks" width="700">
 

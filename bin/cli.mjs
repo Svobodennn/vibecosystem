@@ -12,7 +12,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const REPO_DIR = join(__dirname, '..');
 const CLAUDE_DIR = join(homedir(), '.claude');
-const VERSION = '3.1.1';
+const VERSION = '3.2.0';
 
 const VALID_PROFILES = new Set(['minimal', 'frontend', 'backend', 'fullstack', 'devops', 'all']);
 
