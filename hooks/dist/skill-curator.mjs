@@ -1,10 +1,32 @@
 // src/skill-curator.ts
-import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, renameSync, unlinkSync, statSync } from "node:fs";
-import { join } from "node:path";
-import { homedir } from "node:os";
-var DRAFTS_DIR = join(homedir(), ".claude", "skills-drafts");
-var ARCHIVE_DIR = join(DRAFTS_DIR, "archive");
-var SKILLS_DIR = join(homedir(), ".claude", "skills");
+import { readFileSync, writeFileSync, existsSync, mkdirSync as mkdirSync2, readdirSync, renameSync, unlinkSync, statSync } from "node:fs";
+import { join as join2 } from "node:path";
+import { homedir as homedir2 } from "node:os";
+
+// src/shared/hook-health.ts
+import { appendFileSync, mkdirSync } from "fs";
+import { join } from "path";
+import { homedir } from "os";
+var HEALTH_FILE = join(homedir(), ".claude", "hook-health.jsonl");
+function reportHealth(hookName, success, durationMs, error) {
+  try {
+    const entry = {
+      ts: (/* @__PURE__ */ new Date()).toISOString(),
+      hook: hookName,
+      success,
+      duration_ms: Math.round(durationMs)
+    };
+    if (error) entry.error = error.slice(0, 200);
+    mkdirSync(join(homedir(), ".claude"), { recursive: true });
+    appendFileSync(HEALTH_FILE, JSON.stringify(entry) + "\n");
+  } catch {
+  }
+}
+
+// src/skill-curator.ts
+var DRAFTS_DIR = join2(homedir2(), ".claude", "skills-drafts");
+var ARCHIVE_DIR = join2(DRAFTS_DIR, "archive");
+var SKILLS_DIR = join2(homedir2(), ".claude", "skills");
 var PROMOTION_CONFIDENCE = 80;
 var ARCHIVE_CONFIDENCE = 50;
 var MAX_DRAFT_AGE_DAYS = 14;
@@ -27,7 +49,7 @@ function loadDrafts() {
   try {
     const files = readdirSync(DRAFTS_DIR).filter((f) => f.endsWith(".md"));
     for (const file of files) {
-      const filepath = join(DRAFTS_DIR, file);
+      const filepath = join2(DRAFTS_DIR, file);
       try {
         const content = readFileSync(filepath, "utf-8");
         const fm = parseFrontmatter(content);
@@ -54,14 +76,14 @@ function isDuplicateOfExisting(draft) {
   try {
     const existingSkills = readdirSync(SKILLS_DIR).filter((f) => {
       try {
-        return statSync(join(SKILLS_DIR, f)).isDirectory();
+        return statSync(join2(SKILLS_DIR, f)).isDirectory();
       } catch {
         return false;
       }
     });
     if (existingSkills.includes(draft.name)) return true;
     for (const skill of existingSkills) {
-      const skillFile = join(SKILLS_DIR, skill, "SKILL.md");
+      const skillFile = join2(SKILLS_DIR, skill, "SKILL.md");
       if (!existsSync(skillFile)) continue;
       try {
         const content = readFileSync(skillFile, "utf-8");
@@ -89,13 +111,13 @@ function daysOld(timestamp) {
   }
 }
 function promoteDraft(draft) {
-  const skillDir = join(SKILLS_DIR, draft.name);
+  const skillDir = join2(SKILLS_DIR, draft.name);
   if (existsSync(skillDir)) return false;
   try {
-    mkdirSync(skillDir, { recursive: true });
+    mkdirSync2(skillDir, { recursive: true });
     const content = readFileSync(draft.filepath, "utf-8");
     const promoted = content.replace(/status: draft/, "status: active");
-    writeFileSync(join(skillDir, "SKILL.md"), promoted);
+    writeFileSync(join2(skillDir, "SKILL.md"), promoted);
     try {
       unlinkSync(draft.filepath);
     } catch {
@@ -107,9 +129,9 @@ function promoteDraft(draft) {
 }
 function archiveDraft(draft) {
   try {
-    mkdirSync(ARCHIVE_DIR, { recursive: true });
+    mkdirSync2(ARCHIVE_DIR, { recursive: true });
     const filename = draft.filepath.split("/").pop() || "unknown.md";
-    const archivePath = join(ARCHIVE_DIR, filename);
+    const archivePath = join2(ARCHIVE_DIR, filename);
     renameSync(draft.filepath, archivePath);
     return true;
   } catch {
@@ -159,8 +181,11 @@ function runHook() {
     }));
   }
 }
+var _start = Date.now();
 try {
   runHook();
-} catch {
+  reportHealth("skill-curator", true, Date.now() - _start);
+} catch (e) {
+  reportHealth("skill-curator", false, Date.now() - _start, e instanceof Error ? e.message : String(e));
   process.exit(0);
 }

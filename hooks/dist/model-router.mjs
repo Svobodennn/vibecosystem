@@ -1,7 +1,29 @@
 // src/model-router.ts
 import { readFileSync, existsSync } from "node:fs";
-import { join } from "node:path";
-import { homedir } from "node:os";
+import { join as join2 } from "node:path";
+import { homedir as homedir2 } from "node:os";
+
+// src/shared/hook-health.ts
+import { appendFileSync, mkdirSync } from "fs";
+import { join } from "path";
+import { homedir } from "os";
+var HEALTH_FILE = join(homedir(), ".claude", "hook-health.jsonl");
+function reportHealth(hookName, success, durationMs, error) {
+  try {
+    const entry = {
+      ts: (/* @__PURE__ */ new Date()).toISOString(),
+      hook: hookName,
+      success,
+      duration_ms: Math.round(durationMs)
+    };
+    if (error) entry.error = error.slice(0, 200);
+    mkdirSync(join(homedir(), ".claude"), { recursive: true });
+    appendFileSync(HEALTH_FILE, JSON.stringify(entry) + "\n");
+  } catch {
+  }
+}
+
+// src/model-router.ts
 var VALID_AGENT_NAME = /^[a-zA-Z0-9_-]+$/;
 var TIER_MODELS = {
   2: "sonnet",
@@ -40,8 +62,8 @@ function parseFrontmatter(content) {
 function getAgentTier(agentName) {
   if (!VALID_AGENT_NAME.test(agentName)) return 2;
   const agentPaths = [
-    join(homedir(), ".claude", "agents", `${agentName}.md`),
-    join(process.cwd(), "agents", `${agentName}.md`)
+    join2(homedir2(), ".claude", "agents", `${agentName}.md`),
+    join2(process.cwd(), "agents", `${agentName}.md`)
   ];
   for (const agentPath of agentPaths) {
     if (existsSync(agentPath)) {
@@ -84,8 +106,11 @@ function runHook() {
     }
   }));
 }
+var _start = Date.now();
 try {
   runHook();
-} catch {
+  reportHealth("model-router", true, Date.now() - _start);
+} catch (e) {
+  reportHealth("model-router", false, Date.now() - _start, e instanceof Error ? e.message : String(e));
   process.exit(0);
 }

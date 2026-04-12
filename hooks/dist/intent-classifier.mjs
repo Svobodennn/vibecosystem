@@ -1,7 +1,38 @@
 // src/intent-classifier.ts
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync as mkdirSync2 } from "fs";
+import { join as join2 } from "path";
+import { homedir as homedir2 } from "os";
+
+// src/shared/hook-health.ts
+import { appendFileSync, mkdirSync } from "fs";
 import { join } from "path";
 import { homedir } from "os";
+var HEALTH_FILE = join(homedir(), ".claude", "hook-health.jsonl");
+function reportHealth(hookName, success, durationMs, error) {
+  try {
+    const entry = {
+      ts: (/* @__PURE__ */ new Date()).toISOString(),
+      hook: hookName,
+      success,
+      duration_ms: Math.round(durationMs)
+    };
+    if (error) entry.error = error.slice(0, 200);
+    mkdirSync(join(homedir(), ".claude"), { recursive: true });
+    appendFileSync(HEALTH_FILE, JSON.stringify(entry) + "\n");
+  } catch {
+  }
+}
+function wrapWithHealth(hookName, fn) {
+  const start = Date.now();
+  try {
+    fn();
+    reportHealth(hookName, true, Date.now() - start);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    reportHealth(hookName, false, Date.now() - start, msg);
+    throw err;
+  }
+}
 
 // src/shared/task-detector.ts
 var IMPLEMENTATION_INDICATORS = [
@@ -215,9 +246,9 @@ function main() {
     return;
   }
   const intent = classifyIntent(input);
-  const cacheDir = join(homedir(), ".claude", "cache");
-  if (!existsSync(cacheDir)) mkdirSync(cacheDir, { recursive: true });
-  const intentPath = join(cacheDir, "current-intent.json");
+  const cacheDir = join2(homedir2(), ".claude", "cache");
+  if (!existsSync(cacheDir)) mkdirSync2(cacheDir, { recursive: true });
+  const intentPath = join2(cacheDir, "current-intent.json");
   try {
     writeFileSync(intentPath, JSON.stringify(intent, null, 2));
   } catch {
@@ -230,4 +261,4 @@ function main() {
     console.log("{}");
   }
 }
-main();
+wrapWithHealth("intent-classifier", main);

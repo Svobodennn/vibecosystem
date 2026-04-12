@@ -87,6 +87,21 @@ jobs:
       - name: Install dependencies
         run: cd hooks && npm install
 
+      - name: Type check
+        run: cd hooks && npx tsc --noEmit
+
+      - name: Build hooks
+        run: cd hooks && npm run build
+
+      - name: Verify dist is up to date
+        run: |
+          cd hooks && npm run build
+          if ! git diff --quiet dist/; then
+            echo "ERROR: dist/ is out of date. Run 'cd hooks && npm run build' and commit."
+            git diff --stat dist/
+            exit 1
+          fi
+
       - name: Run tests
         run: cd hooks && npm test
 

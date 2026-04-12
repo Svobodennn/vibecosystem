@@ -14,6 +14,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
+import { reportHealth } from './shared/hook-health.js';
 
 interface HookInput {
   tool_name: string;
@@ -132,4 +133,5 @@ function runHook(): void {
   }));
 }
 
-try { runHook(); } catch { process.exit(0); }
+const _start = Date.now();
+try { runHook(); reportHealth('model-router', true, Date.now() - _start); } catch (e) { reportHealth('model-router', false, Date.now() - _start, e instanceof Error ? e.message : String(e)); process.exit(0); }

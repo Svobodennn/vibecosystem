@@ -22,6 +22,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, renameSync, unlinkSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
+import { reportHealth } from './shared/hook-health.js';
 
 interface SessionEvent {
   type?: string;
@@ -226,4 +227,5 @@ function runHook(): void {
   }
 }
 
-try { runHook(); } catch { process.exit(0); }
+const _start = Date.now();
+try { runHook(); reportHealth('skill-curator', true, Date.now() - _start); } catch (e) { reportHealth('skill-curator', false, Date.now() - _start, e instanceof Error ? e.message : String(e)); process.exit(0); }

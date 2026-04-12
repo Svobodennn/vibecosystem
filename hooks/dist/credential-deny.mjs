@@ -1,7 +1,30 @@
 // src/credential-deny.ts
-import { readFileSync } from "fs";
+import { readFileSync, realpathSync, lstatSync, readlinkSync } from "fs";
+import { resolve, dirname } from "path";
+import { homedir as homedir2 } from "os";
+
+// src/shared/hook-health.ts
+import { appendFileSync, mkdirSync } from "fs";
+import { join } from "path";
 import { homedir } from "os";
-var HOME = homedir().replace(/\\/g, "/");
+var HEALTH_FILE = join(homedir(), ".claude", "hook-health.jsonl");
+function reportHealth(hookName, success, durationMs, error) {
+  try {
+    const entry = {
+      ts: (/* @__PURE__ */ new Date()).toISOString(),
+      hook: hookName,
+      success,
+      duration_ms: Math.round(durationMs)
+    };
+    if (error) entry.error = error.slice(0, 200);
+    mkdirSync(join(homedir(), ".claude"), { recursive: true });
+    appendFileSync(HEALTH_FILE, JSON.stringify(entry) + "\n");
+  } catch {
+  }
+}
+
+// src/credential-deny.ts
+var HOME = homedir2().replace(/\\/g, "/");
 var DENIED_PATHS = [
   { pattern: /[/\\]\.ssh[/\\]/, reason: "SSH keys" },
   { pattern: /[/\\]\.aws[/\\]/, reason: "AWS credentials" },
@@ -46,11 +69,30 @@ var SENSITIVE_KEYWORDS = [
   { pattern: /\bid_ed25519\b/, reason: "SSH private key reference" },
   { pattern: /\bid_ecdsa\b/, reason: "SSH private key reference" }
 ];
+function resolveAllPaths(filePath) {
+  const paths = /* @__PURE__ */ new Set([filePath]);
+  try {
+    const stat = lstatSync(filePath);
+    if (stat.isSymbolicLink()) {
+      const target = readlinkSync(filePath);
+      const abs = target.startsWith("/") ? target : resolve(dirname(filePath), target);
+      paths.add(abs);
+    }
+  } catch {
+  }
+  try {
+    paths.add(realpathSync(filePath));
+  } catch {
+  }
+  return [...paths];
+}
 function checkFilePath(filePath) {
-  const normalized = filePath.replace(/\\/g, "/");
-  for (const deny of DENIED_PATHS) {
-    if (deny.pattern.test(normalized)) {
-      return deny.reason;
+  const candidates = resolveAllPaths(filePath).map((p) => p.replace(/\\/g, "/"));
+  for (const normalized of candidates) {
+    for (const deny of DENIED_PATHS) {
+      if (deny.pattern.test(normalized)) {
+        return deny.reason;
+      }
     }
   }
   return null;
@@ -111,6 +153,7 @@ function block(reason) {
   }));
 }
 function main() {
+  const start = Date.now();
   let raw = "";
   try {
     raw = readFileSync(0, "utf-8");
@@ -126,40 +169,43 @@ function main() {
     input = JSON.parse(raw);
   } catch {
     block("Malformed hook input - fail closed");
+    reportHealth("credential-deny", true, Date.now() - start);
     return;
   }
+  let blocked = false;
   if (["Read", "Edit", "Write"].includes(input.tool_name) && input.tool_input?.file_path) {
     const reason = checkFilePath(input.tool_input.file_path);
     if (reason) {
       block(`${reason} dosyasina erisim yasak`);
-      return;
+      blocked = true;
     }
   }
-  if (input.tool_name === "Bash" && input.tool_input?.command) {
+  if (!blocked && input.tool_name === "Bash" && input.tool_input?.command) {
     const reason = checkBashCommand(input.tool_input.command);
     if (reason) {
       block(reason);
-      return;
+      blocked = true;
     }
   }
-  if (input.tool_name === "Grep" && input.tool_input?.path) {
+  if (!blocked && input.tool_name === "Grep" && input.tool_input?.path) {
     const searchPath = input.tool_input.path;
     const reason = checkFilePath(searchPath + "/") || checkFilePath(searchPath);
     if (reason) {
       block(`${reason} - Grep ile erisim yasak`);
-      return;
+      blocked = true;
     }
   }
-  if (input.tool_name === "Glob") {
+  if (!blocked && input.tool_name === "Glob") {
     const globPath = input.tool_input?.path || "";
     const globPattern = input.tool_input?.pattern || "";
     const fullPath = globPath ? `${globPath}/${globPattern}` : globPattern;
     const reason = checkFilePath(fullPath + "/") || checkFilePath(fullPath);
     if (reason) {
       block(`${reason} - Glob ile erisim yasak`);
-      return;
+      blocked = true;
     }
   }
-  console.log("{}");
+  if (!blocked) console.log("{}");
+  reportHealth("credential-deny", true, Date.now() - start);
 }
 main();

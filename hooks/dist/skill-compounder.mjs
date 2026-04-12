@@ -1,10 +1,32 @@
 // src/skill-compounder.ts
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
-import { join } from "node:path";
-import { homedir } from "node:os";
+import { readFileSync, writeFileSync, existsSync, mkdirSync as mkdirSync2 } from "node:fs";
+import { join as join2 } from "node:path";
+import { homedir as homedir2 } from "node:os";
+
+// src/shared/hook-health.ts
+import { appendFileSync, mkdirSync } from "fs";
+import { join } from "path";
+import { homedir } from "os";
+var HEALTH_FILE = join(homedir(), ".claude", "hook-health.jsonl");
+function reportHealth(hookName, success, durationMs, error) {
+  try {
+    const entry = {
+      ts: (/* @__PURE__ */ new Date()).toISOString(),
+      hook: hookName,
+      success,
+      duration_ms: Math.round(durationMs)
+    };
+    if (error) entry.error = error.slice(0, 200);
+    mkdirSync(join(homedir(), ".claude"), { recursive: true });
+    appendFileSync(HEALTH_FILE, JSON.stringify(entry) + "\n");
+  } catch {
+  }
+}
+
+// src/skill-compounder.ts
 import { createHash } from "node:crypto";
-var DRAFTS_DIR = join(homedir(), ".claude", "skills-drafts");
-var EVENTS_LOG = join(homedir(), ".claude", "agent-events.jsonl");
+var DRAFTS_DIR = join2(homedir2(), ".claude", "skills-drafts");
+var EVENTS_LOG = join2(homedir2(), ".claude", "agent-events.jsonl");
 var MIN_OCCURRENCES = 3;
 var MIN_CONFIDENCE = 60;
 var MIN_SEQUENCE_LENGTH = 3;
@@ -121,9 +143,9 @@ function generateSkillDraft(pattern, sessionId) {
   return frontmatter + body;
 }
 function saveDraft(pattern, sessionId) {
-  mkdirSync(DRAFTS_DIR, { recursive: true });
+  mkdirSync2(DRAFTS_DIR, { recursive: true });
   const filename = `${pattern.name}.md`;
-  const path = join(DRAFTS_DIR, filename);
+  const path = join2(DRAFTS_DIR, filename);
   if (existsSync(path)) return false;
   try {
     writeFileSync(path, generateSkillDraft(pattern, sessionId));
@@ -162,8 +184,11 @@ function runHook() {
     }));
   }
 }
+var _start = Date.now();
 try {
   runHook();
-} catch {
+  reportHealth("skill-compounder", true, Date.now() - _start);
+} catch (e) {
+  reportHealth("skill-compounder", false, Date.now() - _start, e instanceof Error ? e.message : String(e));
   process.exit(0);
 }

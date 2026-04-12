@@ -5,7 +5,7 @@
 **Your AI software team. Built on Claude Code.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Agents](https://img.shields.io/badge/agents-139-blue.svg)](#agents)
+[![Agents](https://img.shields.io/badge/agents-138-blue.svg)](#agents)
 [![Skills](https://img.shields.io/badge/skills-295-green.svg)](#skills)
 [![Hooks](https://img.shields.io/badge/hooks-73-orange.svg)](#hooks)
 [![Rules](https://img.shields.io/badge/rules-20-red.svg)](#rules)
@@ -13,6 +13,8 @@
 [![Works with Cursor](https://img.shields.io/badge/works%20with-Cursor-00b4d8.svg)](#multi-cli)
 [![Works with Codex CLI](https://img.shields.io/badge/works%20with-Codex%20CLI-10a37f.svg)](#multi-cli)
 [![Works with OpenCode](https://img.shields.io/badge/works%20with-OpenCode-purple.svg)](#multi-cli)
+[![npm](https://img.shields.io/npm/v/vibecosystem.svg)](https://www.npmjs.com/package/vibecosystem)
+[![Marketplace](https://img.shields.io/badge/Claude%20Code-Marketplace-8A2BE2.svg)](https://github.com/vibeeval/vibecosystem)
 
 [Turkce](#turkce) | [English](#english) | [Espanol](docs/README_ES.md) | [Francais](docs/README_FR.md) | [Deutsch](docs/README_DE.md) | [Portugues](docs/README_PT.md) | [Italiano](docs/README_IT.md) | [Nederlands](docs/README_NL.md) | [中文](docs/README_ZH.md) | [日本語](docs/README_JA.md) | [한국어](docs/README_KO.md) | [العربية](docs/README_AR.md) | [हिन्दी](docs/README_HI.md) | [Русский](docs/README_RU.md)
 
@@ -46,7 +48,7 @@ Claude Code is powerful, but it's one assistant. You prompt, it responds, you re
 
 vibecosystem is a complete [Claude Code](https://docs.anthropic.com/en/docs/claude-code) ecosystem that creates a self-organizing AI team:
 
-1. <a name="agents"></a>**139 agents** — specialized roles from frontend-dev to security-analyst
+1. <a name="agents"></a>**138 agents** — specialized roles from frontend-dev to security-analyst
 2. <a name="skills"></a>**295 skills** — reusable knowledge from TDD workflows to Kubernetes patterns
 3. <a name="hooks"></a>**73 hooks** — TypeScript sensors that observe, filter, and inject context
 4. <a name="rules"></a>**20 rules** — behavioral guidelines that shape every agent's output

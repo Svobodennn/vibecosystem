@@ -1,0 +1,65 @@
+{
+  "$schema": "https://raw.githubusercontent.com/anthropics/claude-code/main/schemas/plugin-marketplace.schema.json",
+  "name": "vibecosystem",
+  "displayName": "vibecosystem - AI Software Team",
+  "description": "139 specialized agents, 295 skills, 73 hooks with self-learning pipeline. The most comprehensive Claude Code ecosystem.",
+  "version": "3.3.0",
+  "author": {
+    "name": "vibeeval",
+    "url": "https://github.com/vibeeval",
+    "twitter": "@vibeeval"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vibeeval/vibecosystem"
+  },
+  "license": "MIT",
+  "categories": [
+    "developer-tools",
+    "code-quality",
+    "testing",
+    "security",
+    "ai-agents"
+  ],
+  "keywords": [
+    "claude-code",
+    "agents",
+    "skills",
+    "hooks",
+    "self-learning",
+    "code-review",
+    "tdd",
+    "security",
+    "multi-agent",
+    "ai-team"
+  ],
+  "install": {
+    "method": "npm",
+    "command": "npx vibecosystem init"
+  },
+  "components": {
+    "agents": 139,
+    "skills": 295,
+    "hooks": 73,
+    "rules": 20
+  },
+  "features": [
+    "Self-learning pipeline (errors become rules automatically)",
+    "Multi-agent swarm coordination (5 phases)",
+    "Dev-QA loop (implement, review, retry, escalate)",
+    "Agent cross-training (one mistake trains entire team)",
+    "Autonomous skill evolution (pattern detection, draft generation, promotion)",
+    "Memory palace (hierarchical project memory)",
+    "Session compression (ACDE format, 10-30x token reduction)",
+    "3-depth progressive recall",
+    "Achievement system with XP and levels",
+    "6 preset profiles (minimal to all)",
+    "Hook health monitoring"
+  ],
+  "compatibility": {
+    "claude-code": ">=1.0.0",
+    "node": ">=18.0.0"
+  },
+  "screenshots": [],
+  "changelog": "https://github.com/vibeeval/vibecosystem/blob/main/CHANGELOG.md"
+}

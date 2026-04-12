@@ -1,6 +1,6 @@
 # vibecosystem
 
-**AI Software Team** -- 139 agents, 295 skills, 73 hooks, 20 rules
+**AI Software Team** -- 138 agents, 295 skills, 73 hooks, 20 rules
 
 This file is for **Codex CLI** (OpenAI). If you're using Claude Code, see `CLAUDE.md` or just run `./install.sh`.
 

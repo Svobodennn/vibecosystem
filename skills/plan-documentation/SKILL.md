@@ -1,88 +1,169 @@
 ---
 name: plan-documentation
-description: Generate structured plan files for large tasks. Use when starting a big feature, refactoring, or multi-phase work. Creates plans/<task>-plan.md with phases, acceptance criteria, and open questions. After each phase, generates completion docs.
+description: Structured plan file generation for large tasks -- phased planning, completion tracking, and decision documentation
 ---
 
 # Plan Documentation
 
-Create durable, structured plan files for complex work. Plans survive session boundaries and serve as living documentation of intent.
+Generate structured plan files when starting large features, refactoring efforts, or multi-phase work. Plans create a paper trail that survives context resets and helps collaborators understand what was planned, what changed, and why.
 
-## When to Create a Plan
+## When to Generate Plan Files
 
-- Task touches more than 3 files
-- Work will span multiple sessions
-- Architecture decision involved
-- Unclear requirements that need discovery
-- Refactoring with risk of regression
+Create a plan document when:
+- The task spans more than 2 files or requires multiple coordinated changes
+- Work will take more than one session or phase
+- Multiple approaches exist and the chosen path should be documented
+- Other people (or future you) need to understand the sequence of work
 
-## Plan File Structure
+Do NOT create plan files for:
+- Single-file fixes or tweaks
+- Routine maintenance (dependency updates, formatting)
+- Tasks that can be completed in under 15 minutes
 
-Store in `plans/<task-slug>-plan.md`:
+## Plan Document Template
+
+Create the plan at `plans/<task-slug>-plan.md` in the project root.
 
 ```markdown
-# Plan: <Task Name>
+# Plan: <Task Title>
 
-## Goal
-<One sentence describing the end state>
+Created: <ISO date>
+Status: IN_PROGRESS | COMPLETE | ABANDONED
 
-## Motivation
-<Why this work matters - the problem being solved>
+## Summary
 
-## Scope
-### In
-- <what's included>
-
-### Out
-- <what's explicitly excluded>
-
-## Open Questions
-- [ ] <question needing answer>
-- [ ] <decision to make>
+<2-3 sentences explaining what this work accomplishes and why it matters.>
 
 ## Phases
 
-### Phase 1: <Name>
-**Objective:** <what this phase achieves>
-**Files:** <expected files to touch>
-**Acceptance:**
-- [ ] <measurable criterion>
-- [ ] <measurable criterion>
+### Phase 1: <Phase Title>
+- [ ] Step 1 description
+- [ ] Step 2 description
+- [ ] Step 3 description
 
-### Phase 2: <Name>
+**Acceptance Criteria:**
+- <What must be true when this phase is done>
+- <Measurable or verifiable condition>
+
+### Phase 2: <Phase Title>
+- [ ] Step 1 description
+- [ ] Step 2 description
+
+**Acceptance Criteria:**
+- <Condition>
+
+### Phase N: <Phase Title>
 ...
 
-## Risks
-- <risk>: <mitigation>
+## Open Questions
 
-## References
-- <related doc or issue>
+1. <Question about approach or requirement> -- Suggested: <Option A> vs <Option B>
+2. <Question about scope> -- Suggested: <Option A> vs <Option B>
+3. <Question about dependency or risk> -- Suggested: <Option A>
+
+Keep open questions between 1-5. Each should have suggested options so they can be resolved quickly. Remove questions as they get answered -- move the decision to the relevant phase.
+
+## Dependencies
+
+- <External system, API, library, or team dependency>
+- <Prerequisite work that must finish first>
+
+## Risks
+
+- <What could go wrong and how likely it is>
+- <Mitigation strategy if applicable>
 ```
 
-## Completion Docs
+## Phase Completion Template
 
-After each phase completes, append to `plans/<task-slug>-completed.md`:
+After finishing each phase, create `plans/<task-slug>-phase-N-complete.md`:
 
 ```markdown
-## Phase <N>: <Name> - Completed <date>
+# Phase N Complete: <Phase Title>
 
-**Commits:** <hash1>, <hash2>
-**Files changed:** <count>
-**Tests added:** <count>
-**Surprises:** <anything unexpected>
-**Next:** <what's coming next>
+Completed: <ISO date>
+Plan: <task-slug>-plan.md
+
+## Phase N Summary
+
+<1-2 sentences on what was accomplished.>
+
+## What Changed
+
+| File | Change |
+|------|--------|
+| `path/to/file.ts` | Added validation logic for user input |
+| `path/to/test.ts` | 6 new unit tests for validation edge cases |
+
+## What Was Tested
+
+- <Test suite or manual verification performed>
+- <Edge cases covered>
+- <What was NOT tested and why>
+
+## Decisions Made
+
+- <Decision>: <Why this option was chosen over alternatives>
+
+## Next Phase Preview
+
+Phase N+1 will focus on <brief description>. Prerequisites met: <yes/no>.
 ```
 
-## Integration
+## Final Completion Template
 
-- Works with `persistent-planning` skill (PLAN.md sync)
-- Triggers `plan-reviewer` agent for validation
-- Feeds `phase-gated-commits` workflow
-- Plans referenced by `compass` for session recovery
+When all phases are done, create `plans/<task-slug>-complete.md`:
 
-## Lifecycle
+```markdown
+# Complete: <Task Title>
 
-1. **Create** plan at task start
-2. **Review** with plan-reviewer agent
-3. **Execute** phase by phase
-4. **Update** completion doc after each phase
-5. **Archive** to `plans/archive/` when task complete
+Completed: <ISO date>
+Plan: <task-slug>-plan.md
+Duration: <how long the work took>
+
+## Task Summary
+
+<2-3 sentences on the full scope of work completed.>
+
+## All Phases
+
+| Phase | Title | Status |
+|-------|-------|--------|
+| 1 | <Title> | COMPLETE |
+| 2 | <Title> | COMPLETE |
+| N | <Title> | COMPLETE |
+
+## Total Changes
+
+- Files modified: <count>
+- Files created: <count>
+- Tests added: <count>
+- Lines changed: <approximate>
+
+## Lessons Learned
+
+- <Insight that would help someone doing similar work>
+- <Unexpected challenge and how it was resolved>
+- <Pattern discovered that should be reused>
+```
+
+## File Naming Convention
+
+All plan files go in the `plans/` directory at the project root.
+
+| File | Purpose |
+|------|---------|
+| `<task-slug>-plan.md` | Initial plan with phases and acceptance criteria |
+| `<task-slug>-phase-N-complete.md` | Completion record for phase N |
+| `<task-slug>-complete.md` | Final completion summary |
+
+The `<task-slug>` should be a short, lowercase, hyphenated description of the task (e.g., `auth-refactor`, `search-api-v2`, `dashboard-redesign`).
+
+## Rules
+
+- Write the plan BEFORE starting implementation
+- Update phase status in the plan file as work progresses
+- Do not skip phase completion docs -- they are the audit trail
+- Keep summaries concise -- if it takes more than 3 sentences, it is too long
+- Open questions should block work until resolved, not be ignored
+- If the plan changes significantly mid-work, update the plan file and note what changed and why

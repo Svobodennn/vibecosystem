@@ -12,7 +12,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const REPO_DIR = join(__dirname, '..');
 const CLAUDE_DIR = join(homedir(), '.claude');
-const VERSION = '3.2.0';
+const VERSION = '3.3.0';
 
 const VALID_PROFILES = new Set(['minimal', 'frontend', 'backend', 'fullstack', 'devops', 'all']);
 
@@ -65,7 +65,7 @@ function install(options = {}) {
   console.log(c('bold', '\nvibecosystem installer'));
   console.log('======================\n');
   console.log(`Installing into ${c('cyan', '~/.claude/')}:`);
-  console.log(`  - 139 agents  -> ~/.claude/agents/`);
+  console.log(`  - 138 agents  -> ~/.claude/agents/`);
   console.log(`  - 295 skills  -> ~/.claude/skills/`);
   console.log(`  - 73 hooks    -> ~/.claude/hooks/`);
   console.log(`  - 20 rules    -> ~/.claude/rules/`);
@@ -247,7 +247,7 @@ ${c('bold', 'PROFILES')}
   backend    44 agents, ~74 skills   API/DB/security
   fullstack  59 agents, ~96 skills   Frontend + backend combined
   devops     33 agents, ~61 skills   CI/CD/K8s/cloud
-  all        139 agents, 295 skills  Everything (default)
+  all        138 agents, 295 skills  Everything (default)
 
 ${c('dim', 'https://github.com/vibeeval/vibecosystem')}
 `);

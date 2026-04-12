@@ -9,6 +9,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
+import { wrapWithHealth } from './shared/hook-health.js';
 import { detectTask } from './shared/task-detector.js';
 
 interface UserPromptSubmitInput {
@@ -138,4 +139,4 @@ function main() {
   }
 }
 
-main();
+wrapWithHealth('intent-classifier', main);

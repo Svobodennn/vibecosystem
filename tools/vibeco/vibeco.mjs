@@ -9,7 +9,7 @@ import { execSync, spawn } from 'node:child_process';
 import { createConnection } from 'node:net';
 import { get } from 'node:http';
 
-const VERSION = '3.1.0';
+const VERSION = '3.3.0';
 const CLAUDE_DIR = join(homedir(), '.claude');
 const PROFILES_DIR = join(CLAUDE_DIR, 'profiles');
 const PLUGIN_CONFIG = join(CLAUDE_DIR, 'plugin-config.json');
@@ -129,6 +129,7 @@ ${bold('COMMANDS')}
     ${dim('--search <term>')}              Filter by name/description
   ${green('dashboard')}                     Start monitoring dashboard
   ${green('doctor')}                        Health check
+    ${dim('--runtime')}                   Show hook runtime stats (24h)
   ${green('profile')} ${dim('<name>')}                Set active profile
     ${dim('minimal | frontend | backend | fullstack | devops | all')}
   ${green('search')} ${dim('<term> [term2 ...]')}          Search agents and skills by keyword
@@ -461,6 +462,61 @@ async function doctor() {
   const status = fail > 0 ? red('UNHEALTHY') : warn > 0 ? yellow('MOSTLY HEALTHY') : green('HEALTHY');
   console.log(`\n${dim('─'.repeat(40))}`);
   console.log(`  Health: ${bold(`${pass}/${total}`)} (${score}%) ${status}\n`);
+
+  // --runtime flag: hook health stats
+  if (process.argv.includes('--runtime')) {
+    await showRuntimeHealth();
+  }
+}
+
+async function showRuntimeHealth() {
+  const healthFile = join(CLAUDE_DIR, 'hook-health.jsonl');
+  if (!existsSync(healthFile)) {
+    console.log(`${dim('  No runtime health data yet (hook-health.jsonl)')}\n`);
+    return;
+  }
+
+  const cutoff = new Date();
+  cutoff.setHours(cutoff.getHours() - 24);
+
+  const lines = readFileSync(healthFile, 'utf-8').split('\n').filter(l => l.trim());
+  const recent = [];
+  for (const line of lines) {
+    try {
+      const entry = JSON.parse(line);
+      if (new Date(entry.ts) >= cutoff) recent.push(entry);
+    } catch {}
+  }
+
+  if (recent.length === 0) {
+    console.log(`${dim('  No hook activity in last 24h')}\n`);
+    return;
+  }
+
+  // Group by hook name
+  const grouped = new Map();
+  for (const entry of recent) {
+    const name = entry.hook || 'unknown';
+    if (!grouped.has(name)) grouped.set(name, { runs: 0, success: 0, totalMs: 0, errors: [] });
+    const g = grouped.get(name);
+    g.runs++;
+    if (entry.success) g.success++;
+    g.totalMs += entry.duration_ms || 0;
+    if (entry.error) g.errors.push(entry.error);
+  }
+
+  console.log(`${bold('Hook Health')} ${dim('(last 24h)')}`);
+  console.log(dim('─'.repeat(40)));
+
+  const sorted = [...grouped.entries()].sort((a, b) => b[1].runs - a[1].runs);
+  for (const [name, data] of sorted) {
+    const pct = Math.round((data.success / data.runs) * 100);
+    const avg = Math.round(data.totalMs / data.runs);
+    const indicator = pct === 100 ? green(`${pct}%`) : pct >= 80 ? yellow(`${pct}%`) : red(`${pct}%`);
+    const broken = pct < 80 ? red(' <- BROKEN') : '';
+    console.log(`  ${name.padEnd(24)} ${String(data.runs).padStart(4)} runs, ${indicator} success, avg ${avg}ms${broken}`);
+  }
+  console.log('');
 }
 
 function search() {

@@ -10,6 +10,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Community contribution workflow
 - agentskills.io format migration (v4.0)
 
+## [3.3.0] - 2026-04-13
+
+### Fixed - Security
+- **Credential-deny symlink bypass** (CRITICAL): Added `readlinkSync` + `realpathSync` to resolve symlinks before path matching. Previously a symlink like `/tmp/x -> ~/.ssh/id_rsa` would bypass the deny hook. Now both the original path and the resolved target are checked.
+
+### Added - CI Quality Gates
+- **TypeScript type check in CI**: Added `npx tsc --noEmit` step to catch type errors before merge
+- **Dist parity check in CI**: Verifies `hooks/dist/` matches source. Fails if stale build artifacts are committed
+
+### Added - Hook Health Ledger
+- **hook-health.ts shared module** (`hooks/src/shared/hook-health.ts`): `reportHealth()` and `wrapWithHealth()` functions that log hook success/failure/duration to `~/.claude/hook-health.jsonl`
+- **5 critical hooks instrumented**: credential-deny, intent-classifier, model-router, skill-compounder, skill-curator now report health metrics
+- **vibeco doctor --runtime**: Shows hook execution stats from last 24h (runs, success rate, avg duration). Highlights broken hooks
+
+### Added - Marketplace
+- **marketplace.json**: Plugin marketplace manifest with categories, features, compatibility, and install instructions
+- **npm + marketplace badges** in README
+
+### Changed - Naming Cleanup
+- **50 prompt.md -> SKILL.md**: All remaining `prompt.md` files renamed to `SKILL.md` for consistency
+- **8 snake_case -> kebab-case**: Renamed skill directories (continuity_ledger, create_handoff, etc.) to kebab-case
+- **accessibility-auditor merged into a11y-expert**: Removed duplicate agent
+
+### Changed
+- vibeco CLI version bumped to 3.3.0
+- All version references updated across package.json, plugin.json, bin/cli.mjs, marketplace.json
+
 ## [3.2.0] - 2026-04-12
 
 ### Added - Autonomous Skill Evolution Loop
@@ -29,7 +56,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **oracle agent updated**: Now runs topic-resolver as Step 0 before any search. Adds Recommended Skills section referencing topic-resolver and knowledge-graph.
 
 ### Changed
-- Updated counts: 139 agents, 295 skills, 73 hooks, 20 rules
+- Updated counts: 138 agents, 295 skills, 73 hooks, 20 rules
 - Version bumped: 3.1.1 -> 3.2.0
 
 ### Context
@@ -94,7 +121,7 @@ Comprehensive review by 4 parallel agents (Explore, security-reviewer, code-revi
   - Templates for banners, diagrams, social media, presentations
 
 ### Changed
-- Updated counts: 139 agents, 293 skills, 71 hooks, 20 rules
+- Updated counts: 138 agents, 293 skills, 71 hooks, 20 rules
 
 ## [3.0.1] - 2026-04-08
 
@@ -115,7 +142,7 @@ Comprehensive review by 4 parallel agents (Explore, security-reviewer, code-revi
 - **Palace recall hook** (`hooks/src/palace-recall.ts`): Loads Layer 1-2 memories at session start
 
 ### Changed
-- Updated counts: 139 agents, 288 skills, 69 hooks, 20 rules
+- Updated counts: 138 agents, 288 skills, 69 hooks, 20 rules
 - Anthropic marketplace submission
 
 ## [3.0.0] - 2026-04-07
@@ -147,7 +174,7 @@ Comprehensive review by 4 parallel agents (Explore, security-reviewer, code-revi
   - Cost estimates for Haiku/Sonnet/Opus tiers
 
 ### Changed
-- Updated counts: 139 agents, 285 skills, 66 hooks, 20 rules
+- Updated counts: 138 agents, 285 skills, 66 hooks, 20 rules
 - Root `package.json` added for npm distribution
 - `.npmignore` added for clean npm packaging
 
@@ -214,7 +241,7 @@ Features prioritized from competitive analysis of 20+ Claude Code ecosystem repo
   - `backend` (~44 agents, ~74 skills) - API/DB/security
   - `fullstack` (~59 agents, ~96 skills) - frontend + backend combined
   - `devops` (~33 agents, ~61 skills) - CI/CD/K8s/cloud
-  - `all` (139 agents, 283 skills) - everything (default)
+  - `all` (138 agents, 283 skills) - everything (default)
 - **One-liner remote install** (`install-remote.sh`): `curl -fsSL https://raw.githubusercontent.com/vibeeval/vibecosystem/main/install-remote.sh | bash`
 
 ### Changed
@@ -228,7 +255,7 @@ Features prioritized from competitive analysis of 20+ Claude Code ecosystem repo
 
 ### Changed
 - **Token optimization**: Moved 3 rules to skills (commit-trailers, tldr-cli, handoff-templates) saving ~3,400 tokens/session
-- Updated counts: 139 agents, 283 skills, 60 hooks, 20 rules
+- Updated counts: 138 agents, 283 skills, 60 hooks, 20 rules
 
 ### Removed
 - 3 rules moved to skills (still available as skills, no longer injected every session)
@@ -239,7 +266,7 @@ Features prioritized from competitive analysis of 20+ Claude Code ecosystem repo
 - **5 new skills**: agent-linter (agent/skill file validation with 10+ rule categories), experiment-engine (autonomous modify-verify-keep/discard optimization loop), cognitive-modes (5 thinking modes: analytical/creative/systematic/rapid/debug), autonomous-pr (self-fixing PR lifecycle with CI retry and budget controls), circuit-breaker (agent error tolerance with fallback chains and exponential backoff)
 
 ### Changed
-- Updated counts: 139 agents, 279 skills
+- Updated counts: 138 agents, 279 skills
 
 ## [2.2.2] - 2026-04-05
 
@@ -248,7 +275,7 @@ Features prioritized from competitive analysis of 20+ Claude Code ecosystem repo
 - **3 new skills**: knowledge-management (4-layer knowledge organization, progressive summarization, ADR templates), agent-qa-testing (agent protocol compliance testing, role boundary verification, personality drift detection), token-budget (per-agent cost tracking, budget planning, optimization strategies)
 
 ### Changed
-- Updated counts: 139 agents, 274 skills
+- Updated counts: 138 agents, 274 skills
 
 ## [2.2.1] - 2026-04-04
 

@@ -10,8 +10,10 @@
  * 4. Grep/Glob tool coverage
  * 5. Fail-closed on malformed input
  */
-import { readFileSync } from 'fs';
+import { readFileSync, realpathSync, lstatSync, readlinkSync } from 'fs';
+import { resolve, dirname } from 'path';
 import { homedir } from 'os';
+import { reportHealth } from './shared/hook-health.js';
 
 interface PreToolInput {
   session_id: string;
@@ -60,11 +62,32 @@ const SENSITIVE_KEYWORDS: Array<{ pattern: RegExp; reason: string }> = [
   { pattern: /\bid_ecdsa\b/, reason: 'SSH private key reference' },
 ];
 
+function resolveAllPaths(filePath: string): string[] {
+  const paths = new Set<string>([filePath]);
+  // readlinkSync: symlink hedefi (hedef mevcut olmasa bile calisir)
+  try {
+    const stat = lstatSync(filePath);
+    if (stat.isSymbolicLink()) {
+      const target = readlinkSync(filePath);
+      const abs = target.startsWith('/') ? target : resolve(dirname(filePath), target);
+      paths.add(abs);
+    }
+  } catch { /* dosya yok, skip */ }
+  // realpathSync: tum zinciri cozer (tum hedefler mevcutsa)
+  try {
+    paths.add(realpathSync(filePath));
+  } catch { /* hedef yok, skip */ }
+  return [...paths];
+}
+
 function checkFilePath(filePath: string): string | null {
-  const normalized = filePath.replace(/\\/g, '/');
-  for (const deny of DENIED_PATHS) {
-    if (deny.pattern.test(normalized)) {
-      return deny.reason;
+  // Hem orijinal hem resolved path'leri kontrol et (symlink bypass engeli)
+  const candidates = resolveAllPaths(filePath).map(p => p.replace(/\\/g, '/'));
+  for (const normalized of candidates) {
+    for (const deny of DENIED_PATHS) {
+      if (deny.pattern.test(normalized)) {
+        return deny.reason;
+      }
     }
   }
   return null;
@@ -150,6 +173,7 @@ function block(reason: string): void {
 }
 
 function main() {
+  const start = Date.now();
   let raw = '';
   try { raw = readFileSync(0, 'utf-8'); } catch { return; }
   if (!raw) { console.log('{}'); return; }
@@ -158,39 +182,42 @@ function main() {
   let input: PreToolInput;
   try { input = JSON.parse(raw); } catch {
     block('Malformed hook input - fail closed');
+    reportHealth('credential-deny', true, Date.now() - start);
     return;
   }
+
+  let blocked = false;
 
   // File-based tools: Read, Edit, Write
   if (['Read', 'Edit', 'Write'].includes(input.tool_name) && input.tool_input?.file_path) {
     const reason = checkFilePath(input.tool_input.file_path);
-    if (reason) { block(`${reason} dosyasina erisim yasak`); return; }
+    if (reason) { block(`${reason} dosyasina erisim yasak`); blocked = true; }
   }
 
   // Bash tool
-  if (input.tool_name === 'Bash' && input.tool_input?.command) {
+  if (!blocked && input.tool_name === 'Bash' && input.tool_input?.command) {
     const reason = checkBashCommand(input.tool_input.command);
-    if (reason) { block(reason); return; }
+    if (reason) { block(reason); blocked = true; }
   }
 
   // Grep tool - path parametresi hassas dizin olabilir
-  if (input.tool_name === 'Grep' && input.tool_input?.path) {
+  if (!blocked && input.tool_name === 'Grep' && input.tool_input?.path) {
     const searchPath = input.tool_input.path;
-    // Dizin referanslari icin trailing slash ekle
     const reason = checkFilePath(searchPath + '/') || checkFilePath(searchPath);
-    if (reason) { block(`${reason} - Grep ile erisim yasak`); return; }
+    if (reason) { block(`${reason} - Grep ile erisim yasak`); blocked = true; }
   }
 
   // Glob tool - path veya pattern hassas dizin olabilir
-  if (input.tool_name === 'Glob') {
+  if (!blocked && input.tool_name === 'Glob') {
     const globPath = input.tool_input?.path || '';
     const globPattern = input.tool_input?.pattern || '';
     const fullPath = globPath ? `${globPath}/${globPattern}` : globPattern;
     const reason = checkFilePath(fullPath + '/') || checkFilePath(fullPath);
-    if (reason) { block(`${reason} - Glob ile erisim yasak`); return; }
+    if (reason) { block(`${reason} - Glob ile erisim yasak`); blocked = true; }
   }
 
-  console.log('{}');
+  if (!blocked) console.log('{}');
+  reportHealth('credential-deny', true, Date.now() - start);
 }
 
 main();
