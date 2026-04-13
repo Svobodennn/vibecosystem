@@ -114,3 +114,7 @@ try {
   reportHealth("model-router", false, Date.now() - _start, e instanceof Error ? e.message : String(e));
   process.exit(0);
 }
+export {
+  getAgentTier,
+  parseFrontmatter
+};

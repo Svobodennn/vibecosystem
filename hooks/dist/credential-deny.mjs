@@ -209,3 +209,9 @@ function main() {
   reportHealth("credential-deny", true, Date.now() - start);
 }
 main();
+export {
+  checkBashCommand,
+  checkFilePath,
+  extractPaths,
+  resolveAllPaths
+};

@@ -58,7 +58,7 @@ const DEFAULT_TIERS: Record<string, number> = {
   'data-modeler': 3,
 };
 
-function parseFrontmatter(content: string): AgentFrontmatter {
+export function parseFrontmatter(content: string): AgentFrontmatter {
   const match = content.match(/^---\n([\s\S]*?)\n---/);
   if (!match) return {};
 
@@ -74,7 +74,7 @@ function parseFrontmatter(content: string): AgentFrontmatter {
   return result;
 }
 
-function getAgentTier(agentName: string): number {
+export function getAgentTier(agentName: string): number {
   // Validate name before using in paths (prevents traversal)
   if (!VALID_AGENT_NAME.test(agentName)) return 2;
 

@@ -62,7 +62,7 @@ const SENSITIVE_KEYWORDS: Array<{ pattern: RegExp; reason: string }> = [
   { pattern: /\bid_ecdsa\b/, reason: 'SSH private key reference' },
 ];
 
-function resolveAllPaths(filePath: string): string[] {
+export function resolveAllPaths(filePath: string): string[] {
   const paths = new Set<string>([filePath]);
   // readlinkSync: symlink hedefi (hedef mevcut olmasa bile calisir)
   try {
@@ -80,7 +80,7 @@ function resolveAllPaths(filePath: string): string[] {
   return [...paths];
 }
 
-function checkFilePath(filePath: string): string | null {
+export function checkFilePath(filePath: string): string | null {
   // Hem orijinal hem resolved path'leri kontrol et (symlink bypass engeli)
   const candidates = resolveAllPaths(filePath).map(p => p.replace(/\\/g, '/'));
   for (const normalized of candidates) {
@@ -93,7 +93,7 @@ function checkFilePath(filePath: string): string | null {
   return null;
 }
 
-function extractPaths(cmd: string): string[] {
+export function extractPaths(cmd: string): string[] {
   const paths: string[] = [];
   let m;
 
@@ -132,7 +132,7 @@ function extractPaths(cmd: string): string[] {
   return paths;
 }
 
-function checkBashCommand(cmd: string): string | null {
+export function checkBashCommand(cmd: string): string | null {
   // 1. Block bare env/printenv/set/export -p (dumps ALL env vars including secrets)
   if (/^\s*(env|printenv|set)\s*$/.test(cmd) ||
       /^\s*(env|printenv|set)\s*\|/.test(cmd) ||

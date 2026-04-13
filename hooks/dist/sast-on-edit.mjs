@@ -228,3 +228,8 @@ function main() {
   }));
 }
 main();
+export {
+  formatFindings,
+  isSupportedFile,
+  scanContent
+};
