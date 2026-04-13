@@ -130,6 +130,9 @@ ${bold('COMMANDS')}
   ${green('dashboard')}                     Start monitoring dashboard
   ${green('doctor')}                        Health check
     ${dim('--runtime')}                   Show hook runtime stats (24h)
+  ${green('audit')} ${dim('[path]')}                  Security + quality scan
+    ${dim('--fix')}                      Auto-fix safe issues
+    ${dim('--json')}                     Output as JSON
   ${green('profile')} ${dim('<name>')}                Set active profile
     ${dim('minimal | frontend | backend | fullstack | devops | all')}
   ${green('search')} ${dim('<term> [term2 ...]')}          Search agents and skills by keyword
@@ -642,6 +645,291 @@ async function update() {
   console.log(`\n${green('[OK]')} vibecosystem updated`);
 }
 
+// ─── Audit ───
+
+const AUDIT_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.py', '.go', '.java', '.rb', '.php', '.mjs', '.cjs'];
+
+const SAST_PATTERNS = [
+  { pattern: /\beval\s*\(/, severity: 'CRITICAL', category: 'Code Injection', message: 'eval() usage detected' },
+  { pattern: /\bnew\s+Function\s*\(/, severity: 'CRITICAL', category: 'Code Injection', message: 'new Function() detected' },
+  { pattern: /(?<!\w\.)exec\s*\(/, severity: 'CRITICAL', category: 'Command Injection', message: 'exec() usage detected' },
+  { pattern: /\bexecSync\s*\(/, severity: 'CRITICAL', category: 'Command Injection', message: 'execSync() usage detected' },
+  { pattern: /\bos\.system\s*\(/, severity: 'CRITICAL', category: 'Command Injection', message: 'os.system() detected' },
+  { pattern: /\bsubprocess\.\w+\s*\(/, severity: 'CRITICAL', category: 'Command Injection', message: 'subprocess usage detected' },
+  { pattern: /["'`]\s*\+\s*\w+.*(?:SELECT|INSERT|UPDATE|DELETE|DROP)\b/i, severity: 'CRITICAL', category: 'SQL Injection', message: 'String concat in SQL query' },
+  { pattern: /(?:SELECT|INSERT|UPDATE|DELETE)\b.*\$\{/i, severity: 'CRITICAL', category: 'SQL Injection', message: 'Template literal in SQL query' },
+  { pattern: /\.innerHTML\s*=/, severity: 'HIGH', category: 'XSS', message: 'innerHTML assignment' },
+  { pattern: /dangerouslySetInnerHTML/, severity: 'HIGH', category: 'XSS', message: 'dangerouslySetInnerHTML usage' },
+  { pattern: /document\.write\s*\(/, severity: 'HIGH', category: 'XSS', message: 'document.write() usage' },
+  { pattern: /pickle\.loads?\s*\(/, severity: 'HIGH', category: 'Insecure Deserialization', message: 'pickle.load(s) usage' },
+  { pattern: /yaml\.load\s*\([^)]*\)\s*(?!.*Loader)/, severity: 'HIGH', category: 'Insecure Deserialization', message: 'yaml.load() without Loader' },
+  { pattern: /console\.log\s*\(.*(?:password|secret|token|key|credential|auth)/i, severity: 'MEDIUM', category: 'Data Exposure', message: 'Sensitive data in console.log' },
+  { pattern: /\bMD5\s*\(|\.md5\s*\(/i, severity: 'MEDIUM', category: 'Weak Crypto', message: 'MD5 usage detected' },
+  { pattern: /\bSHA1\s*\(|\.sha1\s*\(/i, severity: 'MEDIUM', category: 'Weak Crypto', message: 'SHA1 usage detected' },
+  { pattern: /(?:api[_-]?key|secret|password|token)\s*[:=]\s*['"][^'"]{8,}['"]/i, severity: 'HIGH', category: 'Hardcoded Secret', message: 'Possible hardcoded secret' },
+];
+
+function walkDir(dir, extensions, ignore = []) {
+  const results = [];
+  try {
+    for (const entry of readdirSync(dir)) {
+      if (entry.startsWith('.') || ignore.includes(entry)) continue;
+      const full = join(dir, entry);
+      try {
+        const st = statSync(full);
+        if (st.isDirectory()) {
+          results.push(...walkDir(full, extensions, ignore));
+        } else if (extensions.some(ext => entry.endsWith(ext))) {
+          results.push(full);
+        }
+      } catch { /* skip */ }
+    }
+  } catch { /* skip */ }
+  return results;
+}
+
+async function audit() {
+  const targetDir = process.argv[3] || process.cwd();
+  const doFix = process.argv.includes('--fix');
+  const jsonOut = process.argv.includes('--json');
+
+  if (!existsSync(targetDir)) {
+    console.log(`${red('[ERROR]')} Directory not found: ${targetDir}`);
+    return;
+  }
+
+  console.log(`\n${bold('vibeco audit')} ${dim(targetDir)}`);
+  console.log(dim('='.repeat(50)));
+
+  const ignore = ['node_modules', 'dist', '.git', 'vendor', '__pycache__', '.next', 'build', 'coverage'];
+  const files = walkDir(targetDir, AUDIT_EXTENSIONS, ignore);
+
+  if (files.length === 0) {
+    console.log(`\n${yellow('[WARN]')} No source files found to audit`);
+    return;
+  }
+
+  console.log(`\n  Scanning ${cyan(String(files.length))} files...\n`);
+
+  const report = {
+    timestamp: new Date().toISOString(),
+    directory: targetDir,
+    files_scanned: files.length,
+    security: [],
+    quality: { large_files: [], todo_fixme: [], console_logs: [] },
+    dead_code: { unused_imports_hint: [] },
+    summary: { critical: 0, high: 0, medium: 0, low: 0, total_issues: 0 },
+  };
+
+  // ─── Security Scan ───
+  for (const file of files) {
+    let content;
+    try { content = readFileSync(file, 'utf-8'); } catch { continue; }
+    const lines = content.split('\n');
+    const rel = file.replace(targetDir + '/', '');
+    const isTest = /\.(test|spec)\.[jt]sx?$/.test(file) || file.includes('__tests__') || file.includes('__mocks__');
+
+    if (!isTest) for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const trimmed = line.trim();
+      if (trimmed.startsWith('//') || trimmed.startsWith('#') || trimmed.startsWith('/*') || trimmed.startsWith('*')) continue;
+
+      for (const pat of SAST_PATTERNS) {
+        if (pat.pattern.test(line)) {
+          const existing = report.security.find(s => s.file === rel && s.category === pat.category);
+          if (!existing) {
+            report.security.push({
+              file: rel, line: i + 1, severity: pat.severity,
+              category: pat.category, message: pat.message,
+              code: trimmed.slice(0, 100),
+            });
+          }
+        }
+      }
+    }
+
+    // ─── Quality: Large files ───
+    if (lines.length > 500) {
+      report.quality.large_files.push({ file: rel, lines: lines.length });
+    }
+
+    // ─── Quality: TODO/FIXME ───
+    let todoCount = 0;
+    for (const line of lines) {
+      if (/\b(TODO|FIXME|HACK|XXX)\b/.test(line)) todoCount++;
+    }
+    if (todoCount > 0) {
+      report.quality.todo_fixme.push({ file: rel, count: todoCount });
+    }
+
+    // ─── Quality: console.log ───
+    let logCount = 0;
+    for (const line of lines) {
+      if (/\bconsole\.log\s*\(/.test(line) && !line.trim().startsWith('//')) logCount++;
+    }
+    if (logCount > 3) {
+      report.quality.console_logs.push({ file: rel, count: logCount });
+    }
+  }
+
+  // ─── Dead code hints: check test file ratio ───
+  const testFiles = files.filter(f => /\.(test|spec)\.[jt]sx?$/.test(f));
+  const srcFiles = files.filter(f => !/\.(test|spec)\.[jt]sx?$/.test(f));
+  const testRatio = srcFiles.length > 0 ? (testFiles.length / srcFiles.length * 100).toFixed(1) : '0';
+
+  // ─── Dependency check ───
+  let depIssues = [];
+  const pkgPath = join(targetDir, 'package.json');
+  if (existsSync(pkgPath)) {
+    try {
+      const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+      const lockPath = join(targetDir, 'package-lock.json');
+      if (!existsSync(lockPath) && !existsSync(join(targetDir, 'yarn.lock')) && !existsSync(join(targetDir, 'pnpm-lock.yaml'))) {
+        depIssues.push({ severity: 'MEDIUM', message: 'No lock file found (package-lock.json, yarn.lock, or pnpm-lock.yaml)' });
+      }
+      // Check for very old node engine
+      if (pkg.engines?.node && /[<]16|[<]=?14|[<]=?12/.test(pkg.engines.node)) {
+        depIssues.push({ severity: 'MEDIUM', message: `Outdated node engine requirement: ${pkg.engines.node}` });
+      }
+    } catch { /* skip */ }
+  }
+
+  // ─── Summary ───
+  for (const s of report.security) {
+    if (s.severity === 'CRITICAL') report.summary.critical++;
+    else if (s.severity === 'HIGH') report.summary.high++;
+    else if (s.severity === 'MEDIUM') report.summary.medium++;
+    else report.summary.low++;
+  }
+  report.summary.total_issues = report.security.length + report.quality.large_files.length +
+    report.quality.todo_fixme.length + report.quality.console_logs.length + depIssues.length;
+
+  // ─── Print Report ───
+  // Security
+  if (report.security.length > 0) {
+    console.log(`${bold('Security Issues')} ${dim(`(${report.security.length})`)}`);
+    console.log(dim('-'.repeat(50)));
+    for (const s of report.security) {
+      const sev = s.severity === 'CRITICAL' ? red(s.severity) : s.severity === 'HIGH' ? yellow(s.severity) : dim(s.severity);
+      console.log(`  ${sev.padEnd(20)} ${s.file}:${s.line}`);
+      console.log(`  ${dim(s.message)}`);
+      console.log(`  ${dim(s.code)}`);
+      console.log();
+    }
+  } else {
+    console.log(`${green('[CLEAN]')} No security issues found\n`);
+  }
+
+  // Quality
+  if (report.quality.large_files.length > 0) {
+    console.log(`${bold('Large Files')} ${dim(`(>500 lines)`)}`);
+    console.log(dim('-'.repeat(50)));
+    for (const f of report.quality.large_files.sort((a, b) => b.lines - a.lines)) {
+      console.log(`  ${yellow(String(f.lines).padStart(5))} lines  ${f.file}`);
+    }
+    console.log();
+  }
+
+  if (report.quality.todo_fixme.length > 0) {
+    console.log(`${bold('TODO/FIXME')} ${dim(`(${report.quality.todo_fixme.reduce((s, t) => s + t.count, 0)} total)`)}`);
+    console.log(dim('-'.repeat(50)));
+    for (const t of report.quality.todo_fixme.sort((a, b) => b.count - a.count).slice(0, 10)) {
+      console.log(`  ${yellow(String(t.count).padStart(3))}x  ${t.file}`);
+    }
+    console.log();
+  }
+
+  if (report.quality.console_logs.length > 0) {
+    console.log(`${bold('Excessive console.log')} ${dim(`(>3 per file)`)}`);
+    console.log(dim('-'.repeat(50)));
+    for (const l of report.quality.console_logs.sort((a, b) => b.count - a.count)) {
+      console.log(`  ${yellow(String(l.count).padStart(3))}x  ${l.file}`);
+    }
+    console.log();
+  }
+
+  if (depIssues.length > 0) {
+    console.log(`${bold('Dependency Issues')}`);
+    console.log(dim('-'.repeat(50)));
+    for (const d of depIssues) {
+      console.log(`  ${yellow(d.severity)}  ${d.message}`);
+    }
+    console.log();
+  }
+
+  // Test coverage
+  console.log(`${bold('Test Coverage')}`);
+  console.log(dim('-'.repeat(50)));
+  const ratioNum = parseFloat(testRatio);
+  const ratioColor = ratioNum >= 30 ? green : ratioNum >= 10 ? yellow : red;
+  console.log(`  Source files:  ${srcFiles.length}`);
+  console.log(`  Test files:    ${testFiles.length}`);
+  console.log(`  Test ratio:    ${ratioColor(testRatio + '%')}`);
+  console.log();
+
+  // Summary
+  const totalIssues = report.summary.total_issues;
+  const grade = report.summary.critical > 0 ? red('F') :
+    report.summary.high > 3 ? red('D') :
+    report.summary.high > 0 ? yellow('C') :
+    report.summary.medium > 5 ? yellow('B') :
+    totalIssues > 0 ? green('A-') : green('A+');
+
+  console.log(dim('='.repeat(50)));
+  console.log(`${bold('Audit Grade:')} ${bold(grade)}`);
+  console.log(`  ${red('CRITICAL')}: ${report.summary.critical}  ${yellow('HIGH')}: ${report.summary.high}  ${dim('MEDIUM')}: ${report.summary.medium}`);
+  console.log(`  Total issues: ${totalIssues}  |  Files: ${files.length}  |  Test ratio: ${testRatio}%`);
+
+  // Save JSON report
+  const reportPath = join(targetDir, '.vibeco-audit.json');
+  try {
+    writeFileSync(reportPath, JSON.stringify(report, null, 2));
+    console.log(`\n  Report saved: ${dim(reportPath)}`);
+  } catch { /* skip */ }
+
+  if (jsonOut) {
+    console.log(JSON.stringify(report, null, 2));
+  }
+
+  if (totalIssues > 0 && !doFix) {
+    console.log(`\n  ${cyan('Tip:')} Run ${bold('vibeco audit --fix')} to auto-fix safe issues.`);
+  }
+
+  // ─── Auto-fix mode ───
+  if (doFix) {
+    console.log(`\n${bold('Auto-fixing safe issues...')}\n`);
+    let fixed = 0;
+
+    // Fix: Remove console.log (only if >3 per file)
+    for (const entry of report.quality.console_logs) {
+      const filePath = join(targetDir, entry.file);
+      try {
+        let content = readFileSync(filePath, 'utf-8');
+        const before = content;
+        content = content.split('\n').filter(line => {
+          const trimmed = line.trim();
+          return !(trimmed.startsWith('console.log(') || trimmed.startsWith('console.log ('));
+        }).join('\n');
+        if (content !== before) {
+          writeFileSync(filePath, content);
+          const removed = before.split('\n').length - content.split('\n').length;
+          console.log(`  ${green('[FIX]')} Removed ${removed} console.log in ${entry.file}`);
+          fixed += removed;
+        }
+      } catch { /* skip */ }
+    }
+
+    if (fixed > 0) {
+      console.log(`\n  ${green('Fixed:')} ${fixed} issues`);
+      console.log(`  ${dim('Security issues require manual review - not auto-fixed.')}`);
+    } else {
+      console.log(`  ${dim('No auto-fixable issues found.')}`);
+    }
+  }
+
+  console.log();
+}
+
 // ─── Router ───
 const COMMANDS = {
   help,
@@ -652,6 +940,7 @@ const COMMANDS = {
   dashboard,
   profile,
   doctor,
+  audit,
   update,
   '-h': help,
   '--help': help,
