@@ -16,8 +16,8 @@
  *   node plugin-registry.mjs disable <hook># Hook'u deaktive et
  *   node plugin-registry.mjs status        # Ozet goster
  */
-import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 'fs';
-import { join, basename } from 'path';
+import { readFileSync, writeFileSync, existsSync, readdirSync } from 'fs';
+import { join } from 'path';
 import { homedir } from 'os';
 
 const CLAUDE_HOME = join(homedir(), '.claude');

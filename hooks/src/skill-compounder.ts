@@ -14,7 +14,7 @@
  * skill-curator agent reviews these drafts on next session start.
  */
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
 import { reportHealth } from './shared/hook-health.js';

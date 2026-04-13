@@ -5,7 +5,7 @@ import { spawnSync } from 'child_process';
 import { tmpdir } from 'os';
 
 // Import shared resource reader (Phase 4 module)
-import { readResourceState, ResourceState } from './shared/resource-reader.js';
+import { readResourceState } from './shared/resource-reader.js';
 import { startTimer, endTimer } from './shared/hook-profiler.js';
 
 // Import validation module for false-positive reduction

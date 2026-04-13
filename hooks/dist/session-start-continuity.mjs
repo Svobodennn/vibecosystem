@@ -2,10 +2,6 @@
 import * as fs from "fs";
 import * as path from "path";
 import { execSync } from "child_process";
-function buildHandoffDirName(sessionName, sessionId) {
-  const uuidShort = sessionId.replace(/-/g, "").slice(0, 8);
-  return `${sessionName}-${uuidShort}`;
-}
 function parseHandoffDirName(dirName) {
   const match = dirName.match(/^(.+)-([0-9a-f]{8})$/i);
   if (match) {
@@ -13,48 +9,8 @@ function parseHandoffDirName(dirName) {
   }
   return { sessionName: dirName, uuidShort: null };
 }
-function findSessionHandoffWithUUID(sessionName, sessionId) {
-  const projectDir = process.env.CLAUDE_PROJECT_DIR || process.cwd();
-  const handoffsBase = path.join(projectDir, "thoughts", "shared", "handoffs");
-  if (!fs.existsSync(handoffsBase)) return null;
-  const uuidShort = sessionId.replace(/-/g, "").slice(0, 8).toLowerCase();
-  const exactDir = path.join(handoffsBase, `${sessionName}-${uuidShort}`);
-  if (fs.existsSync(exactDir)) {
-    return findMostRecentMdFile(exactDir);
-  }
-  const legacyDir = path.join(handoffsBase, sessionName);
-  if (fs.existsSync(legacyDir) && fs.statSync(legacyDir).isDirectory()) {
-    const result = findMostRecentMdFile(legacyDir);
-    if (result) return result;
-  }
-  const allDirs = fs.readdirSync(handoffsBase).filter((d) => {
-    const stat = fs.statSync(path.join(handoffsBase, d));
-    if (!stat.isDirectory()) return false;
-    const { sessionName: parsedName } = parseHandoffDirName(d);
-    return parsedName === sessionName;
-  });
-  allDirs.sort((a, b) => {
-    const statA = fs.statSync(path.join(handoffsBase, a));
-    const statB = fs.statSync(path.join(handoffsBase, b));
-    return statB.mtime.getTime() - statA.mtime.getTime();
-  });
-  for (const dir of allDirs) {
-    const result = findMostRecentMdFile(path.join(handoffsBase, dir));
-    if (result) return result;
-  }
-  return null;
-}
 function isHandoffFile(filename) {
   return filename.endsWith(".md") || filename.endsWith(".yaml") || filename.endsWith(".yml");
-}
-function findMostRecentMdFile(dirPath) {
-  if (!fs.existsSync(dirPath)) return null;
-  const handoffFiles = fs.readdirSync(dirPath).filter((f) => isHandoffFile(f)).sort((a, b) => {
-    const statA = fs.statSync(path.join(dirPath, a));
-    const statB = fs.statSync(path.join(dirPath, b));
-    return statB.mtime.getTime() - statA.mtime.getTime();
-  });
-  return handoffFiles.length > 0 ? path.join(dirPath, handoffFiles[0]) : null;
 }
 function extractYamlFields(content) {
   const goalMatch = content.match(/^goal:\s*(.+)$/m);
@@ -396,10 +352,8 @@ async function readStdin() {
 }
 main().catch(console.error);
 export {
-  buildHandoffDirName,
   extractLedgerSection,
   extractYamlFields,
   findSessionHandoff,
-  findSessionHandoffWithUUID,
   parseHandoffDirName
 };

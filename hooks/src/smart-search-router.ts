@@ -9,10 +9,10 @@
  * Uses TLDR daemon for fast symbol lookups when available.
  */
 
-import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
+import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { execSync } from 'child_process';
 import { join } from 'path';
-import { queryDaemonSync, DaemonResponse, trackHookActivitySync } from './daemon-client.js';
+import { queryDaemonSync, trackHookActivitySync } from './daemon-client.js';
 import { isRelevantForIntent } from './shared/context-budget.js';
 import { startTimer, endTimer } from './shared/hook-profiler.js';
 

@@ -4,7 +4,6 @@
  * Dashboard opsiyonel - baglanti yoksa sessizce devam eder.
  */
 import { readFileSync } from 'fs';
-import { createConnection, Socket } from 'net';
 
 interface PostToolInput {
   session_id: string;

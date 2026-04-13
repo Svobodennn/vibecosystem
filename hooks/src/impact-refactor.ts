@@ -7,9 +7,9 @@
  * Uses TLDR daemon for fast cached responses (50ms vs 500ms CLI).
  */
 
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync } from 'fs';
 import { join } from 'path';
-import { queryDaemonSync, DaemonResponse, trackHookActivitySync } from './daemon-client.js';
+import { queryDaemonSync, trackHookActivitySync } from './daemon-client.js';
 import { isRelevantForIntent } from './shared/context-budget.js';
 
 interface UserPromptInput {
