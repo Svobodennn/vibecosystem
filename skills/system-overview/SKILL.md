@@ -1,6 +1,6 @@
 ---
-name: system_overview
-description: Show how Continuous Claude works - the opinionated setup with hooks, memory, and coordination.
+name: system-overview
+description: Show how vibecosystem works - agents, skills, hooks, and self-learning pipeline.
 ---
 
 # System Overview

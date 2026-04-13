@@ -177,6 +177,7 @@ function extractEntryPoints(prompt: string): string[] {
   const candidates: Set<string> = new Set();
 
   for (const pattern of FUNCTION_PATTERNS) {
+    pattern.lastIndex = 0;  // Reset stale lastIndex
     let match;
     while ((match = pattern.exec(prompt)) !== null) {
       const candidate = match[1];

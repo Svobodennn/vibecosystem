@@ -112,7 +112,8 @@ function isDaemonReachable(projectDir) {
     }
     if (isDaemonProcessRunning(projectDir)) {
       try {
-        execSync(`echo '{"cmd":"ping"}' | nc -U "${connInfo.path}"`, {
+        execSync(`nc -U "${connInfo.path}"`, {
+          input: '{"cmd":"ping"}\n',
           encoding: "utf-8",
           timeout: 1e3,
           // Increased from 500ms
@@ -124,7 +125,8 @@ function isDaemonReachable(projectDir) {
       }
     }
     try {
-      execSync(`echo '{"cmd":"ping"}' | nc -U "${connInfo.path}"`, {
+      execSync(`nc -U "${connInfo.path}"`, {
+        input: '{"cmd":"ping"}\n',
         encoding: "utf-8",
         timeout: 500,
         stdio: ["pipe", "pipe", "pipe"]
@@ -230,7 +232,8 @@ function queryDaemonSync(query, projectDir) {
         timeout: QUERY_TIMEOUT
       });
     } else {
-      result = execSync(`echo '${input}' | nc -U "${connInfo.path}"`, {
+      result = execSync(`nc -U "${connInfo.path}"`, {
+        input: input + "\n",
         encoding: "utf-8",
         timeout: QUERY_TIMEOUT
       });

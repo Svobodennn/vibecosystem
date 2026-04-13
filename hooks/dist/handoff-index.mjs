@@ -4,6 +4,7 @@ import * as path from "path";
 import { spawn, execSync } from "child_process";
 import Database from "better-sqlite3";
 function getPpid(pid) {
+  if (!Number.isInteger(pid) || pid < 1) return null;
   if (process.platform === "win32") {
     try {
       const result = execSync(`wmic process where ProcessId=${pid} get ParentProcessId`, {

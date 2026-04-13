@@ -10,7 +10,7 @@
  */
 
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
-import { execSync } from 'child_process';
+import { execSync, spawnSync } from 'child_process';
 import { join } from 'path';
 import { queryDaemonSync, trackHookActivitySync } from './daemon-client.js';
 import { isRelevantForIntent } from './shared/context-budget.js';
@@ -98,11 +98,11 @@ function tldrSearch(pattern: string, projectDir: string = '.'): TLDRSearchResult
  */
 function ripgrepFallback(pattern: string, projectDir: string): TLDRSearchResult[] {
   try {
-    const escaped = pattern.replace(/"/g, '\\"').replace(/\$/g, '\\$');
-    const result = execSync(
-      `rg "${escaped}" "${projectDir}" --type py --line-number --max-count 10 2>/dev/null`,
-      { encoding: 'utf-8', timeout: 3000 }
-    );
+    const rg = spawnSync('rg', [pattern, projectDir, '--type', 'py', '--line-number', '--max-count', '10'], {
+      encoding: 'utf-8',
+      timeout: 3000,
+    });
+    const result = rg.stdout || '';
     // Parse ripgrep output: file:line:content
     return result.trim().split('\n').filter(l => l).slice(0, 10).map(line => {
       const match = line.match(/^([^:]+):(\d+):(.*)$/);

@@ -1,6 +1,6 @@
 // src/compiler-in-the-loop.ts
 import { readFileSync as readFileSync2, writeFileSync as writeFileSync2, existsSync as existsSync2, mkdirSync as mkdirSync2 } from "fs";
-import { execSync } from "child_process";
+import { execSync, spawnSync } from "child_process";
 import { join as join2 } from "path";
 import { tmpdir } from "os";
 
@@ -12,7 +12,7 @@ import { homedir } from "os";
 // src/shared/log-rotation.ts
 import { statSync, readFileSync, writeFileSync, appendFileSync, renameSync, unlinkSync } from "fs";
 function appendWithRotation(filePath, line, maxBytes = 2 * 1024 * 1024, keepLines = 5e3) {
-  appendFileSync(filePath, line);
+  appendFileSync(filePath, line, { mode: 384 });
   try {
     const stats = statSync(filePath);
     if (stats.size > maxBytes) {
@@ -80,13 +80,25 @@ function runLeanCompiler(filePath, cwd) {
   const pathWithElan = `${elanBin}:${process.env.PATH}`;
   try {
     const hasLakefile = existsSync2(join2(cwd, "lakefile.lean")) || existsSync2(join2(cwd, "lakefile.toml"));
-    const cmd = hasLakefile ? `cd "${cwd}" && lake build 2>&1` : `lean "${filePath}" 2>&1`;
-    const output = execSync(cmd, {
-      encoding: "utf-8",
-      timeout: 6e4,
-      maxBuffer: 1024 * 1024,
-      env: { ...process.env, PATH: pathWithElan }
-    });
+    let output;
+    if (hasLakefile) {
+      output = execSync("lake build 2>&1", {
+        encoding: "utf-8",
+        timeout: 6e4,
+        maxBuffer: 1024 * 1024,
+        cwd,
+        env: { ...process.env, PATH: pathWithElan }
+      });
+    } else {
+      const result = spawnSync("lean", [filePath], {
+        encoding: "utf-8",
+        timeout: 6e4,
+        maxBuffer: 1024 * 1024,
+        cwd,
+        env: { ...process.env, PATH: pathWithElan }
+      });
+      output = (result.stdout || "") + (result.stderr || "");
+    }
     const sorries = [];
     const fileContent = existsSync2(filePath) ? readFileSync2(filePath, "utf-8") : "";
     const sorryMatches = fileContent.match(/sorry/g);

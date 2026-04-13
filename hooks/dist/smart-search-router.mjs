@@ -1,6 +1,6 @@
 // src/smart-search-router.ts
 import { existsSync as existsSync4, mkdirSync as mkdirSync3, writeFileSync as writeFileSync4 } from "fs";
-import { execSync as execSync2 } from "child_process";
+import { spawnSync as spawnSync2 } from "child_process";
 import { join as join4 } from "path";
 
 // src/daemon-client.ts
@@ -114,7 +114,8 @@ function isDaemonReachable(projectDir) {
     }
     if (isDaemonProcessRunning(projectDir)) {
       try {
-        execSync(`echo '{"cmd":"ping"}' | nc -U "${connInfo.path}"`, {
+        execSync(`nc -U "${connInfo.path}"`, {
+          input: '{"cmd":"ping"}\n',
           encoding: "utf-8",
           timeout: 1e3,
           // Increased from 500ms
@@ -126,7 +127,8 @@ function isDaemonReachable(projectDir) {
       }
     }
     try {
-      execSync(`echo '{"cmd":"ping"}' | nc -U "${connInfo.path}"`, {
+      execSync(`nc -U "${connInfo.path}"`, {
+        input: '{"cmd":"ping"}\n',
         encoding: "utf-8",
         timeout: 500,
         stdio: ["pipe", "pipe", "pipe"]
@@ -232,7 +234,8 @@ function queryDaemonSync(query, projectDir) {
         timeout: QUERY_TIMEOUT
       });
     } else {
-      result = execSync(`echo '${input}' | nc -U "${connInfo.path}"`, {
+      result = execSync(`nc -U "${connInfo.path}"`, {
+        input: input + "\n",
         encoding: "utf-8",
         timeout: QUERY_TIMEOUT
       });
@@ -297,7 +300,7 @@ import { homedir as homedir2 } from "os";
 // src/shared/log-rotation.ts
 import { statSync as statSync2, readFileSync as readFileSync3, writeFileSync as writeFileSync3, appendFileSync, renameSync, unlinkSync as unlinkSync2 } from "fs";
 function appendWithRotation(filePath, line, maxBytes = 2 * 1024 * 1024, keepLines = 5e3) {
-  appendFileSync(filePath, line);
+  appendFileSync(filePath, line, { mode: 384 });
   try {
     const stats = statSync2(filePath);
     if (stats.size > maxBytes) {
@@ -368,11 +371,11 @@ function tldrSearch(pattern, projectDir = ".") {
 }
 function ripgrepFallback(pattern, projectDir) {
   try {
-    const escaped = pattern.replace(/"/g, '\\"').replace(/\$/g, "\\$");
-    const result = execSync2(
-      `rg "${escaped}" "${projectDir}" --type py --line-number --max-count 10 2>/dev/null`,
-      { encoding: "utf-8", timeout: 3e3 }
-    );
+    const rg = spawnSync2("rg", [pattern, projectDir, "--type", "py", "--line-number", "--max-count", "10"], {
+      encoding: "utf-8",
+      timeout: 3e3
+    });
+    const result = rg.stdout || "";
     return result.trim().split("\n").filter((l) => l).slice(0, 10).map((line) => {
       const match = line.match(/^([^:]+):(\d+):(.*)$/);
       if (match) {

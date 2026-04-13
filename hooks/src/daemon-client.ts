@@ -313,7 +313,8 @@ function isDaemonReachable(projectDir: string): boolean {
       // Process exists - socket might just be busy, don't delete it
       // Try a quick ping but don't delete socket on failure
       try {
-        execSync(`echo '{"cmd":"ping"}' | nc -U "${connInfo.path}"`, {
+        execSync(`nc -U "${connInfo.path}"`, {
+          input: '{"cmd":"ping"}\n',
           encoding: 'utf-8',
           timeout: 1000,  // Increased from 500ms
           stdio: ['pipe', 'pipe', 'pipe'],
@@ -328,7 +329,8 @@ function isDaemonReachable(projectDir: string): boolean {
 
     // No daemon process running - try ping to verify socket isn't stale
     try {
-      execSync(`echo '{"cmd":"ping"}' | nc -U "${connInfo.path}"`, {
+      execSync(`nc -U "${connInfo.path}"`, {
+        input: '{"cmd":"ping"}\n',
         encoding: 'utf-8',
         timeout: 500,
         stdio: ['pipe', 'pipe', 'pipe'],
@@ -584,7 +586,8 @@ export function queryDaemonSync(query: DaemonQuery, projectDir: string): DaemonR
     } else {
       // Unix: Use nc (netcat) to communicate with Unix socket
       // echo '{"cmd":"ping"}' | nc -U /tmp/tldr-xxx.sock
-      result = execSync(`echo '${input}' | nc -U "${connInfo.path}"`, {
+      result = execSync(`nc -U "${connInfo.path}"`, {
+        input: input + '\n',
         encoding: 'utf-8',
         timeout: QUERY_TIMEOUT,
       });

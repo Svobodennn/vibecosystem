@@ -3,7 +3,7 @@
 ## Ilgili Kurallar
 - `agent-assignment-matrix.md` → Hangi task hangi agent'a gider
 - `qa-loop.md` → Dev-QA dongusu, retry logic, escalation
-- `handoff-templates.md` → Agent arasi mesaj sablonlari
+- `skills/handoff-templates/SKILL.md` → Agent arasi mesaj sablonlari
 
 ## Available Agents
 

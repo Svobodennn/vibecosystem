@@ -9,7 +9,7 @@
  */
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
-import { execSync } from 'child_process';
+import { execSync, spawnSync } from 'child_process';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { startTimer, endTimer } from './shared/hook-profiler.js';
@@ -78,16 +78,26 @@ function runLeanCompiler(filePath: string, cwd: string): { success: boolean; out
   try {
     // Try lake build first (for project files), or lean directly for standalone files
     const hasLakefile = existsSync(join(cwd, 'lakefile.lean')) || existsSync(join(cwd, 'lakefile.toml'));
-    const cmd = hasLakefile
-      ? `cd "${cwd}" && lake build 2>&1`
-      : `lean "${filePath}" 2>&1`;
 
-    const output = execSync(cmd, {
-      encoding: 'utf-8',
-      timeout: 60000,
-      maxBuffer: 1024 * 1024,
-      env: { ...process.env, PATH: pathWithElan }
-    });
+    let output: string;
+    if (hasLakefile) {
+      output = execSync('lake build 2>&1', {
+        encoding: 'utf-8',
+        timeout: 60000,
+        maxBuffer: 1024 * 1024,
+        cwd,
+        env: { ...process.env, PATH: pathWithElan }
+      });
+    } else {
+      const result = spawnSync('lean', [filePath], {
+        encoding: 'utf-8',
+        timeout: 60000,
+        maxBuffer: 1024 * 1024,
+        cwd,
+        env: { ...process.env, PATH: pathWithElan }
+      });
+      output = (result.stdout || '') + (result.stderr || '');
+    }
 
     // Check for 'sorry' in the output or file
     const sorries: string[] = [];

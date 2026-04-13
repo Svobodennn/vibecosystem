@@ -3,7 +3,7 @@
   "description": "Frontend + Backend combined. Full application development.",
   "agents": [
     "a11y-expert",
-    "accessibility-auditor",
+    "a11y-expert",
     "api-designer",
     "api-doc-generator",
     "api-gateway-expert",
@@ -148,7 +148,7 @@
     "smart-model-routing",
     "strategic-compact",
     "supply-chain-security",
-    "system_overview",
+    "system-overview",
     "tdd",
     "tdd-workflow",
     "test",

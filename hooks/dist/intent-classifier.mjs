@@ -18,7 +18,7 @@ function reportHealth(hookName, success, durationMs, error) {
     };
     if (error) entry.error = error.slice(0, 200);
     mkdirSync(join(homedir(), ".claude"), { recursive: true });
-    appendFileSync(HEALTH_FILE, JSON.stringify(entry) + "\n");
+    appendFileSync(HEALTH_FILE, JSON.stringify(entry) + "\n", { mode: 384 });
   } catch {
   }
 }

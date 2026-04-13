@@ -131,7 +131,7 @@ ${bold('COMMANDS')}
   ${green('doctor')}                        Health check
     ${dim('--runtime')}                   Show hook runtime stats (24h)
   ${green('audit')} ${dim('[path]')}                  Security + quality scan
-    ${dim('--fix')}                      Auto-fix safe issues
+    ${dim('--report')}                   Save findings to .vibeco-audit.json
     ${dim('--json')}                     Output as JSON
   ${green('profile')} ${dim('<name>')}                Set active profile
     ${dim('minimal | frontend | backend | fullstack | devops | all')}
@@ -880,51 +880,28 @@ async function audit() {
   console.log(`  ${red('CRITICAL')}: ${report.summary.critical}  ${yellow('HIGH')}: ${report.summary.high}  ${dim('MEDIUM')}: ${report.summary.medium}`);
   console.log(`  Total issues: ${totalIssues}  |  Files: ${files.length}  |  Test ratio: ${testRatio}%`);
 
-  // Save JSON report
-  const reportPath = join(targetDir, '.vibeco-audit.json');
-  try {
-    writeFileSync(reportPath, JSON.stringify(report, null, 2));
-    console.log(`\n  Report saved: ${dim(reportPath)}`);
-  } catch { /* skip */ }
+  // Save JSON report only when explicitly requested
+  if (process.argv.includes('--report') || jsonOut) {
+    const reportPath = join(targetDir, '.vibeco-audit.json');
+    try {
+      writeFileSync(reportPath, JSON.stringify(report, null, 2));
+      console.log(`\n  Report saved: ${dim(reportPath)}`);
+    } catch { /* skip */ }
+  }
 
   if (jsonOut) {
     console.log(JSON.stringify(report, null, 2));
   }
 
-  if (totalIssues > 0 && !doFix) {
-    console.log(`\n  ${cyan('Tip:')} Run ${bold('vibeco audit --fix')} to auto-fix safe issues.`);
+  if (totalIssues > 0) {
+    console.log(`\n  ${cyan('Tip:')} Run ${bold('vibeco audit --report')} to save findings as JSON.`);
   }
 
   // ─── Auto-fix mode ───
   if (doFix) {
-    console.log(`\n${bold('Auto-fixing safe issues...')}\n`);
-    let fixed = 0;
-
-    // Fix: Remove console.log (only if >3 per file)
-    for (const entry of report.quality.console_logs) {
-      const filePath = join(targetDir, entry.file);
-      try {
-        let content = readFileSync(filePath, 'utf-8');
-        const before = content;
-        content = content.split('\n').filter(line => {
-          const trimmed = line.trim();
-          return !(trimmed.startsWith('console.log(') || trimmed.startsWith('console.log ('));
-        }).join('\n');
-        if (content !== before) {
-          writeFileSync(filePath, content);
-          const removed = before.split('\n').length - content.split('\n').length;
-          console.log(`  ${green('[FIX]')} Removed ${removed} console.log in ${entry.file}`);
-          fixed += removed;
-        }
-      } catch { /* skip */ }
-    }
-
-    if (fixed > 0) {
-      console.log(`\n  ${green('Fixed:')} ${fixed} issues`);
-      console.log(`  ${dim('Security issues require manual review - not auto-fixed.')}`);
-    } else {
-      console.log(`  ${dim('No auto-fixable issues found.')}`);
-    }
+    console.log(`\n${bold('Auto-fix is not available yet.')}`);
+    console.log(`  Security issues require manual review.`);
+    console.log(`  Use ${cyan('vibeco audit --report')} to save findings as JSON.\n`);
   }
 
   console.log();

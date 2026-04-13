@@ -3,7 +3,7 @@
   "description": "React/Next.js/CSS/accessibility focused development.",
   "agents": [
     "a11y-expert",
-    "accessibility-auditor",
+    "a11y-expert",
     "architect",
     "browser-agent",
     "build-error-resolver",
@@ -84,7 +84,7 @@
     "server-components",
     "smart-model-routing",
     "strategic-compact",
-    "system_overview",
+    "system-overview",
     "tdd",
     "tdd-workflow",
     "test",

@@ -33,6 +33,10 @@ if [ -d "$INSTALL_DIR" ]; then
   echo "Updating existing installation..."
   git -C "$INSTALL_DIR" pull --ff-only 2>/dev/null || {
     echo "Pull failed, re-cloning..."
+    if [ -z "$INSTALL_DIR" ] || [ "$INSTALL_DIR" = "/" ] || [ "$INSTALL_DIR" = "$HOME" ]; then
+      echo "FATAL: INSTALL_DIR is unsafe: '$INSTALL_DIR'"
+      exit 1
+    fi
     rm -rf "$INSTALL_DIR"
     git clone --depth 1 "$REPO_URL" "$INSTALL_DIR"
   }
