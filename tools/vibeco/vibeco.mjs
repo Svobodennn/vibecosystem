@@ -133,6 +133,7 @@ ${bold('COMMANDS')}
   ${green('audit')} ${dim('[path]')}                  Security + quality scan
     ${dim('--report')}                   Save findings to .vibeco-audit.json
     ${dim('--json')}                     Output as JSON
+  ${green('secrets')} ${dim('[path]')}                Scan for API keys & credentials
   ${green('profile')} ${dim('<name>')}                Set active profile
     ${dim('minimal | frontend | backend | fullstack | devops | all')}
   ${green('search')} ${dim('<term> [term2 ...]')}          Search agents and skills by keyword
@@ -907,6 +908,124 @@ async function audit() {
   console.log();
 }
 
+// ─── Secrets Scanner ───
+
+const SECRET_PATTERNS = [
+  { pattern: /sk-proj-[A-Za-z0-9_-]{20,}/, name: 'OpenAI API Key (project)' },
+  { pattern: /sk-[A-Za-z0-9]{20,}/, name: 'OpenAI API Key' },
+  { pattern: /sk-ant-[A-Za-z0-9_-]{20,}/, name: 'Anthropic API Key' },
+  { pattern: /AKIA[0-9A-Z]{16}/, name: 'AWS Access Key ID' },
+  { pattern: /ghp_[A-Za-z0-9]{36,}/, name: 'GitHub Personal Access Token' },
+  { pattern: /gho_[A-Za-z0-9]{36,}/, name: 'GitHub OAuth Token' },
+  { pattern: /github_pat_[A-Za-z0-9_]{22,}/, name: 'GitHub Fine-grained PAT' },
+  { pattern: /sk_live_[A-Za-z0-9]{20,}/, name: 'Stripe Secret Key (Live)' },
+  { pattern: /pk_live_[A-Za-z0-9]{20,}/, name: 'Stripe Publishable Key (Live)' },
+  { pattern: /sq0csp-[A-Za-z0-9_-]{20,}/, name: 'Square Access Token' },
+  { pattern: /AIza[A-Za-z0-9_-]{35}/, name: 'Google API Key' },
+  { pattern: /ya29\.[A-Za-z0-9_-]{50,}/, name: 'Google OAuth Token' },
+  { pattern: /xoxb-[0-9]+-[A-Za-z0-9]+/, name: 'Slack Bot Token' },
+  { pattern: /xoxp-[0-9]+-[A-Za-z0-9]+/, name: 'Slack User Token' },
+  { pattern: /SG\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{43}/, name: 'SendGrid API Key' },
+  { pattern: /npm_[A-Za-z0-9]{36,}/, name: 'npm Access Token' },
+  { pattern: /pypi-[A-Za-z0-9_-]{50,}/, name: 'PyPI API Token' },
+  { pattern: /PRIVATE KEY-----/, name: 'Private Key (PEM)' },
+  { pattern: /(?:mongodb(?:\+srv)?:\/\/)(?:[^:]+):([^@]{8,})@/, name: 'MongoDB Connection String with Password' },
+  { pattern: /(?:postgres(?:ql)?:\/\/)(?:[^:]+):([^@]{8,})@/, name: 'PostgreSQL Connection String with Password' },
+  { pattern: /(?:mysql:\/\/)(?:[^:]+):([^@]{8,})@/, name: 'MySQL Connection String with Password' },
+  { pattern: /(?:redis:\/\/)(?::)?([^@]{8,})@/, name: 'Redis Connection String with Password' },
+];
+
+const SECRETS_SCAN_EXTENSIONS = [
+  '.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs',
+  '.py', '.go', '.java', '.rb', '.php', '.rs', '.swift', '.kt',
+  '.json', '.yml', '.yaml', '.toml', '.env', '.cfg', '.conf', '.ini',
+  '.sh', '.bash', '.zsh', '.fish',
+  '.xml', '.properties', '.gradle',
+];
+
+const SECRETS_IGNORE = ['node_modules', 'dist', '.git', 'vendor', '__pycache__', '.next', 'build', 'coverage', 'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml'];
+
+function secrets() {
+  const targetDir = process.argv[3] || process.cwd();
+
+  if (!existsSync(targetDir)) {
+    console.log(`${red('[ERROR]')} Directory not found: ${targetDir}`);
+    process.exit(1);
+  }
+
+  console.log(`\n${bold('vibeco secrets')} ${dim(targetDir)}`);
+  console.log(dim('='.repeat(50)));
+
+  const files = walkDir(targetDir, SECRETS_SCAN_EXTENSIONS, SECRETS_IGNORE);
+  console.log(`\n  Scanning ${cyan(String(files.length))} files for secrets...\n`);
+
+  const findings = [];
+
+  for (const file of files) {
+    let content;
+    try { content = readFileSync(file, 'utf-8'); } catch { continue; }
+
+    // Skip binary-looking files
+    if (content.includes('\0')) continue;
+
+    const lines = content.split('\n');
+    const rel = file.replace(targetDir + '/', '');
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const trimmed = line.trim();
+
+      // Skip comments
+      if (trimmed.startsWith('//') || trimmed.startsWith('#') || trimmed.startsWith('/*') || trimmed.startsWith('*')) continue;
+
+      // Skip lines that look like pattern definitions (regex literals, test assertions)
+      if (/\/(\\\/|[^/])+\/[gimsuy]*/.test(trimmed) && (trimmed.includes('pattern') || trimmed.includes('regex') || trimmed.includes('RegExp'))) continue;
+
+      for (const secret of SECRET_PATTERNS) {
+        const match = secret.pattern.exec(line);
+        if (match) {
+          // Mask the secret value
+          const value = match[0];
+          const masked = value.slice(0, 8) + '***' + value.slice(-4);
+          findings.push({
+            file: rel,
+            line: i + 1,
+            type: secret.name,
+            masked,
+          });
+          break; // One finding per line is enough
+        }
+      }
+    }
+  }
+
+  if (findings.length === 0) {
+    console.log(`${green('[CLEAN]')} No secrets found!\n`);
+    console.log(`  ${dim('Scanned')} ${files.length} ${dim('files, zero API keys or credentials detected.')}\n`);
+    return;
+  }
+
+  // Print findings
+  console.log(`${red('[ALERT]')} Found ${bold(String(findings.length))} potential secret(s)!\n`);
+
+  for (const f of findings) {
+    console.log(`  ${red('SECRET')}  ${f.file}:${f.line}`);
+    console.log(`  ${dim('Type:')}   ${f.type}`);
+    console.log(`  ${dim('Value:')}  ${yellow(f.masked)}`);
+    console.log();
+  }
+
+  console.log(dim('='.repeat(50)));
+  console.log(`  ${red(String(findings.length))} secret(s) found in ${files.length} files`);
+  console.log(`\n  ${bold('DO NOT push these files to GitHub!')}`);
+  console.log(`  ${dim('1. Remove or move secrets to .env files')}`);
+  console.log(`  ${dim('2. Add .env to .gitignore')}`);
+  console.log(`  ${dim('3. Use environment variables instead')}`);
+  console.log(`  ${dim('4. If already pushed, rotate the credentials immediately')}\n`);
+
+  process.exit(1); // Exit with error so pre-push hook blocks
+}
+
 // ─── Router ───
 const COMMANDS = {
   help,
@@ -918,6 +1037,7 @@ const COMMANDS = {
   profile,
   doctor,
   audit,
+  secrets,
   update,
   '-h': help,
   '--help': help,
