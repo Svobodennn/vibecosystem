@@ -135,7 +135,7 @@ ${bold('COMMANDS')}
     ${dim('--json')}                     Output as JSON
   ${green('secrets')} ${dim('[path]')}                Scan for API keys & credentials
   ${green('profile')} ${dim('<name>')}                Set active profile
-    ${dim('minimal | frontend | backend | fullstack | devops | all')}
+    ${dim('minimal | frontend | backend | fullstack | devops | all | smart')}
   ${green('search')} ${dim('<term> [term2 ...]')}          Search agents and skills by keyword
   ${green('update')}                        Pull latest & reinstall
 
@@ -311,7 +311,7 @@ async function dashboard() {
 
 function profile() {
   const name = process.argv[3];
-  const validProfiles = ['minimal', 'frontend', 'backend', 'fullstack', 'devops', 'all'];
+  const validProfiles = ['minimal', 'frontend', 'backend', 'fullstack', 'devops', 'all', 'smart'];
 
   if (!name || !validProfiles.includes(name)) {
     const config = readPluginConfig();
@@ -335,13 +335,18 @@ function profile() {
   const profileData = JSON.parse(readFileSync(profileFile, 'utf-8'));
   const config = readPluginConfig();
 
-  if (name === 'all') {
-    // Remove all disabled entries
+  if (name === 'all' || name === 'smart') {
+    // all ve smart: tum agent/skill'ler etkin
+    // smart = all + settings.json env ile vercel-plugin budget kisintili
     delete config.agents;
     delete config.skills;
-    config.activeProfile = 'all';
+    config.activeProfile = name;
     writePluginConfig(config);
-    console.log(`${green('[OK]')} Profile set to ${bold('all')} - everything enabled`);
+    const label = name === 'smart' ? 'smart (full capability, token optimized)' : 'all - everything enabled';
+    console.log(`${green('[OK]')} Profile set to ${bold(label)}`);
+    if (name === 'smart') {
+      console.log(`  ${dim('Ensure ~/.claude/settings.json has env section with VERCEL_PLUGIN_* budgets set.')}`);
+    }
     return;
   }
 

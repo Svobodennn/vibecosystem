@@ -1,0 +1,16 @@
+{
+  "name": "smart",
+  "description": "Full capability (139 agents, 300 skills) with token optimization enabled. Lean hooks + vercel-plugin budget caps via settings.json env vars. Target: -40% session tokens vs all.",
+  "agents": "all",
+  "skills": "all",
+  "rules": "all",
+  "optimizations": {
+    "userPromptSubmitHooks": 3,
+    "sessionBannerLazy": true,
+    "vercelPluginBudget": {
+      "injection": 6000,
+      "promptInjection": 3000,
+      "lexicalPrompt": "off"
+    }
+  }
+}
