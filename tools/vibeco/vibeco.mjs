@@ -978,6 +978,11 @@ function secrets() {
       for (const secret of SECRET_PATTERNS) {
         const match = secret.pattern.exec(line);
         if (match) {
+          // Localhost dev varsayilanlari secret degildir (or. Docker compose
+          // fallback'leri) - connection-string pattern'lerinde host'u kontrol et
+          if (secret.name.includes('Connection String') && /@(localhost|127\.0\.0\.1|\[?::1)/.test(line)) {
+            continue;
+          }
           // Mask the secret value
           const value = match[0];
           const masked = value.slice(0, 8) + '***' + value.slice(-4);

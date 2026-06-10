@@ -61,6 +61,26 @@ describe('vibeco secrets', () => {
     const result = runCli('secrets', join(tmpdir(), 'vibeco-does-not-exist-xyz'));
     expect(result.status).toBe(1);
   });
+
+  it('does not flag localhost dev connection strings, still flags remote ones', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'vibeco-conn-'));
+    try {
+      writeFileSync(join(dir, 'dev.ts'), "const url = 'postgresql://claude:claude_dev@localhost:5432/db';\n");
+      const clean = runCli('secrets', dir);
+      expect(clean.stdout).toContain('No secrets found');
+
+      // Fixture assembled across source LINES: the repo's own secret scan is
+      // per-line, so neither source line alone matches the connection pattern
+      const remoteUrl = 'postgresql://admin:supersecret9' +
+        '@db.example.com:5432/db';
+      writeFileSync(join(dir, 'prod.ts'), `const url = '${remoteUrl}';\n`);
+      const dirty = runCli('secrets', dir);
+      expect(dirty.stdout).toContain('PostgreSQL Connection String');
+      expect(dirty.stdout).toContain('prod.ts');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
 });
 
 describe('vibeco audit', () => {
