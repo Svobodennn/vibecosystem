@@ -16,7 +16,7 @@
 [![npm](https://img.shields.io/npm/v/vibecosystem.svg)](https://www.npmjs.com/package/vibecosystem)
 [![Marketplace](https://img.shields.io/badge/Claude%20Code-Marketplace-8A2BE2.svg)](https://github.com/vibeeval/vibecosystem)
 
-[Turkce](#turkce) | [English](#english) | [Espanol](docs/README_ES.md) | [Francais](docs/README_FR.md) | [Deutsch](docs/README_DE.md) | [Portugues](docs/README_PT.md) | [Italiano](docs/README_IT.md) | [Nederlands](docs/README_NL.md) | [中文](docs/README_ZH.md) | [日本語](docs/README_JA.md) | [한국어](docs/README_KO.md) | [العربية](docs/README_AR.md) | [हिन्दी](docs/README_HI.md) | [Русский](docs/README_RU.md)
+[Türkçe](#turkce) | [English](#english) | [Espanol](docs/README_ES.md) | [Francais](docs/README_FR.md) | [Deutsch](docs/README_DE.md) | [Portugues](docs/README_PT.md) | [Italiano](docs/README_IT.md) | [Nederlands](docs/README_NL.md) | [中文](docs/README_ZH.md) | [日本語](docs/README_JA.md) | [한국어](docs/README_KO.md) | [العربية](docs/README_AR.md) | [हिन्दी](docs/README_HI.md) | [Русский](docs/README_RU.md)
 
 ![vibecosystem](assets/gif1-numbers.gif)
 
@@ -411,15 +411,15 @@ Contributions welcome! Areas where help is needed:
 
 <a name="turkce"></a>
 
-## Turkce
+## Türkçe
 
 ### Nedir?
 
-vibecosystem, Claude Code'u tam bir AI yazilim ekibine donusturur. Tek bir asistan degil — planlayan, gelistiren, review yapan, test eden ve her hatasindan ogrenen **139 uzman agent'lik bir ekip**.
+vibecosystem, Claude Code'u tam donanımlı bir yapay zeka yazılım ekibine dönüştürür. Sadece tek bir asistan değil — planlayan, geliştiren, kod incelemesi (review) yapan, test eden ve yaptığı her hatadan öğrenen **139 uzman ajandan (agent) oluşan bir ekip**.
 
-Ozel model yok. Ozel API yok. Sadece Claude Code'un hook + agent + rules sistemi, sonuna kadar kullanilmis.
+Özel bir model yok. Özel bir API yok. Sadece Claude Code'un hook + agent + rules sistemi sonuna kadar kullanılmış durumda.
 
-### Hizli Baslangic
+### Hızlı Başlangıç
 
 ```bash
 git clone https://github.com/vibeeval/vibecosystem.git
@@ -427,21 +427,20 @@ cd vibecosystem
 ./install.sh
 ```
 
-### Nasil Calisir?
+### Nasıl Çalışır?
 
-1. **Hook'lar sensor** — gozlemler, filtreler, isaret eder
-2. **Agent'lar kas** — calisir, uretir, duzeltir
-3. **Aralarindaki kopru:** context injection
-4. **Direkt RPC yok** — bilerek boyle
-5. **Context uzerinden implicit koordinasyon** calisiyor
+1. **Hook'lar sensördür** — gözlemler, filtreler ve işaret eder.
+2. **Agent'lar kas gibidir** — çalışır, üretir ve düzeltir.
+3. **Aralarındaki köprü:** Context (bağlam) enjeksiyonudur.
+4. **Doğrudan RPC yoktur** — bu kasıtlı bir mimari tercihtir.
+5. **Context üzerinden örtük (implicit) koordinasyon** sağlanır.
 
 ### Felsefe
 
+```text
+Kullanıcının hiçbir şey hatırlamasına gerek yoktur.
+Her şey otomatiktir.
 ```
-Kullanicinin hicbir sey hatirlamasina gerek yok.
-Her sey otomatik.
-```
-
 ---
 
 ## License
