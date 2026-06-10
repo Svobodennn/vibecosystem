@@ -2,6 +2,15 @@
 
 Onemli tasarim ve mimari kararlarinda yapilandirilmis karar alma sureci.
 
+## Oncelik Hiyerarsisi (kurallar celisirse)
+
+Otonomi konusunda kurallar arasinda oncelik sirasi:
+
+1. **Kullanicinin acik talimati** (her zaman kazanir)
+2. **safety-and-quality.md** - git commit/push/merge ve silme islemleri HER ZAMAN onay gerektirir
+3. **Kullanici tam-otonomi kurali tanimladiysa** o kural diger "sor" maddelerini override eder (git ve geri donusu olmayan islemler haric)
+4. **Bu dosya** - varsayilan davranis: onemli kararlarda 1 soru sor
+
 ## Ne Zaman Kullan
 
 - Birden fazla gecerli yaklasim varsa

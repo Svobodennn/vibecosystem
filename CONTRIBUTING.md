@@ -29,7 +29,7 @@ what it should and shouldn't do, and output format.
 
 ### Add New Skills
 
-Create a directory in `skills/` with a `SKILL.md` (preferred) or `prompt.md`:
+Create a directory in `skills/` with a `SKILL.md`:
 
 ```yaml
 ---
@@ -134,7 +134,7 @@ vibeco search X   # find agents/skills by keyword
 ## Code Style
 
 - **Agents**: Markdown + YAML frontmatter
-- **Skills**: Markdown (SKILL.md or prompt.md) + YAML frontmatter
+- **Skills**: Markdown (SKILL.md) + YAML frontmatter
 - **Hooks**: TypeScript (ES2022, NodeNext modules), built with esbuild
 - **Rules**: Markdown
 - **CLI**: Node.js ESM (.mjs), zero dependencies

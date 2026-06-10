@@ -4,6 +4,7 @@
 // npx vibecosystem [command] [options]
 
 import { existsSync, mkdirSync, cpSync, readdirSync, statSync, readFileSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { join, dirname } from 'node:path';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -14,7 +15,7 @@ const REPO_DIR = join(__dirname, '..');
 const CLAUDE_DIR = join(homedir(), '.claude');
 const VERSION = '3.3.0';
 
-const VALID_PROFILES = new Set(['minimal', 'frontend', 'backend', 'fullstack', 'devops', 'all']);
+const VALID_PROFILES = new Set(['minimal', 'frontend', 'backend', 'fullstack', 'devops', 'all', 'smart']);
 
 const COLORS = {
   reset: '\x1b[0m',
@@ -66,8 +67,8 @@ function install(options = {}) {
   console.log('======================\n');
   console.log(`Installing into ${c('cyan', '~/.claude/')}:`);
   console.log(`  - 138 agents  -> ~/.claude/agents/`);
-  console.log(`  - 295 skills  -> ~/.claude/skills/`);
-  console.log(`  - 73 hooks    -> ~/.claude/hooks/`);
+  console.log(`  - 296 skills  -> ~/.claude/skills/`);
+  console.log(`  - 74 hooks    -> ~/.claude/hooks/`);
   console.log(`  - 20 rules    -> ~/.claude/rules/`);
   console.log(`\nMode: ${force ? c('yellow', 'OVERWRITE') : c('green', 'MERGE')} | Profile: ${c('blue', profile)}\n`);
 
@@ -111,6 +112,21 @@ function install(options = {}) {
     track(smartCopy(hooksJson, join(CLAUDE_DIR, 'hooks', 'hooks.json'), force));
   }
   console.log(c('green', ' done'));
+
+  // Register hooks in settings.json - copied hooks never fire without this
+  if (existsSync(hooksJson)) {
+    console.log('Registering hooks in settings.json...');
+    try {
+      execFileSync('node', [
+        join(REPO_DIR, 'tools', 'register-hooks.mjs'),
+        hooksJson,
+        join(CLAUDE_DIR, 'settings.json'),
+        CLAUDE_DIR,
+      ], { stdio: 'inherit' });
+    } catch {
+      console.log(c('yellow', '  WARNING: hook registration failed - merge hooks/hooks.json into ~/.claude/settings.json manually'));
+    }
+  }
 
   // Rules
   process.stdout.write('Installing rules...');
@@ -160,41 +176,47 @@ function install(options = {}) {
   }
   console.log(c('green', ' done'));
 
-  // Apply profile - writes disabled lists to plugin-config.json
+  // Apply profile - writes the same plugin-config.json schema as vibeco.mjs
+  // (activeProfile + agents/skills disable maps) so both CLIs stay in sync
   if (profile !== 'all') {
     process.stdout.write(`Applying profile: ${profile}...`);
     const profileFile = join(CLAUDE_DIR, 'profiles', `${profile}.json`);
     if (existsSync(profileFile)) {
       try {
-        const profileData = JSON.parse(readFileSync(profileFile, 'utf-8'));
-        const enabledAgents = new Set(profileData.agents || []);
-        const enabledSkills = new Set(profileData.skills || []);
+        const configPath = join(CLAUDE_DIR, 'plugin-config.json');
+        let config = {};
+        if (existsSync(configPath)) {
+          try { config = JSON.parse(readFileSync(configPath, 'utf-8')); } catch {}
+        }
 
-        // Compute disabled sets
-        const allAgents = readdirSync(join(CLAUDE_DIR, 'agents'))
-          .filter(f => f.endsWith('.md'))
-          .map(f => f.replace(/\.md$/, ''));
-        const allSkills = readdirSync(join(CLAUDE_DIR, 'skills'))
-          .filter(f => statSync(join(CLAUDE_DIR, 'skills', f)).isDirectory());
+        if (profile === 'smart') {
+          // smart = everything enabled, token-optimized injection budgets
+          const { agents: _agents, skills: _skills, ...rest } = config;
+          config = { ...rest, activeProfile: profile };
+        } else {
+          const profileData = JSON.parse(readFileSync(profileFile, 'utf-8'));
+          const enabledAgents = new Set(profileData.agents || []);
+          const enabledSkills = new Set(profileData.skills || []);
 
-        const disabledAgents = enabledAgents.size > 0
-          ? allAgents.filter(a => !enabledAgents.has(a))
-          : [];
-        const disabledSkills = enabledSkills.size > 0
-          ? allSkills.filter(s => !enabledSkills.has(s))
-          : [];
+          const allAgents = readdirSync(join(CLAUDE_DIR, 'agents'))
+            .filter(f => f.endsWith('.md'))
+            .map(f => f.replace(/\.md$/, ''));
+          const allSkills = readdirSync(join(CLAUDE_DIR, 'skills'))
+            .filter(f => statSync(join(CLAUDE_DIR, 'skills', f)).isDirectory());
 
-        const pluginConfig = {
-          profile,
-          disabledAgents,
-          disabledSkills,
-          appliedAt: new Date().toISOString(),
-        };
+          const disabledAgents = {};
+          for (const a of allAgents) {
+            if (enabledAgents.size > 0 && !enabledAgents.has(a)) disabledAgents[a] = { enabled: false };
+          }
+          const disabledSkills = {};
+          for (const s of allSkills) {
+            if (enabledSkills.size > 0 && !enabledSkills.has(s)) disabledSkills[s] = { enabled: false };
+          }
 
-        writeFileSync(
-          join(CLAUDE_DIR, 'plugin-config.json'),
-          JSON.stringify(pluginConfig, null, 2)
-        );
+          config = { ...config, activeProfile: profile, agents: disabledAgents, skills: disabledSkills };
+        }
+
+        writeFileSync(configPath, JSON.stringify(config, null, 2));
         console.log(c('green', ' done'));
       } catch (err) {
         console.log(c('yellow', ` failed: ${err.message}`));
@@ -231,7 +253,7 @@ ${c('bold', 'USAGE')}
 ${c('bold', 'COMMANDS')}
   init              Install vibecosystem into ~/.claude/
   init --force      Overwrite existing files
-  init --profile X  Install with specific profile (minimal/frontend/backend/fullstack/devops/all)
+  init --profile X  Install with specific profile (minimal/frontend/backend/fullstack/devops/smart/all)
   doctor            Run health check on installation
   version           Show version
   help              Show this help
@@ -247,7 +269,8 @@ ${c('bold', 'PROFILES')}
   backend    44 agents, ~74 skills   API/DB/security
   fullstack  59 agents, ~96 skills   Frontend + backend combined
   devops     33 agents, ~61 skills   CI/CD/K8s/cloud
-  all        138 agents, 295 skills  Everything (default)
+  smart      138 agents, 296 skills  Everything enabled, token-optimized injection budgets
+  all        138 agents, 296 skills  Everything (default)
 
 ${c('dim', 'https://github.com/vibeeval/vibecosystem')}
 `);

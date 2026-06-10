@@ -31,7 +31,9 @@ interface PluginConfig {
 function loadConfig(): PluginConfig {
   try {
     if (existsSync(CONFIG_FILE)) {
-      return JSON.parse(readFileSync(CONFIG_FILE, 'utf-8'));
+      // hooks/skills anahtarlari all/smart profilinde silinir - normalize et
+      const parsed = JSON.parse(readFileSync(CONFIG_FILE, 'utf-8'));
+      return { hooks: {}, skills: {}, ...parsed };
     }
   } catch {
     // corrupt

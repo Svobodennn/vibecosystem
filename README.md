@@ -6,8 +6,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Agents](https://img.shields.io/badge/agents-138-blue.svg)](#agents)
-[![Skills](https://img.shields.io/badge/skills-295-green.svg)](#skills)
-[![Hooks](https://img.shields.io/badge/hooks-73-orange.svg)](#hooks)
+[![Skills](https://img.shields.io/badge/skills-296-green.svg)](#skills)
+[![Hooks](https://img.shields.io/badge/hooks-74-orange.svg)](#hooks)
 [![Rules](https://img.shields.io/badge/rules-20-red.svg)](#rules)
 [![Validate](https://github.com/vibeeval/vibecosystem/actions/workflows/validate.yml/badge.svg)](https://github.com/vibeeval/vibecosystem/actions/workflows/validate.yml)
 [![Works with Cursor](https://img.shields.io/badge/works%20with-Cursor-00b4d8.svg)](#multi-cli)
@@ -22,7 +22,7 @@
 
 </div>
 
-vibecosystem turns Claude Code into a full AI software team — 139 specialized agents that plan, build, review, test, and learn from every mistake. No configuration needed — just install and code.
+vibecosystem turns Claude Code into a full AI software team — 138 specialized agents that plan, build, review, test, and learn from every mistake. No configuration needed — just install and code.
 
 > **v2.0**: 13 new agents (sast-scanner, mutation-tester, graph-analyst, mcp-manager, community-manager, benchmark, dependency-auditor, api-designer, incident-responder, data-modeler, test-architect, release-engineer, documentation-architect) + 23 new skills (SAST, compliance, product, marketing, MCP) + 4 new hooks + Agent Monitoring Dashboard + GitHub Actions CI/CD + MCP Auto-Discovery. See [UPGRADING.md](UPGRADING.md) for details.
 
@@ -49,8 +49,8 @@ Claude Code is powerful, but it's one assistant. You prompt, it responds, you re
 vibecosystem is a complete [Claude Code](https://docs.anthropic.com/en/docs/claude-code) ecosystem that creates a self-organizing AI team:
 
 1. <a name="agents"></a>**138 agents** — specialized roles from frontend-dev to security-analyst
-2. <a name="skills"></a>**295 skills** — reusable knowledge from TDD workflows to Kubernetes patterns
-3. <a name="hooks"></a>**73 hooks** — TypeScript sensors that observe, filter, and inject context
+2. <a name="skills"></a>**296 skills** — reusable knowledge from TDD workflows to Kubernetes patterns
+3. <a name="hooks"></a>**74 hooks** — TypeScript sensors that observe, filter, and inject context
 4. <a name="rules"></a>**20 rules** — behavioral guidelines that shape every agent's output
 5. **Self-learning** — every error becomes a rule, automatically
 
@@ -106,7 +106,10 @@ Save tokens by loading only what you need:
 | `backend` | ~44 | ~74 | API/DB/security |
 | `fullstack` | ~59 | ~96 | Frontend + Backend |
 | `devops` | ~33 | ~61 | CI/CD/K8s/cloud |
-| `all` | 139 | 295 | Everything (default) |
+| `smart` | 138 | 296 | Everything enabled + token-optimized plugin injection budgets |
+| `all` | 138 | 296 | Everything (default) |
+
+**Honest note on `smart`:** it does not disable any agent or skill — capability is identical to `all`. The difference is session-start token cost: `smart` expects reduced context-injection budgets (via the `env` section of `~/.claude/settings.json`), cutting startup overhead roughly 30-35% against vanilla `all`.
 
 ```bash
 vibeco profile frontend  # switch to frontend profile
@@ -236,7 +239,7 @@ Agent error → error-ledger.jsonl → skill-matrix.json
 
 ### Adaptive Hook Loading
 
-73 hooks exist but they don't all run at once. Intent determines which hooks fire.
+74 hooks exist but they don't all run at once. Intent determines which hooks fire.
 
 ![Hooks](assets/gif4-hooks.gif)
 
@@ -252,7 +255,7 @@ Agent error → error-ledger.jsonl → skill-matrix.json
 │                                                         │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
 │  │  Hooks   │  │  Agents  │  │  Skills  │              │
-│  │  (73)    │→ │  (139)   │← │  (295)   │              │
+│  │  (74)    │→ │  (138)   │← │  (296)   │              │
 │  └────┬─────┘  └────┬─────┘  └──────────┘              │
 │       │              │                                   │
 │       ▼              ▼                                   │
@@ -297,7 +300,7 @@ Agent error → error-ledger.jsonl → skill-matrix.json
 
 | Feature | vibecosystem | Single Claude Code | Cursor | aider |
 |---------|:----------:|:------------------:|:------:|:-----:|
-| Specialized agents | **139** | 0 | 0 | 0 |
+| Specialized agents | **138** | 0 | 0 | 0 |
 | Self-learning | **Yes** | No | No | No |
 | Agent swarm coordination | **Yes** | No | No | No |
 | Cross-project learning | **Yes** | No | No | No |
@@ -314,9 +317,9 @@ Agent error → error-ledger.jsonl → skill-matrix.json
 
 | Component | Count | Description |
 |-----------|-------|-------------|
-| `agents/` | 139 | Markdown agent definitions with specialized prompts |
-| `skills/` | 295 | Reusable knowledge — TDD, security, patterns, frameworks |
-| `hooks/src/` | 73 | TypeScript hooks — sensors, learners, validators |
+| `agents/` | 138 | Markdown agent definitions with specialized prompts |
+| `skills/` | 296 | Reusable knowledge — TDD, security, patterns, frameworks |
+| `hooks/src/` | 74 | TypeScript hooks — sensors, learners, validators |
 | `rules/` | 20 | Behavioral guidelines — coding style, safety, QA |
 
 ---
@@ -365,9 +368,9 @@ vibecosystem works with multiple AI coding tools:
 
 | CLI | Installer | Instructions File | What You Get |
 |-----|-----------|-------------------|--------------|
-| **Claude Code** | `./install.sh` | `CLAUDE.md` | Full support (agents + skills + hooks + rules) |
+| **Claude Code** | `./install.sh` | `rules/*.md` | Full support (agents + skills + hooks + rules) |
 | **Cursor IDE** | `./install-cursor.sh` | `AGENTS.md` + `.cursor/rules/` | 6 MDC rules + AGENTS.md + skills |
-| **Codex CLI** (OpenAI) | `./install-codex.sh` | `AGENTS.md` | Skills only (295 skills) |
+| **Codex CLI** (OpenAI) | `./install-codex.sh` | `AGENTS.md` | Skills only (296 skills) |
 | **OpenCode** | Manual | `AGENTS.md` | Skills only |
 
 ```bash
@@ -415,7 +418,7 @@ Contributions welcome! Areas where help is needed:
 
 ### Nedir?
 
-vibecosystem, Claude Code'u tam donanımlı bir yapay zeka yazılım ekibine dönüştürür. Sadece tek bir asistan değil — planlayan, geliştiren, kod incelemesi (review) yapan, test eden ve yaptığı her hatadan öğrenen **139 uzman ajandan (agent) oluşan bir ekip**.
+vibecosystem, Claude Code'u tam donanımlı bir yapay zeka yazılım ekibine dönüştürür. Sadece tek bir asistan değil — planlayan, geliştiren, kod incelemesi (review) yapan, test eden ve yaptığı her hatadan öğrenen **138 uzman ajandan (agent) oluşan bir ekip**.
 
 Özel bir model yok. Özel bir API yok. Sadece Claude Code'un hook + agent + rules sistemi sonuna kadar kullanılmış durumda.
 

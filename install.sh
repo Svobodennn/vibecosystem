@@ -33,8 +33,8 @@ echo "======================"
 echo ""
 echo "This will install into ~/.claude/:"
 echo "  - 138 agents  -> ~/.claude/agents/"
-echo "  - 295 skills  -> ~/.claude/skills/"
-echo "  - 73 hooks    -> ~/.claude/hooks/"
+echo "  - 296 skills  -> ~/.claude/skills/"
+echo "  - 74 hooks    -> ~/.claude/hooks/"
 echo "  - 20 rules    -> ~/.claude/rules/"
 echo ""
 if [ "$FORCE" = true ]; then
@@ -121,9 +121,19 @@ for f in "$REPO_DIR/hooks/src/shared/"*.ts; do
   name=$(basename "$f")
   smart_copy_file "$f" "$CLAUDE_DIR/hooks/src/shared/$name"
 done
-cp "$REPO_DIR/hooks/package.json" "$CLAUDE_DIR/hooks/package.json"
-cp "$REPO_DIR/hooks/tsconfig.json" "$CLAUDE_DIR/hooks/tsconfig.json"
+[ -f "$REPO_DIR/hooks/package.json" ] && cp "$REPO_DIR/hooks/package.json" "$CLAUDE_DIR/hooks/package.json"
+[ -f "$REPO_DIR/hooks/tsconfig.json" ] && cp "$REPO_DIR/hooks/tsconfig.json" "$CLAUDE_DIR/hooks/tsconfig.json"
 HOOK_COUNT=$(ls "$CLAUDE_DIR/hooks/dist/"*.mjs 2>/dev/null | wc -l | tr -d ' ')
+
+# Register hooks in ~/.claude/settings.json (copied hooks never fire without this)
+echo "Registering hooks in settings.json..."
+if command -v node >/dev/null 2>&1; then
+  node "$REPO_DIR/tools/register-hooks.mjs" "$REPO_DIR/hooks/hooks.json" "$CLAUDE_DIR/settings.json" "$CLAUDE_DIR" || \
+    echo "  WARNING: hook registration failed - merge hooks/hooks.json into settings.json manually"
+else
+  echo "  WARNING: node not found - hooks copied but NOT registered."
+  echo "  Install Node.js and re-run, or merge hooks/hooks.json into ~/.claude/settings.json manually."
+fi
 
 # Rules
 echo "Installing rules..."

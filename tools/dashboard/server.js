@@ -193,6 +193,15 @@ function getStats() {
 const wsHttpServer = http.createServer((req, res) => {
   // Hook'lardan gelen event'leri al
   if (req.method === 'POST' && req.url === '/event') {
+    // DNS rebinding korumasi: sadece localhost Host header'i kabul et,
+    // tarayici kaynakli (Origin'li) istekleri reddet - hook'lar Origin gondermez
+    const host = (req.headers.host || '').replace(/:\d+$/, '');
+    const allowedHosts = new Set(['localhost', '127.0.0.1', '[::1]']);
+    if (!allowedHosts.has(host) || req.headers.origin) {
+      res.writeHead(403, { 'Content-Type': 'application/json' });
+      res.end('{"error":"forbidden"}');
+      return;
+    }
     let body = '';
     let bodySize = 0;
     const MAX_BODY = 64 * 1024; // 64KB limit

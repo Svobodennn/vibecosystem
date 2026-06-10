@@ -4,6 +4,8 @@ description: "Production incident yonetimi, runbook olusturma, postmortem fasili
 tools: [Read, Bash, Grep, Glob]
 ---
 
+> **Not / Overlap:** Bu agent `incident-responder` ile buyuk olcude ortusur. Yeni isler icin `incident-responder` tercih edilir; bu dosya geriye donuk uyumluluk icin korunuyor (v4.0 da birlestirilecek).
+
 # INCIDENT COMMANDER — Production Incident Response
 
 **Domain:** Incident Management | Runbook Generation | SLA/SLO Tracking | Escalation

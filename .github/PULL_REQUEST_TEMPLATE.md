@@ -16,7 +16,7 @@
 ## Checklist
 
 - [ ] Agent has YAML frontmatter (name, description, tools)
-- [ ] Skill has `prompt.md` with frontmatter
+- [ ] Skill has `SKILL.md` with frontmatter
 - [ ] Hook compiles (`npm run build` in `hooks/`)
 - [ ] No secrets/credentials committed
 - [ ] README updated (if applicable)

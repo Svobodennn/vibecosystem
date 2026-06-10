@@ -21,7 +21,7 @@ jobs:
           ISSUE_BODY: ${{ github.event.issue.body }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          direct_prompt: |
+          prompt: |
             Fix the issue described in environment variables ISSUE_TITLE and ISSUE_BODY.
             Follow TDD workflow: write test first, then implement fix.
             Create a PR with the fix.

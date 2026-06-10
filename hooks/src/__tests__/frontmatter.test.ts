@@ -1,31 +1,11 @@
 /**
  * Tests for frontmatter parsing logic.
  *
- * The parseFrontmatter function is extracted from vibeco.mjs for testability.
- * We define it inline here since the original is in a bundled .mjs file.
+ * Imports the REAL parseFrontmatter implementation shared with the vibeco
+ * CLI (tools/vibeco/lib/frontmatter.mjs) - not a copy.
  */
 import { describe, it, expect } from 'vitest';
-
-/**
- * Parses YAML-style frontmatter from a markdown string.
- * Expects content delimited by --- markers at the start.
- */
-function parseFrontmatter(content: string): Record<string, string> {
-  const match = content.match(/^---\n([\s\S]*?)\n---/);
-  if (!match) return {};
-  const fm: Record<string, string> = {};
-  for (const line of match[1].split('\n')) {
-    const idx = line.indexOf(':');
-    if (idx > 0) {
-      const key = line.slice(0, idx).trim();
-      let val = line.slice(idx + 1).trim();
-      if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1, -1);
-      if (val.startsWith("'") && val.endsWith("'")) val = val.slice(1, -1);
-      fm[key] = val;
-    }
-  }
-  return fm;
-}
+import { parseFrontmatter } from '../../../tools/vibeco/lib/frontmatter.mjs';
 
 describe('parseFrontmatter', () => {
   it('parses valid frontmatter with name and description', () => {

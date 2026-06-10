@@ -5,7 +5,7 @@
  * Returns errors as system reminder so Claude can fix before moving on.
  */
 
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -86,8 +86,11 @@ async function main() {
 
     // Run the check script
     try {
-      const result = execSync(
-        `python3 "${scriptPath}" --file "${filePath}" --json`,
+      // execFileSync with array args: filePath is tool-controlled input,
+      // it must never be interpolated into a shell string
+      const result = execFileSync(
+        'python3',
+        [scriptPath, '--file', filePath, '--json'],
         {
           timeout: 35000,
           encoding: 'utf8',

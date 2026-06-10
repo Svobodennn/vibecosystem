@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- **vibeco audit**: security + quality scanner for the local installation (SAST-style checks)
+- **vibeco secrets**: API key and credential scanner
+- **smart profile**: full capability (identical to `all`, nothing disabled) with token-optimized plugin injection budgets via `settings.json` env vars; supported by both `vibeco profile smart` and `npx vibecosystem init --profile smart`
+- **Hook registration on install**: new `hooks/hooks.json` manifest (52 hook commands across 7 events) + `tools/register-hooks.mjs`; `install.sh` and `npx vibecosystem init` now merge hook registrations into `~/.claude/settings.json` (previously hooks were copied but never registered, so they never fired on fresh installs)
+- **session-banner hook source**: ported orphan `dist/session-banner.mjs` to `hooks/src/session-banner.ts` so it rebuilds from source (hook count 73 -> 74)
+
+### Fixed - Security
+- **typescript-preflight shell injection**: tool-controlled `filePath` was interpolated into an `execSync` shell string; now uses `execFileSync` with array args
+- **vibeco update path interpolation**: repo path no longer interpolated into a `cd` shell string (uses `cwd` option)
+
+### Fixed
+- **27 skills unreadable on Linux**: lowercase `skill.md` renamed to `SKILL.md` (case-sensitive filesystems never loaded them)
+- **bin/cli.mjs profile schema**: `npx vibecosystem init --profile X` now writes the same `plugin-config.json` schema as `vibeco profile X` (previously the two CLIs wrote incompatible formats and `smart` was rejected)
+- **Count drift across docs**: canonical counts synced to 138 agents / 296 skills / 74 hooks / 20 rules in README, 13 translated READMEs, ARCHITECTURE.md, AGENTS.md, plugin.json, marketplace.json, install scripts, profiles and rules
+- **Stale docs**: ARCHITECTURE.md numbers, SECURITY.md supported versions (1.x -> 3.x), dead `prompt.md` references in UPGRADING/CONTRIBUTING/PR template, fabricated codebase-memory MCP tool names in docs/mcp-integrations.md, ghost agent references in rules
+
 ### Planned
 - Community contribution workflow
 - agentskills.io format migration (v4.0)

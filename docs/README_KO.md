@@ -4,21 +4,21 @@
 
 **Claude Code 위에 구축된 AI 소프트웨어 팀.**
 
-139개의 Agent. 285개의 Skill. 66개의 Hook. 수동 작업 제로.
+138개의 Agent. 296개의 Skill. 74개의 Hook. 수동 작업 제로.
 
 ## 한눈에 보기
 
 | 지표 | 수량 |
 |--------|-------|
-| Agents | **139** |
-| Skills | **285** |
-| Hooks | **66** |
+| Agents | **138** |
+| Skills | **296** |
+| Hooks | **74** |
 | Rules | **20** |
 | 수동 작업 | **0** |
 
 ## 이게 뭔가요?
 
-vibecosystem은 Claude Code를 완전한 AI 소프트웨어 팀으로 바꿉니다. 단순한 어시스턴트가 아닌, 설계하고, 구축하고, 리뷰하고, 테스트하고, 모든 실수로부터 학습하는 139개의 전문 agent로 구성된 **팀**입니다.
+vibecosystem은 Claude Code를 완전한 AI 소프트웨어 팀으로 바꿉니다. 단순한 어시스턴트가 아닌, 설계하고, 구축하고, 리뷰하고, 테스트하고, 모든 실수로부터 학습하는 138개의 전문 agent로 구성된 **팀**입니다.
 
 커스텀 모델 없음. 커스텀 API 없음. Claude Code의 hook + agent + rules 시스템만으로, 한계까지 끌어올렸습니다.
 
@@ -59,7 +59,7 @@ Phase 5 (Final):        self-learner + technical-writer
 
 ### 3. 적응형 Hook 로딩
 
-66개의 hook이 있지만 동시에 전부 실행되지는 않습니다. 사용자의 의도에 따라 필요한 hook만 실행됩니다.
+74개의 hook이 있지만 동시에 전부 실행되지는 않습니다. 사용자의 의도에 따라 필요한 hook만 실행됩니다.
 
 <img src="../assets/gif4-hooks.gif" alt="Adaptive Hooks" width="700">
 
@@ -110,7 +110,7 @@ Bug reproduction → replay          (backup: sleuth)
 │                                                         │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
 │  │  Hooks   │  │  Agents  │  │  Skills  │              │
-│  │  (66)    │→ │  (139)   │← │  (285)   │              │
+│  │  (74)    │→ │  (138)   │← │  (296)   │              │
 │  └────┬─────┘  └────┬─────┘  └──────────┘              │
 │       │              │                                   │
 │       ▼              ▼                                   │

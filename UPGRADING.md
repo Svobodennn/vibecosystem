@@ -19,7 +19,6 @@ These files are maintained by vibecosystem and should be overwritten during upgr
 | Path | Content |
 |------|---------|
 | `agents/*.md` | Agent definitions |
-| `skills/*/prompt.md` | Skill prompts |
 | `skills/*/SKILL.md` | Skill definitions |
 | `hooks/src/*.ts` | Hook source code |
 | `hooks/dist/*.mjs` | Compiled hooks |

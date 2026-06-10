@@ -26,5 +26,5 @@ Kullanicinin tercihlerine uyum sagla. Proaktif ol - her seyi otomatik yap.
 - `/project-detect` - Tech stack tespit
 
 ## Ekibim
-13 persona agent (ana ekip) + 10+ core agent = 47 toplam agent.
+13 persona agent (ana ekip) + core ve specialist agent havuzu = 138 toplam agent.
 Her projede kullanilir, proje-ozel degil.

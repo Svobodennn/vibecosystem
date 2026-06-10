@@ -4,6 +4,8 @@ description: Dependency tracking, analysis, and security scanning specialist
 tools: [Read, Grep, Glob, Bash]
 ---
 
+> **Not / Overlap:** Bu agent `dependency-auditor` ile buyuk olcude ortusur. Yeni isler icin `dependency-auditor` tercih edilir; bu dosya geriye donuk uyumluluk icin korunuyor (v4.0 da birlestirilecek).
+
 # Agent: Dependency Tracker
 
 Dependency analiz uzmanı. Dependency graph, circular dependency, CVE scanning, license compliance.

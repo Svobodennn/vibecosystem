@@ -5,9 +5,9 @@
  ║                                               ║
  ║   v i b e c o s y s t e m                     ║
  ║   ─────────────────────────                   ║
- ║   AI Software Team · v3.1                     ║
+ ║   AI Software Team · v3.3                     ║
  ║                                               ║
- ║   138 agents  ·  295 skills  ·  73 hooks      ║
+ ║   138 agents  ·  296 skills  ·  74 hooks      ║
  ║                                               ║
  ║   by @vibeeval                                ║
  ║                                               ║

@@ -6,7 +6,7 @@
 
 **KI-Softwareteam auf Basis von Claude Code.**
 
-139 Agents. 295 skills. 73 hooks. Null manuelle Arbeit.
+138 Agents. 296 skills. 74 hooks. Null manuelle Arbeit.
 
 <img src="../assets/gif1-numbers.gif" alt="Ecosystem Numbers" width="700">
 
@@ -18,9 +18,9 @@
 
 | Kennzahl | Anzahl |
 |----------|--------|
-| Agents | **139** |
-| Skills | **284** |
-| Hooks | **63** |
+| Agents | **138** |
+| Skills | **296** |
+| Hooks | **74** |
 | Rules | **20** |
 | Manuelle Arbeit | **0** |
 
@@ -28,7 +28,7 @@
 
 ## Was ist das?
 
-vibecosystem verwandelt Claude Code in ein vollstaendiges KI-Softwareteam. Kein einzelner Assistent -- ein **Team** aus 139 spezialisierten Agents, die planen, entwickeln, reviewen, testen und aus jedem Fehler lernen.
+vibecosystem verwandelt Claude Code in ein vollstaendiges KI-Softwareteam. Kein einzelner Assistent -- ein **Team** aus 138 spezialisierten Agents, die planen, entwickeln, reviewen, testen und aus jedem Fehler lernen.
 
 Kein eigenes Modell. Keine eigene API. Nur das Hook- + Agent- + Rules-System von Claude Code, bis ans Limit ausgereizt.
 
@@ -71,7 +71,7 @@ Phase 5 (Final):        self-learner + technical-writer
 
 ### 3. Adaptives Hook-Loading
 
-73 hooks existieren, aber sie laufen nicht alle gleichzeitig. Die Absicht bestimmt, welche Hooks ausgeloest werden.
+74 hooks existieren, aber sie laufen nicht alle gleichzeitig. Die Absicht bestimmt, welche Hooks ausgeloest werden.
 
 <img src="../assets/gif4-hooks.gif" alt="Adaptive Hooks" width="700">
 
@@ -124,7 +124,7 @@ Bug reproduction → replay          (backup: sleuth)
 │                                                         │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
 │  │  Hooks   │  │  Agents  │  │  Skills  │              │
-│  │  (66)    │→ │  (139)   │← │  (285)   │              │
+│  │  (74)    │→ │  (138)   │← │  (296)   │              │
 │  └────┬─────┘  └────┬─────┘  └──────────┘              │
 │       │              │                                   │
 │       ▼              ▼                                   │

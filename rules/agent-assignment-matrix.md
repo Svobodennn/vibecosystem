@@ -44,7 +44,7 @@ Hangi is hangi agent'a gider. Maestro ve /swarm bu tabloyu referans alir.
 | Canary deploy | canary-deploy-expert | devops | verifier |
 | Incident response | sentinel | devops | verifier |
 | Chaos engineering | chaos-engineer | devops | verifier |
-| A11y testing | accessibility-auditor | frontend-dev | qa-engineer |
+| A11y testing | a11y-expert | frontend-dev | qa-engineer |
 | i18n/l10n | i18n-expert + babel | frontend-dev | code-reviewer |
 | SEO optimization | seo-specialist | frontend-dev | code-reviewer |
 | Web performance | web-perf-expert | profiler | verifier |
@@ -196,7 +196,7 @@ Phase 2 (Gelistirme):  backend-dev + frontend-dev + designer + devops
                         seo-specialist, web-perf-expert, micro-frontend-expert,
                         nexus, spectre, babel, neuron, vault, nitro, harvest
 Phase 3 (Review):      code-reviewer + security-reviewer + qa-engineer + data-analyst
-                        (+ compliance-expert, accessibility-auditor gerekirse)
+                        (+ compliance-expert, a11y-expert gerekirse)
                         (+ browser-agent deploy dogrulama gerekirse)
 Phase 4 (Duzeltme):    spark/kraken + tdd-guide + verifier
 Phase 5 (Final):       self-learner + technical-writer + growth

@@ -19,7 +19,7 @@ Main context'i temiz tut, agent'lara delege et.
 | Codebase kesfetme | scout | Explore (Haiku, yanlis sonuc verir) |
 | Dis arastirma | oracle | Explore |
 | Pattern bulma | scout | Explore |
-| Dokumantasyon | claude-code-guide | Explore |
+| Dokumantasyon | doc-updater | technical-writer |
 
 Opus'taysan ve yuksek dogruluk lazimsa, agent yerine direkt Grep/Glob/Read kullan.
 

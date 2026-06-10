@@ -60,7 +60,7 @@ pip install uv
 ### 3. codebase-memory-mcp
 
 **Purpose:** Persistent code knowledge graph - 64 language support, sub-millisecond queries, 120x token savings
-**Binary:** Go binary (platform-specific)
+**Binary:** C binary (platform-specific)
 **Used by:** ALL agents (automatic via MCP)
 
 ```json
@@ -90,20 +90,20 @@ chmod +x /usr/local/bin/codebase-memory-mcp
 ```
 
 **Tools provided (14):**
-- `search_graph` - Semantic code search across entire codebase
+- `index_repository` - Index a repository into the knowledge graph
+- `index_status` - Check indexing progress/status
+- `search_code` - Semantic code search across the indexed codebase
+- `search_graph` - Search entities in the code knowledge graph
 - `query_graph` - Query relationships between code entities
 - `trace_call_path` - Trace function call chains
-- `detect_changes` - Detect code changes since last index
 - `get_architecture` - Get high-level architecture overview
-- `manage_adr` - Architecture Decision Records management
 - `get_code_snippet` - Get code with context
-- `find_references` - Find all references to a symbol
-- `get_dependencies` - Get dependency graph for a file/function
-- `get_metrics` - Code complexity and quality metrics
-- `search_by_pattern` - Pattern-based code search
-- `get_file_summary` - Summarize a file's purpose and contents
-- `get_project_overview` - Full project structure overview
-- `reindex` - Re-index after code changes
+- `get_graph_schema` - Inspect the knowledge graph schema
+- `manage_adr` - Architecture Decision Records management
+- `detect_changes` - Detect code changes since last index
+- `ingest_traces` - Ingest runtime traces into the graph
+- `list_projects` - List indexed projects
+- `delete_project` - Remove a project from the index
 
 **Comparison with tldr CLI:**
 

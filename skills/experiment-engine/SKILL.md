@@ -3,6 +3,8 @@ name: experiment-engine
 description: Otonom deney dongusu. Kod degisikligi yap, olc, karsilastir, kabul et veya geri al. Metrik bazli karar verme ile performans, boyut veya kalite optimizasyonu. Tek basina veya agent ile kullan.
 ---
 
+> **Not / Overlap:** Bu skill `experiment-loop` ile ayni otonom deney dongusu kavramini kapsar (bu dosya TR, experiment-loop EN). Yeni isler icin `experiment-loop` tercih edilir; v4.0 da birlestirilecek.
+
 # Experiment Engine
 
 Bir hedef belirle, sistematik olarak deneyler yap, sadece iyilestirenleri tut.

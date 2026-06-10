@@ -1,6 +1,6 @@
 {
   "name": "smart",
-  "description": "Full capability (139 agents, 300 skills) with token optimization enabled. Lean hooks + vercel-plugin budget caps via settings.json env vars. Target: -40% session tokens vs all.",
+  "description": "Full capability (138 agents, 296 skills - identical to all, nothing disabled) with token optimization. Reduced plugin injection budgets via settings.json env vars. Target: 30-35% lower session-start tokens vs all.",
   "agents": "all",
   "skills": "all",
   "rules": "all",

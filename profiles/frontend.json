@@ -3,7 +3,6 @@
   "description": "React/Next.js/CSS/accessibility focused development.",
   "agents": [
     "a11y-expert",
-    "a11y-expert",
     "architect",
     "browser-agent",
     "build-error-resolver",

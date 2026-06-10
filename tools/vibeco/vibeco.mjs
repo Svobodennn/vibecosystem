@@ -8,6 +8,7 @@ import { homedir } from 'node:os';
 import { execSync, spawn } from 'node:child_process';
 import { createConnection } from 'node:net';
 import { get } from 'node:http';
+import { parseFrontmatter } from './lib/frontmatter.mjs';
 
 const VERSION = '3.3.0';
 const CLAUDE_DIR = join(homedir(), '.claude');
@@ -47,22 +48,8 @@ function countFiles(dir, pattern) {
   } catch { return 0; }
 }
 
-function parseFrontmatter(content) {
-  const match = content.match(/^---\n([\s\S]*?)\n---/);
-  if (!match) return {};
-  const fm = {};
-  for (const line of match[1].split('\n')) {
-    const idx = line.indexOf(':');
-    if (idx > 0) {
-      const key = line.slice(0, idx).trim();
-      let val = line.slice(idx + 1).trim();
-      if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1, -1);
-      if (val.startsWith("'") && val.endsWith("'")) val = val.slice(1, -1);
-      fm[key] = val;
-    }
-  }
-  return fm;
-}
+// parseFrontmatter lives in lib/frontmatter.mjs so hook tests can
+// exercise the real implementation instead of a copy
 
 function readPluginConfig() {
   try {
@@ -102,7 +89,9 @@ function getRepoDir() {
   const scriptPath = new URL(import.meta.url).pathname;
   const toolsDir = join(scriptPath, '..', '..', '..');
   try {
-    const resolved = execSync(`cd "${toolsDir}" && git rev-parse --show-toplevel 2>/dev/null`, { encoding: 'utf-8' }).trim();
+    // cwd option instead of `cd "${path}"`: the install path must never be
+    // interpolated into a shell string
+    const resolved = execSync('git rev-parse --show-toplevel 2>/dev/null', { cwd: toolsDir, encoding: 'utf-8' }).trim();
     if (resolved && existsSync(join(resolved, 'install.sh'))) return resolved;
   } catch {}
   // fallback: ~/.vibecosystem

@@ -6,7 +6,7 @@
 
 **Team software IA costruito su Claude Code.**
 
-138 agents. 295 skills. 73 hooks. Zero lavoro manuale.
+138 agents. 296 skills. 74 hooks. Zero lavoro manuale.
 
 <img src="../assets/gif1-numbers.gif" alt="Ecosystem Numbers" width="700">
 
@@ -18,9 +18,9 @@
 
 | Metrica | Quantita |
 |---------|----------|
-| Agents | **139** |
-| Skills | **284** |
-| Hooks | **63** |
+| Agents | **138** |
+| Skills | **296** |
+| Hooks | **74** |
 | Rules | **20** |
 | Lavoro manuale | **0** |
 
@@ -28,7 +28,7 @@
 
 ## Cos'e?
 
-vibecosystem trasforma Claude Code in un team software IA completo. Non un semplice assistente -- un **team** di 139 agenti specializzati che pianificano, costruiscono, revisionano, testano e imparano da ogni errore.
+vibecosystem trasforma Claude Code in un team software IA completo. Non un semplice assistente -- un **team** di 138 agenti specializzati che pianificano, costruiscono, revisionano, testano e imparano da ogni errore.
 
 Nessun modello personalizzato. Nessuna API personalizzata. Solo il sistema di hooks + agents + rules di Claude Code, spinto al massimo.
 
@@ -71,7 +71,7 @@ Phase 5 (Final):        self-learner + technical-writer
 
 ### 3. Caricamento adattivo degli hook
 
-Esistono 73 hook, ma non vengono eseguiti tutti contemporaneamente. L'intento determina quali hook si attivano.
+Esistono 74 hook, ma non vengono eseguiti tutti contemporaneamente. L'intento determina quali hook si attivano.
 
 <img src="../assets/gif4-hooks.gif" alt="Adaptive Hooks" width="700">
 
@@ -124,7 +124,7 @@ Bug reproduction → replay          (backup: sleuth)
 │                                                         │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
 │  │  Hooks   │  │  Agents  │  │  Skills  │              │
-│  │  (66)    │→ │  (139)   │← │  (285)   │              │
+│  │  (74)    │→ │  (138)   │← │  (296)   │              │
 │  └────┬─────┘  └────┬─────┘  └──────────┘              │
 │       │              │                                   │
 │       ▼              ▼                                   │

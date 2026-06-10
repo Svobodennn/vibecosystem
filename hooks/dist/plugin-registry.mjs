@@ -14,7 +14,8 @@ var CONFIG_FILE = join(CLAUDE_HOME, "plugin-config.json");
 function loadConfig() {
   try {
     if (existsSync(CONFIG_FILE)) {
-      return JSON.parse(readFileSync(CONFIG_FILE, "utf-8"));
+      const parsed = JSON.parse(readFileSync(CONFIG_FILE, "utf-8"));
+      return { hooks: {}, skills: {}, ...parsed };
     }
   } catch {
   }

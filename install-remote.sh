@@ -60,9 +60,10 @@ echo "  2) frontend   - React/Next.js focused (~30 agents)"
 echo "  3) backend    - API/DB/infra focused (~40 agents)"
 echo "  4) fullstack  - Frontend + Backend (~60 agents)"
 echo "  5) devops     - CI/CD/Cloud focused (~33 agents)"
-echo "  6) all        - Everything (138 agents, 295 skills)"
+echo "  6) smart      - Everything enabled, token-optimized (138 agents, 296 skills)"
+echo "  7) all        - Everything (138 agents, 296 skills)"
 echo ""
-read -p "Select [1-6, default 6]: " CHOICE
+read -p "Select [1-7, default 7]: " CHOICE
 
 case "$CHOICE" in
   1) PROFILE="minimal" ;;
@@ -70,6 +71,7 @@ case "$CHOICE" in
   3) PROFILE="backend" ;;
   4) PROFILE="fullstack" ;;
   5) PROFILE="devops" ;;
+  6) PROFILE="smart" ;;
   *) PROFILE="all" ;;
 esac
 

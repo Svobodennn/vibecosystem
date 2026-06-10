@@ -43,7 +43,7 @@ The flow works like this:
 
 ### Location and Build
 
-- Source: `hooks/src/*.ts` (61 hook files)
+- Source: `hooks/src/*.ts` (74 hook files)
 - Shared utilities: `hooks/src/shared/` (27 modules)
 - Built with esbuild: `npm run build` produces `hooks/dist/*.mjs`
 - Tests: `hooks/src/__tests__/` using vitest
@@ -94,7 +94,7 @@ writeFileSync('~/.claude/cache/current-intent.json', JSON.stringify(intent));
 
 ### Format
 
-139 Markdown files in `agents/`, each with YAML frontmatter:
+138 Markdown files in `agents/`, each with YAML frontmatter:
 
 ```yaml
 ---
@@ -153,7 +153,7 @@ Every task follows this cycle:
 
 ### Format
 
-284 SKILL.md files + 50 prompt.md files across `skills/` subdirectories:
+296 skill directories under `skills/`, each with a SKILL.md (342 SKILL.md files total, some skills nest sub-skills):
 
 ```yaml
 ---
@@ -230,7 +230,7 @@ Profiles define which agents, skills, and hooks are active. This controls token 
 
 ### Location
 
-6 JSON files in `profiles/`:
+7 JSON files in `profiles/`:
 
 ```json
 // profiles/minimal.json
@@ -251,6 +251,7 @@ Profiles define which agents, skills, and hooks are active. This controls token 
 | `backend` | API/DB/Auth focused | Low-Medium |
 | `fullstack` | Frontend + Backend combined | Medium |
 | `devops` | CI/CD, Docker, K8s, Terraform | Medium |
+| `smart` | Everything enabled, reduced plugin injection budgets | Medium-High |
 | `all` | Everything enabled (default) | Highest |
 
 ### How It Works
@@ -264,13 +265,13 @@ Profiles define which agents, skills, and hooks are active. This controls token 
 
 ```
 vibecosystem/
-|-- agents/                     # 139 agent definitions (.md with YAML frontmatter)
+|-- agents/                     # 138 agent definitions (.md with YAML frontmatter)
 |   |-- scout.md
 |   |-- kraken.md
 |   |-- sleuth.md
 |   +-- ...
 |
-|-- skills/                     # 283+ skill directories
+|-- skills/                     # 296 skill directories
 |   |-- fix/SKILL.md            # Workflow orchestrator skills
 |   |-- commit/SKILL.md
 |   |-- coding-standards/SKILL.md
@@ -281,17 +282,17 @@ vibecosystem/
 |   +-- ...
 |
 |-- hooks/
-|   |-- src/                    # 61 TypeScript hook source files
+|   |-- src/                    # 74 TypeScript hook source files
 |   |   |-- intent-classifier.ts
 |   |   |-- passive-learner.ts
 |   |   |-- instinct-consolidator.ts
-|   |   |-- shared/             # 27 shared utility modules
+|   |   |-- shared/             # 15 shared utility modules
 |   |   |   |-- plugin-check.ts
 |   |   |   |-- task-detector.ts
 |   |   |   |-- project-identity.ts
 |   |   |   +-- ...
 |   |   +-- __tests__/          # vitest test files
-|   |-- dist/                   # 61 built .mjs bundles (esbuild output)
+|   |-- dist/                   # 74 built .mjs bundles (esbuild output)
 |   |-- package.json            # Build: esbuild, Test: vitest
 |   +-- tsconfig.json
 |
@@ -302,7 +303,7 @@ vibecosystem/
 |   |-- canavar.md
 |   +-- ...
 |
-|-- profiles/                   # 6 JSON profile definitions
+|-- profiles/                   # 7 JSON profile definitions
 |   |-- minimal.json
 |   |-- frontend.json
 |   |-- backend.json
@@ -342,9 +343,9 @@ vibeco update                        # Pull latest & reinstall
 $ vibeco stats
 
 vibecosystem stats
-  Agents     139
-  Skills     283
-  Hooks      61
+  Agents     138
+  Skills     296
+  Hooks      74
   Rules      20
   Profile    all
 ```

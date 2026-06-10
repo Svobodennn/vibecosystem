@@ -6,7 +6,7 @@
 
 **AI-softwareteam gebouwd op Claude Code.**
 
-138 agents. 295 skills. 73 hooks. Nul handmatig werk.
+138 agents. 296 skills. 74 hooks. Nul handmatig werk.
 
 <img src="../assets/gif1-numbers.gif" alt="Ecosystem Numbers" width="700">
 
@@ -18,9 +18,9 @@
 
 | Metriek | Aantal |
 |---------|--------|
-| Agents | **139** |
-| Skills | **284** |
-| Hooks | **63** |
+| Agents | **138** |
+| Skills | **296** |
+| Hooks | **74** |
 | Rules | **20** |
 | Handmatig werk | **0** |
 
@@ -28,7 +28,7 @@
 
 ## Wat is dit?
 
-vibecosystem maakt van Claude Code een compleet AI-softwareteam. Geen enkele assistent -- een **team** van 139 gespecialiseerde agents die plannen, bouwen, reviewen, testen en leren van elke fout.
+vibecosystem maakt van Claude Code een compleet AI-softwareteam. Geen enkele assistent -- een **team** van 138 gespecialiseerde agents die plannen, bouwen, reviewen, testen en leren van elke fout.
 
 Geen eigen model. Geen eigen API. Alleen het hook- + agent- + rules-systeem van Claude Code, tot het uiterste benut.
 
@@ -71,7 +71,7 @@ Phase 5 (Final):        self-learner + technical-writer
 
 ### 3. Adaptief laden van hooks
 
-Er bestaan 73 hooks, maar ze draaien niet allemaal tegelijk. De intentie bepaalt welke hooks worden geactiveerd.
+Er bestaan 74 hooks, maar ze draaien niet allemaal tegelijk. De intentie bepaalt welke hooks worden geactiveerd.
 
 <img src="../assets/gif4-hooks.gif" alt="Adaptive Hooks" width="700">
 
@@ -124,7 +124,7 @@ Bug reproduction → replay          (backup: sleuth)
 │                                                         │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
 │  │  Hooks   │  │  Agents  │  │  Skills  │              │
-│  │  (66)    │→ │  (139)   │← │  (285)   │              │
+│  │  (74)    │→ │  (138)   │← │  (296)   │              │
 │  └────┬─────┘  └────┬─────┘  └──────────┘              │
 │       │              │                                   │
 │       ▼              ▼                                   │

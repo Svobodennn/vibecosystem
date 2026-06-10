@@ -40,6 +40,43 @@ jobs:
           echo "Hooks: $hooks"
           echo "Rules: $rules"
 
+      - name: Check documented counts match filesystem
+        run: |
+          set -e
+          agents=$(ls agents/*.md | wc -l | tr -d ' ')
+          skills=$(find skills -maxdepth 1 -type d | tail -n +2 | wc -l | tr -d ' ')
+          hooks=$(ls hooks/src/*.ts | wc -l | tr -d ' ')
+          rules=$(ls rules/*.md | wc -l | tr -d ' ')
+          fail=0
+          check() {
+            if ! grep -qF "$2" "$1"; then
+              echo "DRIFT: $1 does not contain '$2'"
+              fail=1
+            fi
+          }
+          check README.md "agents-${agents}-blue"
+          check README.md "skills-${skills}-green"
+          check README.md "hooks-${hooks}-orange"
+          check README.md "rules-${rules}-red"
+          check plugin.json "${agents} agents, ${skills} skills, ${hooks} hooks"
+          check package.json "${agents} agents, ${skills} skills, ${hooks} hooks"
+          check marketplace.json "\"agents\": ${agents}"
+          check marketplace.json "\"skills\": ${skills}"
+          check marketplace.json "\"hooks\": ${hooks}"
+          check bin/cli.mjs "${agents} agents"
+          check bin/cli.mjs "${skills} skills"
+          check bin/cli.mjs "${hooks} hooks"
+          check install.sh "${skills} skills"
+          check install.sh "${hooks} hooks"
+          check install-remote.sh "${agents} agents, ${skills} skills"
+          if [ "$fail" -eq 1 ]; then
+            echo ""
+            echo "Documented counts drifted from the filesystem."
+            echo "Actual: ${agents} agents / ${skills} skills / ${hooks} hooks / ${rules} rules"
+            exit 1
+          fi
+          echo "Counts in sync: ${agents}/${skills}/${hooks}/${rules}"
+
   validate-skills:
     name: Validate Skills
     runs-on: ubuntu-latest
@@ -57,6 +94,33 @@ jobs:
             fi
           done
           echo "$errors skill(s) have frontmatter issues (non-blocking)"
+
+      - name: Check top-level skills have name field
+        run: |
+          set -e
+          missing=0
+          for f in skills/*/SKILL.md; do
+            # \r? : bazi skill dosyalari CRLF satir sonu kullaniyor
+            if ! awk '/^---\r?$/{n++; next} n==1 && /^name:/{found=1} END{exit !found}' "$f"; then
+              echo "MISSING name: $f"
+              missing=$((missing+1))
+            fi
+          done
+          if [ "$missing" -gt 0 ]; then
+            echo "$missing skill(s) missing required 'name' frontmatter field (agent-linter ERROR rule)"
+            exit 1
+          fi
+          echo "All top-level skills have name frontmatter"
+
+      - name: Check no lowercase skill.md (breaks case-sensitive filesystems)
+        run: |
+          lower=$(git ls-files 'skills/' | grep '/skill\.md$' | wc -l | tr -d ' ')
+          if [ "$lower" -gt 0 ]; then
+            echo "ERROR: $lower lowercase skill.md file(s) found - Claude Code only loads SKILL.md on case-sensitive filesystems:"
+            git ls-files 'skills/' | grep '/skill\.md$'
+            exit 1
+          fi
+          echo "No lowercase skill.md files"
 
   validate-install:
     name: Validate Install Script

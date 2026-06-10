@@ -1,5 +1,5 @@
 // src/typescript-preflight.ts
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 import * as path from "path";
 import * as fs from "fs";
 function readStdin() {
@@ -48,8 +48,9 @@ async function main() {
       return;
     }
     try {
-      const result = execSync(
-        `python3 "${scriptPath}" --file "${filePath}" --json`,
+      const result = execFileSync(
+        "python3",
+        [scriptPath, "--file", filePath, "--json"],
         {
           timeout: 35e3,
           encoding: "utf8",
