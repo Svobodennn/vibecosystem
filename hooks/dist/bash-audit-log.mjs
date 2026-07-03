@@ -6,7 +6,7 @@ import { homedir } from "os";
 // src/shared/log-rotation.ts
 import { statSync, readFileSync, writeFileSync, appendFileSync, renameSync, unlinkSync } from "fs";
 function appendWithRotation(filePath, line, maxBytes = 2 * 1024 * 1024, keepLines = 5e3) {
-  appendFileSync(filePath, line, { mode: 384 });
+  appendFileSync(filePath, line);
   try {
     const stats = statSync(filePath);
     if (stats.size > maxBytes) {

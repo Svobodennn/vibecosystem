@@ -1,5 +1,5 @@
 // src/canavar-error-broadcast.ts
-import { readFileSync as readFileSync2, appendFileSync, mkdirSync as mkdirSync2, existsSync as existsSync2 } from "fs";
+import { readFileSync as readFileSync2, appendFileSync, mkdirSync as mkdirSync2, existsSync as existsSync2, statSync } from "fs";
 import { join as join2 } from "path";
 import { homedir as homedir2 } from "os";
 
@@ -77,9 +77,9 @@ function createIssue(title, body, labels) {
   }
 }
 
-// src/canavar-error-broadcast.ts
+// src/shared/error-patterns.ts
 var ERROR_PATTERNS = [
-  // Build / TypeScript errors
+  // --- Build / TypeScript ---
   {
     regex: /error TS(\d+):\s*(.+)/,
     type: "build_fail",
@@ -104,12 +104,66 @@ var ERROR_PATTERNS = [
     pattern: "type-mismatch",
     lesson: (m) => `${m[1]} \u2192 ${m[2]} atanamaz`
   },
-  // Test failures
+  // --- C# / .NET (Godot C# projeleri dahil) ---
   {
-    regex: /FAIL\s+(.+?)$/m,
+    regex: /error CS(\d{4}):?\s*(.+)/,
+    type: "build_fail",
+    pattern: "csharp-error",
+    lesson: (m) => `CS${m[1]}: ${m[2].slice(0, 80)}`
+  },
+  {
+    regex: /error MSB(\d{4}):?\s*(.+)/,
+    type: "build_fail",
+    pattern: "msbuild-error",
+    lesson: (m) => `MSB${m[1]}: ${m[2].slice(0, 80)}`
+  },
+  // --- Godot ---
+  {
+    regex: /SCRIPT ERROR:\s*(.+)/,
+    type: "runtime_error",
+    pattern: "godot-script-error",
+    lesson: (m) => `Godot script: ${m[1].slice(0, 80)}`
+  },
+  {
+    regex: /USER ERROR:\s*(.+)/,
+    type: "runtime_error",
+    pattern: "godot-user-error",
+    lesson: (m) => `Godot: ${m[1].slice(0, 80)}`
+  },
+  {
+    regex: /(?:export template|export preset).{0,50}(?:missing|not found|invalid)/i,
+    type: "build_fail",
+    pattern: "godot-export-error",
+    lesson: () => "Godot export template/preset sorunu \u2014 export ayarlar\u0131n\u0131 kontrol et"
+  },
+  // --- Rust ---
+  {
+    regex: /error\[E(\d{4})\]:?\s*(.+)/,
+    type: "build_fail",
+    pattern: "rust-error",
+    lesson: (m) => `rustc E${m[1]}: ${m[2].slice(0, 80)}`
+  },
+  // --- Test failures (daraltılmış: test-runner biçimleri, düzyazı DEĞİL) ---
+  {
+    // vitest/jest dosya satırı: "FAIL src/foo.test.ts" — token uzantılı dosya olmalı
+    regex: /^\s*(?:✗\s*)?FAIL\s+(\S*\.(?:m?[jt]sx?|py|go|rs|cs|java|rb|php)\b\S*)/m,
     type: "test_fail",
     pattern: "test-failure",
-    lesson: (m) => `Test FAIL: ${m[1].trim().slice(0, 80)}`
+    lesson: (m) => `Test FAIL: ${m[1].slice(0, 80)}`
+  },
+  {
+    // go test özeti: "FAIL\tgithub.com/x/y\t0.123s"
+    regex: /^FAIL\s+(\S+)\s+[\d.]+s/m,
+    type: "test_fail",
+    pattern: "go-test-failure",
+    lesson: (m) => `go test FAIL: ${m[1].slice(0, 80)}`
+  },
+  {
+    // pytest: "FAILED tests/test_x.py::test_y"
+    regex: /^FAILED\s+(\S+::\S+)/m,
+    type: "test_fail",
+    pattern: "pytest-failure",
+    lesson: (m) => `pytest FAILED: ${m[1].slice(0, 80)}`
   },
   {
     regex: /(\d+) failed/i,
@@ -117,7 +171,40 @@ var ERROR_PATTERNS = [
     pattern: "test-failure",
     lesson: (m) => `${m[1]} test basarisiz`
   },
-  // Runtime errors
+  // --- Boş test koşumu (false-green: "0 test koştu" = doğrulama YOK) ---
+  {
+    regex: /No test files? found/i,
+    type: "empty_test_run",
+    pattern: "empty-test-run",
+    lesson: () => 'Test dosyas\u0131 bulunamad\u0131 \u2014 "ye\u015Fil" sayma, test pattern/path yanl\u0131\u015F olabilir'
+  },
+  {
+    regex: /collected 0 items/,
+    type: "empty_test_run",
+    pattern: "empty-test-run",
+    lesson: () => "pytest 0 test toplad\u0131 \u2014 do\u011Frulama yap\u0131lmad\u0131"
+  },
+  {
+    regex: /testing:\s+warning:\s+no tests to run/,
+    type: "empty_test_run",
+    pattern: "empty-test-run",
+    lesson: () => "go test ko\u015Facak test bulamad\u0131 \u2014 do\u011Frulama yap\u0131lmad\u0131"
+  },
+  {
+    regex: /Tests:\s*0 passed,?\s*0 total/,
+    type: "empty_test_run",
+    pattern: "empty-test-run",
+    lesson: () => "Jest 0 test ko\u015Ftu \u2014 do\u011Frulama yap\u0131lmad\u0131"
+  },
+  // --- Lint ---
+  {
+    // eslint özeti: "✖ 12 problems (3 errors, 9 warnings)"
+    regex: /✖\s+\d+\s+problems?\s+\((\d+)\s+errors?/,
+    type: "lint_fail",
+    pattern: "eslint-errors",
+    lesson: (m) => `eslint: ${m[1]} error`
+  },
+  // --- Runtime ---
   {
     regex: /TypeError:\s*(.+)/,
     type: "runtime_error",
@@ -142,14 +229,14 @@ var ERROR_PATTERNS = [
     pattern: "missing-file",
     lesson: (m) => `Dosya bulunamadi: ${m[1]}`
   },
-  // Go errors
+  // --- Go build ---
   {
     regex: /undefined:\s*(\w+)/,
     type: "build_fail",
     pattern: "go-undefined",
     lesson: (m) => `${m[1]} tanimlanmamis`
   },
-  // Python errors
+  // --- Python ---
   {
     regex: /ModuleNotFoundError:\s*No module named ['"](.+?)['"]/,
     type: "runtime_error",
@@ -157,6 +244,8 @@ var ERROR_PATTERNS = [
     lesson: (m) => `Python modul eksik: ${m[1]}`
   }
 ];
+
+// src/canavar-error-broadcast.ts
 function extractFile(output, command) {
   const fileMatch = output.match(/(?:(?:\/|[A-Z]:\\)[\w\/.\\-]+\.\w+)/);
   if (fileMatch) return fileMatch[0].replace(/\\/g, "/");
@@ -186,9 +275,19 @@ function main() {
   }
   const isAgentTool = input.tool_name === "Agent";
   const sessionId = input.session_id?.slice(0, 8) || "unknown";
-  const agentId = isAgentTool ? input.tool_input?.subagent_type || "unknown-agent" : process.env.CLAUDE_AGENT_ID || "main";
-  const agentType = isAgentTool ? input.tool_input?.subagent_type || "unknown-agent" : process.env.CLAUDE_AGENT_TYPE || "main";
-  const output = isAgentTool ? typeof input.tool_output === "string" ? input.tool_output : "" : typeof input.tool_response === "string" ? input.tool_response : JSON.stringify(input.tool_response || "");
+  const agentId = isAgentTool ? input.tool_input?.subagent_type || "unknown-agent" : input.agent_id || "main";
+  const agentType = isAgentTool ? input.tool_input?.subagent_type || "unknown-agent" : input.agent_type || "main";
+  let output;
+  if (isAgentTool) {
+    output = typeof input.tool_output === "string" ? input.tool_output : "";
+  } else if (typeof input.tool_response === "string") {
+    output = input.tool_response;
+  } else if (input.tool_response && typeof input.tool_response === "object") {
+    const r = input.tool_response;
+    output = [r.stdout, r.stderr].filter(Boolean).join("\n") || JSON.stringify(r);
+  } else {
+    output = "";
+  }
   if (!output || output.length < 10) {
     console.log("{}");
     return;
@@ -207,7 +306,9 @@ function main() {
         detail: match[0].slice(0, 200),
         // Agent tool için dosya adını çıktıdan çıkar; Bash için komuttan da bak
         file: extractFile(output, isAgentTool ? void 0 : input.tool_input?.command),
-        lesson: ep.lesson(match)
+        lesson: ep.lesson(match),
+        command: input.tool_input?.command?.slice(0, 200),
+        source: "posttooluse-scan"
       });
     }
   }
@@ -224,7 +325,7 @@ function main() {
     }
     try {
       const ledgerPath2 = join2(homedir2(), ".claude", "canavar", "error-ledger.jsonl");
-      if (existsSync2(ledgerPath2)) {
+      if (existsSync2(ledgerPath2) && statSync(ledgerPath2).size <= 15e5) {
         const allLines = readFileSync2(ledgerPath2, "utf-8").split("\n").filter((l) => l.trim());
         const patternCounts = /* @__PURE__ */ new Map();
         for (const line of allLines) {

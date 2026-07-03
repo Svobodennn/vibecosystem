@@ -2,37 +2,37 @@
 import { appendFileSync, mkdirSync, existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
-function charCount(text) {
+function estimateTokens(text) {
   if (!text) return 0;
-  return String(text).length;
+  return Math.ceil(String(text).length / 4);
 }
-function runHook() {
+async function main() {
   let input;
   try {
-    input = readFileSync(0, "utf-8");
+    input = readFileSync("/dev/stdin", "utf-8");
   } catch {
-    return;
+    process.exit(0);
   }
   let event;
   try {
     event = JSON.parse(input);
   } catch {
-    return;
+    process.exit(0);
   }
   const claudeDir = join(homedir(), ".claude");
   const logFile = join(claudeDir, "token-usage.jsonl");
   if (!existsSync(claudeDir)) {
     mkdirSync(claudeDir, { recursive: true });
   }
-  const inputChars = charCount(JSON.stringify(event.tool_input || {}));
-  const outputChars = charCount(event.tool_output);
+  const inputTokens = estimateTokens(JSON.stringify(event.tool_input || {}));
+  const outputTokens = estimateTokens(event.tool_output);
   const entry = {
     timestamp: (/* @__PURE__ */ new Date()).toISOString(),
     session_id: event.session_id || "unknown",
     tool: event.tool_name,
-    input_chars: inputChars,
-    output_chars: outputChars,
-    total_chars: inputChars + outputChars
+    input_tokens_est: inputTokens,
+    output_tokens_est: outputTokens,
+    total_est: inputTokens + outputTokens
   };
   if (event.tool_name === "Agent" && event.tool_input) {
     entry.agent = String(event.tool_input.subagent_type || "general-purpose");
@@ -41,9 +41,16 @@ function runHook() {
     appendFileSync(logFile, JSON.stringify(entry) + "\n");
   } catch {
   }
+  try {
+    const { createConnection } = await import("node:net");
+    const client = createConnection({ port: 3847, host: "127.0.0.1" }, () => {
+      client.write(JSON.stringify({ type: "token_usage", ...entry }));
+      client.end();
+    });
+    client.on("error", () => {
+    });
+  } catch {
+  }
+  console.log(JSON.stringify({ result: "approve" }));
 }
-try {
-  runHook();
-} catch {
-  process.exit(0);
-}
+main().catch(() => process.exit(0));

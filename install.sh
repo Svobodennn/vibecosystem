@@ -152,6 +152,14 @@ for f in "$REPO_DIR/tools/dashboard/"*; do
   smart_copy_file "$f" "$CLAUDE_DIR/tools/dashboard/$name"
 done
 
+# Dashboard dependencies
+if command -v npm &> /dev/null; then
+  echo "Installing dashboard dependencies..."
+  (cd "$CLAUDE_DIR/tools/dashboard" && npm install --no-fund --no-audit)
+else
+  echo "  Note: npm not found, please run 'npm install' manually in ~/.claude/tools/dashboard"
+fi
+
 # Scripts (MCP etc.)
 echo "Installing scripts/mcp..."
 mkdir -p "$CLAUDE_DIR/scripts/mcp"

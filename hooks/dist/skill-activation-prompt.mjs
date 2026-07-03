@@ -50,7 +50,7 @@ import { homedir } from "os";
 // src/shared/log-rotation.ts
 import { statSync, readFileSync as readFileSync2, writeFileSync, appendFileSync, renameSync, unlinkSync } from "fs";
 function appendWithRotation(filePath, line, maxBytes = 2 * 1024 * 1024, keepLines = 5e3) {
-  appendFileSync(filePath, line, { mode: 384 });
+  appendFileSync(filePath, line);
   try {
     const stats = statSync(filePath);
     if (stats.size > maxBytes) {
@@ -189,9 +189,9 @@ var PATTERN_AGENT_MAP = {
   "hierarchical": "kraken",
   "pipeline": "kraken",
   "generator_critic": "review-agent",
-  "adversarial": "validate-agent",
+  "adversarial": "plan-reviewer",
   "map_reduce": "kraken",
-  "jury": "validate-agent",
+  "jury": "plan-reviewer",
   "blackboard": "maestro",
   "circuit_breaker": "kraken",
   "chain_of_responsibility": "maestro",

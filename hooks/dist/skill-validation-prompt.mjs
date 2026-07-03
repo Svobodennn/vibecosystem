@@ -112,7 +112,66 @@ Examples:
 - "commit these changes" -> {"decision": "activate", "confidence": 0.95, "reason": "User wants to commit code changes"}
 - "commit to this approach" -> {"decision": "skip", "confidence": 0.9, "reason": "Using commit as verb meaning to dedicate, not git commit"}`;
 }
+function parseValidationResponse(response) {
+  const defaultResult = {
+    decision: "activate",
+    // Fail-open: activate on parse error
+    confidence: 0.4,
+    reason: "Failed to parse validation response",
+    parseError: true
+  };
+  try {
+    const jsonMatch = response.match(/\{[\s\S]*?\}/);
+    if (!jsonMatch) {
+      return defaultResult;
+    }
+    const parsed = JSON.parse(jsonMatch[0]);
+    const decision = parsed.decision;
+    if (decision !== "activate" && decision !== "skip") {
+      return defaultResult;
+    }
+    return {
+      decision,
+      confidence: typeof parsed.confidence === "number" ? parsed.confidence : 0.5,
+      reason: typeof parsed.reason === "string" ? parsed.reason : "No reason provided"
+    };
+  } catch (err) {
+    return defaultResult;
+  }
+}
+async function validateSkillRelevance(match, llmCall) {
+  try {
+    const prompt = buildValidationPrompt(match);
+    const result = await llmCall(prompt);
+    return result;
+  } catch (err) {
+    return {
+      decision: "activate",
+      confidence: 0.3,
+      reason: `Validation error: ${err instanceof Error ? err.message : "Unknown error"}`,
+      error: true
+    };
+  }
+}
+function filterValidatedSkills(matches, validationResults, confidenceThreshold = 0.5) {
+  return matches.filter((match) => {
+    const result = validationResults.get(match.skillName);
+    if (!result) {
+      return true;
+    }
+    if (result.decision === "skip") {
+      return false;
+    }
+    if (result.confidence < confidenceThreshold) {
+      return false;
+    }
+    return true;
+  });
+}
 export {
   buildValidationPrompt,
-  shouldValidateWithLLM
+  filterValidatedSkills,
+  parseValidationResponse,
+  shouldValidateWithLLM,
+  validateSkillRelevance
 };

@@ -7,7 +7,7 @@ var PRODUCER_AGENTS = /* @__PURE__ */ new Set([
   "frontend-dev",
   "phoenix",
   "devops",
-  "refactor-cleaner",
+  "janitor",
   "database-reviewer",
   "go-build-resolver",
   "build-error-resolver"

@@ -416,18 +416,39 @@ async function doctor() {
   const rules = countFiles(join(CLAUDE_DIR, 'rules'), '.md');
   check(rules >= 18 ? 'pass' : rules >= 10 ? 'warn' : 'fail', `Rules: ${rules}`, rules < 18 ? 'expected >= 18' : '');
 
-  // 6. settings.json hooks
+  // 6. Hook registrations (settings.json or config.json)
+  let hookConfigs = [];
   try {
-    const settings = JSON.parse(readFileSync(join(CLAUDE_DIR, 'settings.json'), 'utf-8'));
-    const hasHooks = settings.hooks && Object.keys(settings.hooks).length > 0;
-    check(hasHooks ? 'pass' : 'fail', 'Hook registrations in settings.json', hasHooks ? '' : 'no hooks registered');
+    const settingsPath = join(CLAUDE_DIR, 'settings.json');
+    const configPath = join(CLAUDE_DIR, 'config.json');
+    
+    if (existsSync(settingsPath)) {
+      const settings = JSON.parse(readFileSync(settingsPath, 'utf-8'));
+      if (settings.hooks) hookConfigs.push(settings.hooks);
+    }
+    if (existsSync(configPath)) {
+      const config = JSON.parse(readFileSync(configPath, 'utf-8'));
+      if (config.hooks) hookConfigs.push(config.hooks);
+    }
+
+    const hasHooks = hookConfigs.some(h => Object.keys(h).length > 0);
+    check(hasHooks ? 'pass' : 'fail', 'Hook registrations', hasHooks ? '' : 'no hooks registered in settings.json or config.json');
   } catch {
-    check('fail', 'settings.json', 'file not found or invalid');
+    check('fail', 'Hook configuration', 'invalid JSON in settings.json or config.json');
   }
 
   // 7. Dashboard
+  const dashServerExists = existsSync(join(CLAUDE_DIR, 'tools', 'dashboard', 'server.js'));
+  const dashModulesExists = existsSync(join(CLAUDE_DIR, 'tools', 'dashboard', 'node_modules'));
   const dashRunning = await isPortOpen(DASHBOARD_PORT);
-  check(dashRunning ? 'pass' : 'warn', `Dashboard${dashRunning ? ' running' : ' not running'}`, dashRunning ? '' : 'vibeco dashboard');
+  
+  if (!dashServerExists) {
+    check('fail', 'Dashboard server file', 'not found');
+  } else if (!dashModulesExists) {
+    check('fail', 'Dashboard dependencies', 'node_modules not found, run npm install in ~/.claude/tools/dashboard');
+  } else {
+    check(dashRunning ? 'pass' : 'warn', `Dashboard${dashRunning ? ' running' : ' not running'}`, dashRunning ? '' : 'vibeco dashboard');
+  }
 
   // 8. Memory DB
   const canavarDir = join(CLAUDE_DIR, 'canavar');

@@ -113,8 +113,7 @@ function isDaemonReachable(projectDir) {
     }
     if (isDaemonProcessRunning(projectDir)) {
       try {
-        execSync(`nc -U "${connInfo.path}"`, {
-          input: '{"cmd":"ping"}\n',
+        execSync(`echo '{"cmd":"ping"}' | nc -U "${connInfo.path}"`, {
           encoding: "utf-8",
           timeout: 1e3,
           // Increased from 500ms
@@ -126,8 +125,7 @@ function isDaemonReachable(projectDir) {
       }
     }
     try {
-      execSync(`nc -U "${connInfo.path}"`, {
-        input: '{"cmd":"ping"}\n',
+      execSync(`echo '{"cmd":"ping"}' | nc -U "${connInfo.path}"`, {
         encoding: "utf-8",
         timeout: 500,
         stdio: ["pipe", "pipe", "pipe"]
@@ -233,8 +231,7 @@ function queryDaemonSync(query, projectDir) {
         timeout: QUERY_TIMEOUT
       });
     } else {
-      result = execSync(`nc -U "${connInfo.path}"`, {
-        input: input + "\n",
+      result = execSync(`echo '${input}' | nc -U "${connInfo.path}"`, {
         encoding: "utf-8",
         timeout: QUERY_TIMEOUT
       });
@@ -417,7 +414,6 @@ function detectLanguage(projectPath) {
 function extractEntryPoints(prompt) {
   const candidates = /* @__PURE__ */ new Set();
   for (const pattern of FUNCTION_PATTERNS) {
-    pattern.lastIndex = 0;
     let match;
     while ((match = pattern.exec(prompt)) !== null) {
       const candidate = match[1];

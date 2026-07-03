@@ -113,8 +113,7 @@ function isDaemonReachable(projectDir) {
     }
     if (isDaemonProcessRunning(projectDir)) {
       try {
-        execSync(`nc -U "${connInfo.path}"`, {
-          input: '{"cmd":"ping"}\n',
+        execSync(`echo '{"cmd":"ping"}' | nc -U "${connInfo.path}"`, {
           encoding: "utf-8",
           timeout: 1e3,
           // Increased from 500ms
@@ -126,8 +125,7 @@ function isDaemonReachable(projectDir) {
       }
     }
     try {
-      execSync(`nc -U "${connInfo.path}"`, {
-        input: '{"cmd":"ping"}\n',
+      execSync(`echo '{"cmd":"ping"}' | nc -U "${connInfo.path}"`, {
         encoding: "utf-8",
         timeout: 500,
         stdio: ["pipe", "pipe", "pipe"]
@@ -233,8 +231,7 @@ function queryDaemonSync(query, projectDir) {
         timeout: QUERY_TIMEOUT
       });
     } else {
-      result = execSync(`nc -U "${connInfo.path}"`, {
-        input: input + "\n",
+      result = execSync(`echo '${input}' | nc -U "${connInfo.path}"`, {
         encoding: "utf-8",
         timeout: QUERY_TIMEOUT
       });
@@ -299,7 +296,7 @@ import { homedir as homedir2 } from "os";
 // src/shared/log-rotation.ts
 import { statSync as statSync2, readFileSync as readFileSync3, writeFileSync as writeFileSync3, appendFileSync, renameSync, unlinkSync as unlinkSync2 } from "fs";
 function appendWithRotation(filePath, line, maxBytes = 2 * 1024 * 1024, keepLines = 5e3) {
-  appendFileSync(filePath, line, { mode: 384 });
+  appendFileSync(filePath, line);
   try {
     const stats = statSync2(filePath);
     if (stats.size > maxBytes) {

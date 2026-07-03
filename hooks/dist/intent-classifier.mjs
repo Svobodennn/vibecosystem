@@ -1,38 +1,7 @@
 // src/intent-classifier.ts
-import { readFileSync, writeFileSync, existsSync, mkdirSync as mkdirSync2 } from "fs";
-import { join as join2 } from "path";
-import { homedir as homedir2 } from "os";
-
-// src/shared/hook-health.ts
-import { appendFileSync, mkdirSync } from "fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { join } from "path";
 import { homedir } from "os";
-var HEALTH_FILE = join(homedir(), ".claude", "hook-health.jsonl");
-function reportHealth(hookName, success, durationMs, error) {
-  try {
-    const entry = {
-      ts: (/* @__PURE__ */ new Date()).toISOString(),
-      hook: hookName,
-      success,
-      duration_ms: Math.round(durationMs)
-    };
-    if (error) entry.error = error.slice(0, 200);
-    mkdirSync(join(homedir(), ".claude"), { recursive: true });
-    appendFileSync(HEALTH_FILE, JSON.stringify(entry) + "\n", { mode: 384 });
-  } catch {
-  }
-}
-function wrapWithHealth(hookName, fn) {
-  const start = Date.now();
-  try {
-    fn();
-    reportHealth(hookName, true, Date.now() - start);
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    reportHealth(hookName, false, Date.now() - start, msg);
-    throw err;
-  }
-}
 
 // src/shared/task-detector.ts
 var IMPLEMENTATION_INDICATORS = [
@@ -168,22 +137,43 @@ var DOMAIN_PATTERNS = [
   { regex: /\b(rust|\.rs|cargo)\b/i, domain: "rust" },
   { regex: /\b(sql|database|postgres|mysql|sqlite|prisma|migration)\b/i, domain: "database" },
   { regex: /\b(docker|kubernetes|k8s|ci\/cd|deploy|infra)\b/i, domain: "devops" },
-  { regex: /\b(css|tailwind|styled|scss|styling|ui|component)\b/i, domain: "frontend" },
-  { regex: /\b(api|endpoint|rest|graphql|grpc)\b/i, domain: "api" },
+  { regex: /\b(css|tailwind|styled|scss|styling|ui|component|dashboard|panel|sayfa|page|button|buton|input|form|card|modal|dialog|drawer|header|sidebar|footer|nav(bar|igation)?|layout|typography|spacing|color|palette|theme|dark[\s-]?mode|light[\s-]?mode|design[\s-]?system|wcag|a11y|accessibility)\b/i, domain: "frontend" },
+  { regex: /\b(api|endpoint|rest|graphql|grpc|webhook|websocket|sse)\b/i, domain: "api" },
+  { regex: /\b(service|servis|microservice|monolit|queue|worker|job|cron|scheduler|message|broker|kafka|rabbitmq|bullmq)\b/i, domain: "backend" },
   { regex: /\b(test|spec|jest|vitest|playwright|e2e)\b/i, domain: "testing" },
   { regex: /\b(auth|security|token|jwt|oauth|permission)\b/i, domain: "security" },
   { regex: /\b(ai|llm|model|prompt|embedding|vector)\b/i, domain: "ai" }
 ];
 var AGENT_HINTS = [
   { regex: /\b(fix|debug|bug|broken|not working|hata|calismıyor)\b/i, agent: "sleuth" },
-  { regex: /\b(refactor|clean|dead code|tech debt)\b/i, agent: "refactor-cleaner" },
+  { regex: /\b(refactor|clean|dead code|tech debt)\b/i, agent: "janitor" },
   { regex: /\b(test|tdd|coverage)\b/i, agent: "tdd-guide" },
   { regex: /\b(deploy|release|ci|cd)\b/i, agent: "devops" },
   { regex: /\b(security|audit|vulnerability)\b/i, agent: "security-reviewer" },
-  { regex: /\b(plan|architect|design system)\b/i, agent: "architect" },
   { regex: /\b(review|code review)\b/i, agent: "code-reviewer" },
   { regex: /\b(performance|slow|optimize|profil)\b/i, agent: "profiler" }
 ];
+function detectPlannerAgent(prompt) {
+  const hasPlanWord = /(?:^|[^a-z])plan\w*/i.test(prompt) || /\b(roadmap|strateji|strategy|design[\s-]?doc(ument)?|tasarla)\w*/i.test(prompt);
+  if (!hasPlanWord) return null;
+  const executionVerbs = /\b(uygula|gercekle[sş]tir|implement(?!.*\b(plan|tasarla))|execute|run\s+the\s+plan|apply\s+(the\s+)?plan|hayata\s+gecir)/i;
+  if (executionVerbs.test(prompt)) {
+    return null;
+  }
+  const reviewVerbs = /\b(review|incele|g[oö]zden\s+ge[cç]ir|de[gğ]erlendir|critique|eksik(lik|ler)?\s+(bul|yakala))/i;
+  if (reviewVerbs.test(prompt)) {
+    return "plan-reviewer";
+  }
+  const refactorSignals = /\b(refactor\w*|migrat\w*|tech[\s-]?debt|restructure|reorganize|cleanup|yeniden\s+(yaz|tasarla|kur|d[uü]zenle)|temizle|ay[iı]kla|consolidate|extract|split|ta[sş][iı]|d[uü]zenle)/i;
+  if (refactorSignals.test(prompt)) {
+    return "phoenix";
+  }
+  const archSignals = /\b(architect(ure)?|system[\s-]?design|scalab\w*|distributed|microservice\w*|monolit\w*|domain[\s-]?driven|ddd|cqrs|event[\s-]?driven|hexagonal|clean[\s-]?arch)/i;
+  if (archSignals.test(prompt)) {
+    return "architect";
+  }
+  return "planner";
+}
 var SKILL_PATTERNS = [
   { regex: /\b(react|component|hook|useState|useEffect)\b/i, skill: "frontend-patterns" },
   { regex: /\b(api|endpoint|route|middleware)\b/i, skill: "backend-patterns" },
@@ -191,6 +181,90 @@ var SKILL_PATTERNS = [
   { regex: /\b(sql|query|schema|migration)\b/i, skill: "database-patterns" },
   { regex: /\b(docker|k8s|pipeline)\b/i, skill: "devops-patterns" }
 ];
+function calculateComplexity(prompt, domains) {
+  const signals = [];
+  let score = 0;
+  if (domains.length >= 3) {
+    score += 2;
+    signals.push(`${domains.length} domain (${domains.slice(0, 3).join(", ")})`);
+  } else if (domains.length === 2) {
+    score++;
+    signals.push(`2 domain (${domains.join(", ")})`);
+  }
+  const multiVerbCount = (prompt.match(/\b(et|yap|ekle|yaz|olu[sş]tur|test|deploy|commit|fix|build|implement|create)\b/gi) || []).length;
+  const multiStepPatterns = [
+    /\b(sonra|hemen|then|after\s+that|also|ardindan)\b/i,
+    /,\s*\w+\s+(et|yap|ekle|yaz|baglansin|olsun)\b/i
+    // "X, Y et"
+  ];
+  const hasSequenceMarker = multiStepPatterns.some((re) => re.test(prompt));
+  const commaCount = (prompt.match(/,/g) || []).length;
+  const conjCount = (prompt.match(/\b(ve|and|ile|veya|or)\b/gi) || []).length;
+  const longListPattern = /(\w+,\s*){2,}\w+/;
+  const hasComponentList = commaCount >= 1 && conjCount >= 1 || longListPattern.test(prompt);
+  if (hasComponentList) {
+    score += 2;
+    signals.push("list-of-3+");
+  } else if (hasSequenceMarker || multiVerbCount >= 3) {
+    score++;
+    signals.push(`multi-step (${multiVerbCount} verbs)`);
+  }
+  if (/\b(t[uü]m|all|entire|b[uü]t[uü]n)\b[^.!?]{0,30}\b(ve|and|ile)\b/i.test(prompt)) {
+    score++;
+    signals.push("bulk-targets");
+  }
+  const highScopePatterns = [
+    /\byeni\s+\w+(\s+\w+){0,2}\s+(feature|modul|sistem|servis|sayfa|component|api|endpoint|module|service|page)\b/i,
+    /\byeni\s+(feature|modul|sistem|servis|sayfa|component|api|endpoint|module|service|page)\b/i,
+    /\b(t[uü]m|b[uü]t[uü]n|all|entire|complete)\s+\w+/i,
+    /\b(end[\s-]?to[\s-]?end|ba[sş]tan\s+sona|fullstack|full[\s-]?stack)\b/i
+  ];
+  if (highScopePatterns.some((re) => re.test(prompt))) {
+    score++;
+    signals.push("high-scope");
+  }
+  const criticalActionPatterns = [
+    /\b(refactor|migrate|rewrite|yeniden\s+yaz|yeniden\s+tasarla)\b/i,
+    /\b(implement|build|create|olu[sş]tur|geli[sş]tir)\b.{0,60}\b(feature|module|sistem|servis|sayfa|component|api|endpoint|service|page|dashboard|panel|hook|integration|flow|pipeline|microservice|monolit)\b/i,
+    /\b(implement|build|create)\s+(a\s+)?(new\s+)?(feature|module|system|service|api|page|integration|microservice)/i,
+    // Extraction/split: monolitten servis ayirma, modul bolme vb
+    /\b(extract|split|ayir|cikar|bol|divide|separate)\b.{0,60}\b(service|servis|module|modul|microservice|monolit|component|context)\b/i,
+    /\b(monolit\w*)\b.{0,40}\b(servis|service|microservice|ayir|cikar|extract|split)/i
+  ];
+  if (criticalActionPatterns.some((re) => re.test(prompt))) {
+    score += 2;
+    signals.push("critical-action");
+  }
+  const fileMatches = prompt.match(/[\w/-]+\.\w{1,5}\b/g) || [];
+  const uniqueFiles = new Set(fileMatches);
+  if (uniqueFiles.size >= 3) {
+    score++;
+    signals.push(`${uniqueFiles.size} files mentioned`);
+  }
+  const coordPatterns = [
+    /\b(plan(la)?|tasarla|koordinasyon|orchestrate|maestro|swarm)\b/i,
+    /\b(end[\s-]?to[\s-]?end|baştan\s+sona|tamamlay)\b/i,
+    /\b(t[uü]m\s+ekib?i|whole\s+team|all\s+agents)\b/i,
+    /\b(devreye\s+sok|hep\s+birlikte|paralel(de)?\s+calist)\b/i
+  ];
+  if (coordPatterns.some((re) => re.test(prompt))) {
+    score++;
+    signals.push("coordination-keyword");
+  }
+  const trivialPatterns = [
+    /^(typo|imla|sil|rename|yeniden\s+adlandir)\b/i
+  ];
+  const isShort = prompt.trim().length < 40 && !signals.includes("coordination-keyword");
+  const matchesTrivial = trivialPatterns.some((re) => re.test(prompt.trim()));
+  if ((matchesTrivial || isShort) && score < 3) {
+    return { score: 0, signals: ["trivial-override"] };
+  }
+  if (signals.includes("coordination-keyword") && score < 2) {
+    score = 2;
+    signals.push("coord-boost");
+  }
+  return { score, signals };
+}
 function classifyIntent(input) {
   const prompt = input.prompt || "";
   const detection = detectTask(prompt);
@@ -204,11 +278,13 @@ function classifyIntent(input) {
       domains.push(dp.domain);
     }
   }
-  let agentHint = null;
-  for (const ah of AGENT_HINTS) {
-    if (ah.regex.test(prompt)) {
-      agentHint = ah.agent;
-      break;
+  let agentHint = detectPlannerAgent(prompt);
+  if (!agentHint) {
+    for (const ah of AGENT_HINTS) {
+      if (ah.regex.test(prompt)) {
+        agentHint = ah.agent;
+        break;
+      }
     }
   }
   const skillsNeeded = [];
@@ -217,6 +293,11 @@ function classifyIntent(input) {
       skillsNeeded.push(sp.skill);
     }
   }
+  const complexity = calculateComplexity(prompt, domains);
+  const isPureQuestion = /^(ne(\s|den|dir)|why|what|how|when|where|kim|nasil|nedir|nicin)\b.*\?\s*$/i.test(prompt.trim());
+  const isPlanningTask = agentHint !== null && ["phoenix", "architect", "planner", "plan-reviewer"].includes(agentHint);
+  const needsMaestro = complexity.score >= 2 && !isPureQuestion && !isPlanningTask;
+  const finalAgentHint = needsMaestro ? "maestro" : agentHint;
   return {
     ts: (/* @__PURE__ */ new Date()).toISOString(),
     session_id: input.session_id?.slice(0, 8) || "unknown",
@@ -224,7 +305,10 @@ function classifyIntent(input) {
     confidence: detection.confidence,
     domain: domains,
     skills_needed: skillsNeeded,
-    agent_hint: agentHint
+    agent_hint: finalAgentHint,
+    complexity: complexity.score,
+    complexity_signals: complexity.signals,
+    needs_maestro: needsMaestro
   };
 }
 function main() {
@@ -246,19 +330,44 @@ function main() {
     return;
   }
   const intent = classifyIntent(input);
-  const cacheDir = join2(homedir2(), ".claude", "cache");
-  if (!existsSync(cacheDir)) mkdirSync2(cacheDir, { recursive: true });
-  const intentPath = join2(cacheDir, "current-intent.json");
+  const cacheDir = join(homedir(), ".claude", "cache");
+  if (!existsSync(cacheDir)) mkdirSync(cacheDir, { recursive: true });
+  const intentPath = join(cacheDir, "current-intent.json");
   try {
     writeFileSync(intentPath, JSON.stringify(intent, null, 2));
   } catch {
   }
-  if (intent.task_type !== "conversational") {
-    console.log(JSON.stringify({
-      result: "continue"
-    }));
-  } else {
-    console.log("{}");
+  if (intent.needs_maestro) {
+    const signals = intent.complexity_signals.join(", ");
+    const domainList = intent.domain.length > 0 ? intent.domain.join(", ") : "n/a";
+    const lines = [
+      "",
+      "\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501",
+      "\u{1F3BC} AUTO-ORCHESTRATOR ROUTING",
+      "\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501",
+      `Complexity score: ${intent.complexity}/5`,
+      `Signals: ${signals}`,
+      `Domains: ${domainList}`,
+      `Task type: ${intent.task_type}`,
+      "",
+      "STRONGLY RECOMMENDED: Spawn @maestro via the Agent tool",
+      "instead of subdividing this task manually.",
+      "",
+      "Maestro will:",
+      "  \u2022 Pick the right specialist agents (assignment-matrix)",
+      "  \u2022 Run them in proper phases (research \u2192 plan \u2192 impl \u2192 review)",
+      "  \u2022 Enforce Dev-QA loop (max 3 retries before escalation)",
+      "  \u2022 Handle handoffs and conflict resolution",
+      "",
+      "Override ONLY if this is genuinely a single-file 1-shot fix.",
+      "\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501",
+      ""
+    ];
+    console.log(lines.join("\n"));
+  } else if (intent.agent_hint) {
+    console.log(`
+\u2192 Suggested agent: @${intent.agent_hint}  (task: ${intent.task_type}, domain: ${intent.domain.join(",") || "n/a"})
+`);
   }
 }
-wrapWithHealth("intent-classifier", main);
+main();
