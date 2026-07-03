@@ -6,17 +6,16 @@
  * before context window compression occurs.
  *
  * Saves to: ~/.claude/palace/{project}-sessions.jsonl
+ * Also updates: thoughts/PROGRESS.md if exists
  */
 
-import { readFileSync, appendFileSync, existsSync, mkdirSync } from 'node:fs';
-import { join, resolve, sep } from 'node:path';
+import { readFileSync, writeFileSync, appendFileSync, existsSync, mkdirSync } from 'node:fs';
+import { join, basename } from 'node:path';
 import { homedir } from 'node:os';
 import { execSync } from 'node:child_process';
-import { getSafeProjectName } from './shared/project-identity.js';
 
 interface CompactEvent {
-  type?: string;
-  source?: string;
+  type: string;
   session_id?: string;
 }
 
@@ -34,11 +33,16 @@ interface SessionSummary {
 
 const PALACE_DIR = join(homedir(), '.claude', 'palace');
 
-function safePalacePath(filename: string): string | null {
-  const candidate = resolve(join(PALACE_DIR, filename));
-  const root = resolve(PALACE_DIR);
-  if (!candidate.startsWith(root + sep) && candidate !== root) return null;
-  return candidate;
+function getProjectName(): string {
+  const projectDir = process.env.CLAUDE_PROJECT_DIR || process.cwd();
+  const pkgPath = join(projectDir, 'package.json');
+  if (existsSync(pkgPath)) {
+    try {
+      const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+      if (pkg.name) return pkg.name.replace(/^@[^/]+\//, '');
+    } catch {}
+  }
+  return basename(projectDir);
 }
 
 function getRecentChangedFiles(): string[] {
@@ -71,14 +75,16 @@ function getProjectContext(): string[] {
   const context: string[] = [];
   const projectDir = process.env.CLAUDE_PROJECT_DIR || process.cwd();
 
+  // Detect tech stack
   if (existsSync(join(projectDir, 'package.json'))) {
     try {
       const pkg = JSON.parse(readFileSync(join(projectDir, 'package.json'), 'utf-8'));
       const deps = Object.keys(pkg.dependencies || {}).slice(0, 10);
-      if (deps.length) context.push(`Stack: Node.js, ${deps.join(', ')}`);
-    } catch { /* skip */ }
+      context.push(`Stack: Node.js, ${deps.join(', ')}`);
+    } catch {}
   }
 
+  // Current branch
   try {
     const branch = execSync('git branch --show-current 2>/dev/null', {
       encoding: 'utf-8',
@@ -86,14 +92,14 @@ function getProjectContext(): string[] {
       timeout: 3000,
     }).trim();
     if (branch) context.push(`Branch: ${branch}`);
-  } catch { /* skip */ }
+  } catch {}
 
   return context;
 }
 
 function loadPalaceDecisions(project: string): string[] {
-  const wingFile = safePalacePath(`${project}.jsonl`);
-  if (!wingFile || !existsSync(wingFile)) return [];
+  const wingFile = join(PALACE_DIR, `${project}.jsonl`);
+  if (!existsSync(wingFile)) return [];
 
   try {
     const lines = readFileSync(wingFile, 'utf-8').split('\n').filter(l => l.trim());
@@ -101,10 +107,10 @@ function loadPalaceDecisions(project: string): string[] {
     for (const line of lines.slice(-10)) {
       try {
         const entry = JSON.parse(line);
-        if (entry.type === 'decision' && typeof entry.content === 'string') {
+        if (entry.type === 'decision') {
           decisions.push(`${entry.room}: ${entry.content}`);
         }
-      } catch { /* skip bad line */ }
+      } catch {}
     }
     return decisions;
   } catch {
@@ -112,18 +118,18 @@ function loadPalaceDecisions(project: string): string[] {
   }
 }
 
-function runHook(): void {
+async function main() {
   let input: string;
   try {
-    input = readFileSync(0, 'utf-8');
-  } catch { return; }
+    input = readFileSync('/dev/stdin', 'utf-8');
+  } catch { process.exit(0); }
 
   let event: CompactEvent;
   try {
     event = JSON.parse(input);
-  } catch { return; }
+  } catch { process.exit(0); }
 
-  const project = getSafeProjectName();
+  const project = getProjectName();
   const files = getRecentChangedFiles();
   const commits = getRecentCommits();
   const context = getProjectContext();
@@ -141,40 +147,33 @@ function runHook(): void {
     },
   };
 
-  // Save to palace sessions log (path-safe)
+  // Save to palace sessions log
   mkdirSync(PALACE_DIR, { recursive: true });
-  const sessionsFile = safePalacePath(`${project}-sessions.jsonl`);
-  if (sessionsFile) {
-    try { appendFileSync(sessionsFile, JSON.stringify(summary) + '\n'); } catch { /* silent */ }
-  }
+  const sessionsFile = join(PALACE_DIR, `${project}-sessions.jsonl`);
+  try {
+    appendFileSync(sessionsFile, JSON.stringify(summary) + '\n');
+  } catch {}
 
-  // Generate ACDE text for context injection
-  const lines: string[] = [`[Session Compressed] Project: ${project}`, ''];
+  // Generate human-readable ACDE for context injection
+  const acdeText = [
+    `[Session Compressed] Project: ${project}`,
+    '',
+    'Actions:',
+    ...summary.acde.actions.map(a => `  ${a}`),
+    '',
+    'Context:',
+    ...summary.acde.context.map(c => `  ${c}`),
+    '',
+    decisions.length ? 'Decisions:' : '',
+    ...summary.acde.decisions.map(d => `  ${d}`),
+    '',
+    'Changed Files:',
+    ...summary.acde.entities.map(e => `  ${e}`),
+  ].filter(l => l !== undefined).join('\n');
 
-  if (summary.acde.actions.length) {
-    lines.push('Actions:');
-    summary.acde.actions.forEach(a => lines.push(`  ${a}`));
-    lines.push('');
-  }
-
-  if (summary.acde.context.length) {
-    lines.push('Context:');
-    summary.acde.context.forEach(c => lines.push(`  ${c}`));
-    lines.push('');
-  }
-
-  if (summary.acde.decisions.length) {
-    lines.push('Decisions:');
-    summary.acde.decisions.forEach(d => lines.push(`  ${d}`));
-    lines.push('');
-  }
-
-  if (summary.acde.entities.length) {
-    lines.push('Changed Files:');
-    summary.acde.entities.forEach(e => lines.push(`  ${e}`));
-  }
-
-  console.log(JSON.stringify({ systemMessage: lines.join('\n') }));
+  console.log(JSON.stringify({
+    systemMessage: acdeText,
+  }));
 }
 
-try { runHook(); } catch { process.exit(0); }
+main().catch(() => process.exit(0));

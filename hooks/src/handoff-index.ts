@@ -32,7 +32,6 @@ interface BraintrustState {
  * Get parent PID using ps command (Unix only).
  */
 function getPpid(pid: number): number | null {
-  if (!Number.isInteger(pid) || pid < 1) return null;
   if (process.platform === 'win32') {
     // Windows: use wmic
     try {

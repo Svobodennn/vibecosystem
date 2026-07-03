@@ -18,7 +18,7 @@ interface PostToolInput {
 // Producer agent'lar: is yapanlar
 const PRODUCER_AGENTS = new Set([
   'spark', 'kraken', 'backend-dev', 'frontend-dev',
-  'phoenix', 'devops', 'refactor-cleaner', 'database-reviewer',
+  'phoenix', 'devops', 'janitor', 'database-reviewer',
   'go-build-resolver', 'build-error-resolver',
 ]);
 

@@ -165,7 +165,7 @@ function getFileExtension(filePath: string): string {
   return match ? match[0].toLowerCase() : '';
 }
 
-export function isSupportedFile(filePath: string): boolean {
+function isSupportedFile(filePath: string): boolean {
   const ext = getFileExtension(filePath);
   return SUPPORTED_EXTENSIONS.includes(ext);
 }
@@ -177,7 +177,7 @@ function extractFilePath(input: PostToolInput): string | null {
   return null;
 }
 
-export function scanContent(content: string): SecurityPattern[] {
+function scanContent(content: string): SecurityPattern[] {
   const findings: SecurityPattern[] = [];
   const lines = content.split('\n');
 
@@ -201,7 +201,7 @@ export function scanContent(content: string): SecurityPattern[] {
   return findings;
 }
 
-export function formatFindings(findings: SecurityPattern[]): string {
+function formatFindings(findings: SecurityPattern[]): string {
   if (findings.length === 0) return '';
 
   const criticals = findings.filter(f => f.severity === 'CRITICAL');

@@ -22,55 +22,74 @@ interface TokenEntry {
   timestamp: string;
   session_id: string;
   tool: string;
-  input_chars: number;
-  output_chars: number;
-  total_chars: number;
+  input_tokens_est: number;
+  output_tokens_est: number;
+  total_est: number;
   agent?: string;
 }
 
-// Rough char-to-token approximation
-function charCount(text: string | undefined): number {
+// Rough token estimation: ~4 chars per token
+function estimateTokens(text: string | undefined): number {
   if (!text) return 0;
-  return String(text).length;
+  return Math.ceil(String(text).length / 4);
 }
 
-function runHook(): void {
+async function main() {
   let input: string;
   try {
-    input = readFileSync(0, 'utf-8');
-  } catch { return; }
+    input = readFileSync('/dev/stdin', 'utf-8');
+  } catch {
+    process.exit(0);
+  }
 
   let event: ToolEvent;
   try {
     event = JSON.parse(input);
-  } catch { return; }
+  } catch {
+    process.exit(0);
+  }
 
   const claudeDir = join(homedir(), '.claude');
   const logFile = join(claudeDir, 'token-usage.jsonl');
 
+  // Ensure directory exists
   if (!existsSync(claudeDir)) {
     mkdirSync(claudeDir, { recursive: true });
   }
 
-  const inputChars = charCount(JSON.stringify(event.tool_input || {}));
-  const outputChars = charCount(event.tool_output);
+  const inputTokens = estimateTokens(JSON.stringify(event.tool_input || {}));
+  const outputTokens = estimateTokens(event.tool_output);
 
   const entry: TokenEntry = {
     timestamp: new Date().toISOString(),
     session_id: event.session_id || 'unknown',
     tool: event.tool_name,
-    input_chars: inputChars,
-    output_chars: outputChars,
-    total_chars: inputChars + outputChars,
+    input_tokens_est: inputTokens,
+    output_tokens_est: outputTokens,
+    total_est: inputTokens + outputTokens,
   };
 
+  // Check if this is an agent-related tool call
   if (event.tool_name === 'Agent' && event.tool_input) {
     entry.agent = String(event.tool_input.subagent_type || 'general-purpose');
   }
 
   try {
     appendFileSync(logFile, JSON.stringify(entry) + '\n');
-  } catch { /* silent */ }
+  } catch {}
+
+  // Try to broadcast to dashboard WebSocket
+  try {
+    const { createConnection } = await import('node:net');
+    const client = createConnection({ port: 3847, host: '127.0.0.1' }, () => {
+      client.write(JSON.stringify({ type: 'token_usage', ...entry }));
+      client.end();
+    });
+    client.on('error', () => {}); // Silently ignore if dashboard not running
+  } catch {}
+
+  // Output approve (PostToolUse hooks should not block)
+  console.log(JSON.stringify({ result: 'approve' }));
 }
 
-try { runHook(); } catch { process.exit(0); }
+main().catch(() => process.exit(0));

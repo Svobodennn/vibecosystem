@@ -3,11 +3,12 @@
  * Bash ciktisinda hata tespit ederse error-ledger.jsonl'e yazar.
  * Tum agent'lar session basinda bu hatalardan haberdar olur.
  */
-import { readFileSync, appendFileSync, mkdirSync, existsSync } from 'fs';
+import { readFileSync, appendFileSync, mkdirSync, existsSync, statSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
 import { notify } from './shared/notify.js';
 import { getCurrentRepo, createIssue } from './shared/github-bridge.js';
+import { ERROR_PATTERNS } from './shared/error-patterns.js';
 
 interface PostToolInput {
   session_id: string;
@@ -20,9 +21,13 @@ interface PostToolInput {
     description?: string;
     prompt?: string;
   };
-  tool_response?: string;
+  tool_response?: string | { stdout?: string; stderr?: string };
   // Agent tool çıktısı
   tool_output?: string;
+  // Subagent içindeki tool call'larda Claude Code bu alanları input'a koyar
+  // (2026-06-04 probe ile doğrulandı; env var DEĞİL)
+  agent_id?: string;
+  agent_type?: string;
 }
 
 interface ErrorEntry {
@@ -35,92 +40,11 @@ interface ErrorEntry {
   detail: string;
   file: string;
   lesson: string;
+  command?: string;
+  source?: string;
 }
 
-const ERROR_PATTERNS: Array<{
-  regex: RegExp;
-  type: string;
-  pattern: string;
-  lesson: (m: RegExpExecArray) => string;
-}> = [
-  // Build / TypeScript errors
-  {
-    regex: /error TS(\d+):\s*(.+)/,
-    type: 'build_fail',
-    pattern: 'typescript-error',
-    lesson: (m) => `TS${m[1]}: ${m[2].slice(0, 80)}`,
-  },
-  {
-    regex: /Cannot find module ['"](.+?)['"]/i,
-    type: 'build_fail',
-    pattern: 'missing-import',
-    lesson: (m) => `${m[1]} import'u eksik`,
-  },
-  {
-    regex: /Property ['"](.+?)['"] does not exist/i,
-    type: 'type_error',
-    pattern: 'missing-property',
-    lesson: (m) => `'${m[1]}' property'si yok`,
-  },
-  {
-    regex: /Type ['"](.+?)['"] is not assignable to type ['"](.+?)['"]/i,
-    type: 'type_error',
-    pattern: 'type-mismatch',
-    lesson: (m) => `${m[1]} → ${m[2]} atanamaz`,
-  },
-  // Test failures
-  {
-    regex: /FAIL\s+(.+?)$/m,
-    type: 'test_fail',
-    pattern: 'test-failure',
-    lesson: (m) => `Test FAIL: ${m[1].trim().slice(0, 80)}`,
-  },
-  {
-    regex: /(\d+) failed/i,
-    type: 'test_fail',
-    pattern: 'test-failure',
-    lesson: (m) => `${m[1]} test basarisiz`,
-  },
-  // Runtime errors
-  {
-    regex: /TypeError:\s*(.+)/,
-    type: 'runtime_error',
-    pattern: 'type-runtime-error',
-    lesson: (m) => `TypeError: ${m[1].slice(0, 80)}`,
-  },
-  {
-    regex: /ReferenceError:\s*(.+)/,
-    type: 'runtime_error',
-    pattern: 'reference-error',
-    lesson: (m) => `ReferenceError: ${m[1].slice(0, 80)}`,
-  },
-  {
-    regex: /SyntaxError:\s*(.+)/,
-    type: 'build_fail',
-    pattern: 'syntax-error',
-    lesson: (m) => `SyntaxError: ${m[1].slice(0, 80)}`,
-  },
-  {
-    regex: /(?:ENOENT|no such file|ENOENT: no such file or directory)[,:\s]+(?:open|stat|lstat|access|unlink|rename|read)?\s*['"](.+?)['"]/i,
-    type: 'runtime_error',
-    pattern: 'missing-file',
-    lesson: (m) => `Dosya bulunamadi: ${m[1]}`,
-  },
-  // Go errors
-  {
-    regex: /undefined:\s*(\w+)/,
-    type: 'build_fail',
-    pattern: 'go-undefined',
-    lesson: (m) => `${m[1]} tanimlanmamis`,
-  },
-  // Python errors
-  {
-    regex: /ModuleNotFoundError:\s*No module named ['"](.+?)['"]/,
-    type: 'runtime_error',
-    pattern: 'python-missing-module',
-    lesson: (m) => `Python modul eksik: ${m[1]}`,
-  },
-];
+// ERROR_PATTERNS artık shared/error-patterns.ts içinde (test edilebilir ortak kütüphane)
 
 function extractFile(output: string, command?: string): string {
   // Dosya adini hata ciktisindan cikar
@@ -146,21 +70,29 @@ function main() {
   const isAgentTool = input.tool_name === 'Agent';
 
   // Agent tool'u için: subagent_type'ı agent kimliği olarak kullan
-  // Bash tool'u için: ortam değişkenlerinden al (main veya mevcut subagent)
+  // Diğer tool'lar için: hook input'undaki agent_id/agent_type alanları
+  // (subagent içindeki çağrılarda dolu gelir, main context'te yoktur)
   const sessionId = input.session_id?.slice(0, 8) || 'unknown';
   const agentId = isAgentTool
     ? (input.tool_input?.subagent_type || 'unknown-agent')
-    : (process.env.CLAUDE_AGENT_ID || 'main');
+    : (input.agent_id || 'main');
   const agentType = isAgentTool
     ? (input.tool_input?.subagent_type || 'unknown-agent')
-    : (process.env.CLAUDE_AGENT_TYPE || 'main');
+    : (input.agent_type || 'main');
 
   // Çıktıyı al: Agent tool için tool_output, Bash için tool_response
-  const output = isAgentTool
-    ? (typeof input.tool_output === 'string' ? input.tool_output : '')
-    : (typeof input.tool_response === 'string'
-        ? input.tool_response
-        : JSON.stringify(input.tool_response || ''));
+  // Bash tool_response objedir: {stdout, stderr, ...} (probe ile doğrulandı)
+  let output: string;
+  if (isAgentTool) {
+    output = typeof input.tool_output === 'string' ? input.tool_output : '';
+  } else if (typeof input.tool_response === 'string') {
+    output = input.tool_response;
+  } else if (input.tool_response && typeof input.tool_response === 'object') {
+    const r = input.tool_response;
+    output = [r.stdout, r.stderr].filter(Boolean).join('\n') || JSON.stringify(r);
+  } else {
+    output = '';
+  }
 
   if (!output || output.length < 10) {
     console.log('{}');
@@ -183,6 +115,8 @@ function main() {
         // Agent tool için dosya adını çıktıdan çıkar; Bash için komuttan da bak
         file: extractFile(output, isAgentTool ? undefined : input.tool_input?.command),
         lesson: ep.lesson(match),
+        command: input.tool_input?.command?.slice(0, 200),
+        source: 'posttooluse-scan',
       });
     }
   }
@@ -206,7 +140,9 @@ function main() {
     // 3+ kez tekrarlayan hata pattern'i varsa opsiyonel GitHub issue olustur
     try {
       const ledgerPath2 = join(homedir(), '.claude', 'canavar', 'error-ledger.jsonl');
-      if (existsSync(ledgerPath2)) {
+      // E4 guard: rotation normalde dosyayı küçük tutar; yine de 1.5MB üstünde
+      // tüm-dosya sayımını atla (hot-path'te O(n) okuma yapma)
+      if (existsSync(ledgerPath2) && statSync(ledgerPath2).size <= 1_500_000) {
         const allLines = readFileSync(ledgerPath2, 'utf-8').split('\n').filter(l => l.trim());
         const patternCounts = new Map<string, number>();
         for (const line of allLines) {

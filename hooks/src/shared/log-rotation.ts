@@ -13,7 +13,7 @@ export function appendWithRotation(
   keepLines: number = 5000
 ): void {
   // Append first to ensure the line is never lost
-  appendFileSync(filePath, line, { mode: 0o600 });
+  appendFileSync(filePath, line);
 
   try {
     const stats = statSync(filePath);

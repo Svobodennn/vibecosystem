@@ -13,6 +13,16 @@ interface SessionStartInput {
 // ============================================
 
 /**
+ * Build handoff directory name with UUID suffix for isolation.
+ * Format: {sessionName}-{first8CharsOfUUID}
+ * Example: "auth-refactor-550e8400"
+ */
+export function buildHandoffDirName(sessionName: string, sessionId: string): string {
+  const uuidShort = sessionId.replace(/-/g, '').slice(0, 8);
+  return `${sessionName}-${uuidShort}`;
+}
+
+/**
  * Parse handoff directory name to extract session name and UUID suffix.
  * Returns { sessionName, uuidShort } where uuidShort is null for legacy dirs.
  */
@@ -24,6 +34,57 @@ export function parseHandoffDirName(dirName: string): { sessionName: string; uui
   }
   // Legacy format: no UUID suffix
   return { sessionName: dirName, uuidShort: null };
+}
+
+/**
+ * Find handoff with UUID isolation support.
+ * Priority:
+ * 1. Exact UUID match: {sessionName}-{uuidShort}/
+ * 2. Legacy path: {sessionName}/
+ * 3. Any other UUID-suffixed dir for same session name (fallback)
+ */
+export function findSessionHandoffWithUUID(sessionName: string, sessionId: string): string | null {
+  const projectDir = process.env.CLAUDE_PROJECT_DIR || process.cwd();
+  const handoffsBase = path.join(projectDir, 'thoughts', 'shared', 'handoffs');
+
+  if (!fs.existsSync(handoffsBase)) return null;
+
+  const uuidShort = sessionId.replace(/-/g, '').slice(0, 8).toLowerCase();
+
+  // Priority 1: Exact UUID match
+  const exactDir = path.join(handoffsBase, `${sessionName}-${uuidShort}`);
+  if (fs.existsSync(exactDir)) {
+    return findMostRecentMdFile(exactDir);
+  }
+
+  // Priority 2: Legacy path (no UUID suffix)
+  const legacyDir = path.join(handoffsBase, sessionName);
+  if (fs.existsSync(legacyDir) && fs.statSync(legacyDir).isDirectory()) {
+    const result = findMostRecentMdFile(legacyDir);
+    if (result) return result;
+  }
+
+  // Priority 3: Any UUID-suffixed dir for same session name
+  const allDirs = fs.readdirSync(handoffsBase).filter(d => {
+    const stat = fs.statSync(path.join(handoffsBase, d));
+    if (!stat.isDirectory()) return false;
+    const { sessionName: parsedName } = parseHandoffDirName(d);
+    return parsedName === sessionName;
+  });
+
+  // Sort by mtime (most recent first)
+  allDirs.sort((a, b) => {
+    const statA = fs.statSync(path.join(handoffsBase, a));
+    const statB = fs.statSync(path.join(handoffsBase, b));
+    return statB.mtime.getTime() - statA.mtime.getTime();
+  });
+
+  for (const dir of allDirs) {
+    const result = findMostRecentMdFile(path.join(handoffsBase, dir));
+    if (result) return result;
+  }
+
+  return null;
 }
 
 /**

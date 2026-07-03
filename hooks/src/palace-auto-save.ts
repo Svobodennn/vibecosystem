@@ -4,15 +4,14 @@
  * PostToolUse hook that detects important decisions, discoveries,
  * and constraints from agent outputs and saves them to the palace.
  *
- * Triggers on: Agent tool completions with significant output
+ * Triggers on: Agent tool completions, significant Edit/Write operations
  * Saves to: ~/.claude/palace/{project}.jsonl
  */
 
 import { readFileSync, writeFileSync, appendFileSync, existsSync, mkdirSync } from 'node:fs';
-import { join, resolve, sep } from 'node:path';
+import { join, basename } from 'node:path';
 import { homedir } from 'node:os';
-import { randomUUID } from 'node:crypto';
-import { getSafeProjectName } from './shared/project-identity.js';
+import { createHash } from 'node:crypto';
 
 interface ToolEvent {
   tool_name: string;
@@ -58,8 +57,7 @@ function detectRoom(content: string): string {
     for (const kw of keywords) {
       if (lower.includes(kw)) score++;
     }
-    // Require at least 2 keyword matches to avoid false positives
-    if (score > bestScore && score >= 2) {
+    if (score > bestScore) {
       bestScore = score;
       bestRoom = room;
     }
@@ -77,8 +75,20 @@ function detectType(content: string): PalaceEntry['type'] {
   return 'discovery';
 }
 
+function getProjectName(): string {
+  const projectDir = process.env.CLAUDE_PROJECT_DIR || process.cwd();
+  const pkgPath = join(projectDir, 'package.json');
+  if (existsSync(pkgPath)) {
+    try {
+      const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+      if (pkg.name) return pkg.name.replace(/^@[^/]+\//, '');
+    } catch {}
+  }
+  return basename(projectDir);
+}
+
 function generateId(): string {
-  return 'd-' + randomUUID().slice(0, 12);
+  return 'd-' + createHash('md5').update(Date.now().toString() + Math.random().toString()).digest('hex').slice(0, 8);
 }
 
 function isSignificantOutput(output: string): boolean {
@@ -89,27 +99,14 @@ function isSignificantOutput(output: string): boolean {
   return markers.some(m => lower.includes(m));
 }
 
-/**
- * Verify that a constructed path stays within PALACE_DIR.
- * Returns null if the path would escape.
- */
-function safePalacePath(filename: string): string | null {
-  const candidate = resolve(join(PALACE_DIR, filename));
-  const palaceRoot = resolve(PALACE_DIR);
-  if (!candidate.startsWith(palaceRoot + sep) && candidate !== palaceRoot) {
-    return null;
-  }
-  return candidate;
-}
-
 function saveToPalace(entry: PalaceEntry): void {
   mkdirSync(PALACE_DIR, { recursive: true });
 
-  // Index path (constant, safe)
+  // Update index
   const indexPath = join(PALACE_DIR, 'index.json');
   let index: Record<string, { rooms: string[]; lastUpdate: string }> = {};
   if (existsSync(indexPath)) {
-    try { index = JSON.parse(readFileSync(indexPath, 'utf-8')); } catch { /* use empty */ }
+    try { index = JSON.parse(readFileSync(indexPath, 'utf-8')); } catch {}
   }
 
   if (!index[entry.wing]) {
@@ -121,34 +118,35 @@ function saveToPalace(entry: PalaceEntry): void {
   index[entry.wing].lastUpdate = entry.timestamp;
   writeFileSync(indexPath, JSON.stringify(index, null, 2));
 
-  // Append entry - verify path stays inside palace dir
-  const wingFile = safePalacePath(`${entry.wing}.jsonl`);
-  if (!wingFile) return; // silently drop if path would escape
+  // Append entry
+  const wingFile = join(PALACE_DIR, `${entry.wing}.jsonl`);
   appendFileSync(wingFile, JSON.stringify(entry) + '\n');
 }
 
-function runHook(): void {
+async function main() {
   let input: string;
   try {
-    input = readFileSync(0, 'utf-8');
-  } catch { return; }
+    input = readFileSync('/dev/stdin', 'utf-8');
+  } catch { process.exit(0); }
 
   let event: ToolEvent;
   try {
     event = JSON.parse(input);
-  } catch { return; }
+  } catch { process.exit(0); }
 
   // Only process Agent completions with significant output
   if (event.tool_name !== 'Agent' || !event.tool_output) {
+    console.log(JSON.stringify({ result: 'approve' }));
     return;
   }
 
   const output = String(event.tool_output);
   if (!isSignificantOutput(output)) {
+    console.log(JSON.stringify({ result: 'approve' }));
     return;
   }
 
-  const wing = getSafeProjectName();
+  const wing = getProjectName();
   const room = detectRoom(output);
   const type = detectType(output);
   const agentType = String(event.tool_input?.subagent_type || 'unknown');
@@ -157,7 +155,10 @@ function runHook(): void {
   const sentences = output.split(/[.!?\n]/).filter(s => s.trim().length > 20);
   const content = sentences.slice(0, 2).join('. ').slice(0, 200);
 
-  if (!content) return;
+  if (!content) {
+    console.log(JSON.stringify({ result: 'approve' }));
+    return;
+  }
 
   const entry: PalaceEntry = {
     id: generateId(),
@@ -171,7 +172,11 @@ function runHook(): void {
     type,
   };
 
-  try { saveToPalace(entry); } catch { /* silent fail */ }
+  try {
+    saveToPalace(entry);
+  } catch {}
+
+  console.log(JSON.stringify({ result: 'approve' }));
 }
 
-try { runHook(); } catch { process.exit(0); }
+main().catch(() => process.exit(0));

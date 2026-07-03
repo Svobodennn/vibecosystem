@@ -5,7 +5,7 @@ import { spawnSync } from 'child_process';
 import { tmpdir } from 'os';
 
 // Import shared resource reader (Phase 4 module)
-import { readResourceState } from './shared/resource-reader.js';
+import { readResourceState, ResourceState } from './shared/resource-reader.js';
 import { startTimer, endTimer } from './shared/hook-profiler.js';
 
 // Import validation module for false-positive reduction
@@ -42,9 +42,9 @@ const PATTERN_AGENT_MAP: Record<string, string> = {
     'hierarchical': 'kraken',
     'pipeline': 'kraken',
     'generator_critic': 'review-agent',
-    'adversarial': 'validate-agent',
+    'adversarial': 'plan-reviewer',
     'map_reduce': 'kraken',
-    'jury': 'validate-agent',
+    'jury': 'plan-reviewer',
     'blackboard': 'maestro',
     'circuit_breaker': 'kraken',
     'chain_of_responsibility': 'maestro',

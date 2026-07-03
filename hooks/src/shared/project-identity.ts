@@ -120,37 +120,3 @@ function detectProjectName(projectPath: string): string {
   // Fallback: dizin ismi
   return basename(projectPath);
 }
-
-/**
- * Sanitize a project name for use as a filename/path component.
- * Prevents path traversal by stripping directory separators and control chars.
- * Only allows alphanumeric, dash, underscore, dot (but not leading dot).
- */
-export function sanitizeProjectName(name: string): string {
-  if (!name || typeof name !== 'string') return 'default';
-  // Strip npm scope prefix if present
-  const stripped = name.replace(/^@[^/]+\//, '');
-  // Replace anything that isn't safe with underscore
-  const safe = stripped.replace(/[^a-zA-Z0-9_\-.]/g, '_').slice(0, 64);
-  // Prevent leading dot (hidden files) and empty results
-  const result = safe.replace(/^\.+/, '').replace(/\.+$/, '');
-  return result || 'default';
-}
-
-/**
- * Safe wrapper: returns a sanitized project name suitable for filesystem use.
- * Always returns a valid, safe name - never throws.
- */
-export function getSafeProjectName(): string {
-  try {
-    const identity = getProjectIdentity();
-    if (identity?.name) return sanitizeProjectName(identity.name);
-  } catch { /* fall through */ }
-
-  try {
-    const dir = process.env.CLAUDE_PROJECT_DIR || process.cwd();
-    return sanitizeProjectName(basename(dir));
-  } catch {
-    return 'default';
-  }
-}

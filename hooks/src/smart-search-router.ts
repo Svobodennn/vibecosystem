@@ -9,10 +9,10 @@
  * Uses TLDR daemon for fast symbol lookups when available.
  */
 
-import { existsSync, mkdirSync, writeFileSync } from 'fs';
-import { execSync, spawnSync } from 'child_process';
+import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
+import { execSync } from 'child_process';
 import { join } from 'path';
-import { queryDaemonSync, trackHookActivitySync } from './daemon-client.js';
+import { queryDaemonSync, DaemonResponse, trackHookActivitySync } from './daemon-client.js';
 import { isRelevantForIntent } from './shared/context-budget.js';
 import { startTimer, endTimer } from './shared/hook-profiler.js';
 
@@ -98,11 +98,11 @@ function tldrSearch(pattern: string, projectDir: string = '.'): TLDRSearchResult
  */
 function ripgrepFallback(pattern: string, projectDir: string): TLDRSearchResult[] {
   try {
-    const rg = spawnSync('rg', [pattern, projectDir, '--type', 'py', '--line-number', '--max-count', '10'], {
-      encoding: 'utf-8',
-      timeout: 3000,
-    });
-    const result = rg.stdout || '';
+    const escaped = pattern.replace(/"/g, '\\"').replace(/\$/g, '\\$');
+    const result = execSync(
+      `rg "${escaped}" "${projectDir}" --type py --line-number --max-count 10 2>/dev/null`,
+      { encoding: 'utf-8', timeout: 3000 }
+    );
     // Parse ripgrep output: file:line:content
     return result.trim().split('\n').filter(l => l).slice(0, 10).map(line => {
       const match = line.match(/^([^:]+):(\d+):(.*)$/);

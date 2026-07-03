@@ -11,7 +11,7 @@
  * 4. Claude proactively discloses and acts on relevant memories
  */
 
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { spawnSync } from 'child_process';
 import { getOpcDir } from './shared/opc-path.js';
 

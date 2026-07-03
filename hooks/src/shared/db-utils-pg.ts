@@ -16,6 +16,8 @@ import { spawnSync } from 'child_process';
 import type { QueryResult } from './types.js';
 import { requireOpcDir } from './opc-path.js';
 
+// Re-export SAFE_ID_PATTERN and isValidId from pattern-router for convenience
+export { SAFE_ID_PATTERN, isValidId } from './pattern-router.js';
 
 /**
  * Get the PostgreSQL connection string.

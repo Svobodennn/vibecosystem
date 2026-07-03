@@ -16,8 +16,8 @@
  *   node plugin-registry.mjs disable <hook># Hook'u deaktive et
  *   node plugin-registry.mjs status        # Ozet goster
  */
-import { readFileSync, writeFileSync, existsSync, readdirSync } from 'fs';
-import { join } from 'path';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 'fs';
+import { join, basename } from 'path';
 import { homedir } from 'os';
 
 const CLAUDE_HOME = join(homedir(), '.claude');
@@ -31,9 +31,7 @@ interface PluginConfig {
 function loadConfig(): PluginConfig {
   try {
     if (existsSync(CONFIG_FILE)) {
-      // hooks/skills anahtarlari all/smart profilinde silinir - normalize et
-      const parsed = JSON.parse(readFileSync(CONFIG_FILE, 'utf-8'));
-      return { hooks: {}, skills: {}, ...parsed };
+      return JSON.parse(readFileSync(CONFIG_FILE, 'utf-8'));
     }
   } catch {
     // corrupt

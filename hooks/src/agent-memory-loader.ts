@@ -13,7 +13,7 @@
  *   local:   <cwd>/.claude/agent-memory-local/<agent-type>/MEMORY.md
  */
 import { readFileSync, existsSync, readdirSync, statSync } from 'fs';
-import { join } from 'path';
+import { join, sep } from 'path';
 import { homedir } from 'os';
 
 interface PreToolInput {
