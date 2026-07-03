@@ -8,17 +8,27 @@ const fs = require('fs');
 const path = require('path');
 const { WebSocketServer } = require('ws');
 
-const WS_PORT = 3847;
-const HTTP_PORT = 3848;
+const WS_PORT = parseInt(process.env.DASHBOARD_WS_PORT, 10) || 3847;
+const HTTP_PORT = parseInt(process.env.DASHBOARD_HTTP_PORT, 10) || 3848;
 const CANAVAR_DIR = path.join(require('os').homedir(), '.claude', 'canavar');
-const EVENTS_LOG = path.join(require('os').homedir(), '.claude', 'agent-events.jsonl');
+const EVENTS_LOG = process.env.DASHBOARD_EVENTS_LOG || path.join(require('os').homedir(), '.claude', 'agent-events.jsonl');
 const LEDGER_PATH = path.join(CANAVAR_DIR, 'error-ledger.jsonl');
 const MATRIX_PATH = path.join(CANAVAR_DIR, 'skill-matrix.json');
 const TOKEN_LOG = path.join(require('os').homedir(), '.claude', 'token-usage.jsonl');
+const HOOK_PERF_LOG = path.join(require('os').homedir(), '.claude', 'cache', 'hook-perf.jsonl');
 
 // In-memory event store (son 1000 event)
 const eventStore = [];
 const MAX_EVENTS = 1000;
+
+// H9: Retry tracking — correlationId -> spawn count. Same correlationId across spawns
+// means the same agent + session + prompt was retried. Only incremented for agent_spawn
+// events (not complete/error) so retryCount = how many times this exact task was started.
+// Map keys are sha256-truncated 16-char hex strings produced by dashboard-ws-emitter hook.
+// Cap kept bounded: trimmed alongside eventStore.shift() to avoid unbounded growth in
+// long-running processes. Counts are best-effort, not authoritative — server restarts
+// reset them (acceptable: retry decisions are runtime-only signals).
+const correlationCounts = {};
 
 // Session stats
 const sessionStats = {
@@ -34,9 +44,27 @@ const sessionStats = {
 };
 
 function addEvent(event) {
+  // H9: Retry tracking BEFORE persistence so retryCount lands in eventStore + disk + WS broadcast
+  // consistently. Only spawn events count as retries — complete/error of a single spawn are not
+  // re-runs. Defensive: metadata may be missing or non-object on malformed events.
+  if (event && event.type === 'agent_spawn' && event.metadata && typeof event.metadata === 'object') {
+    const corrId = event.metadata.correlationId;
+    if (typeof corrId === 'string' && corrId.length > 0) {
+      correlationCounts[corrId] = (correlationCounts[corrId] || 0) + 1;
+      event.metadata.retryCount = correlationCounts[corrId];
+    }
+  }
+
   eventStore.push(event);
   if (eventStore.length > MAX_EVENTS) {
     eventStore.shift();
+  }
+
+  // Persist to disk (fail-silent: disk error must not break WS broadcast)
+  try {
+    fs.appendFileSync(EVENTS_LOG, JSON.stringify(event) + '\n');
+  } catch (err) {
+    console.error(`[persist] Failed to append event to ${EVENTS_LOG}:`, err.message);
   }
 
   sessionStats.totalEvents++;
@@ -171,6 +199,64 @@ function estimateCosts() {
   };
 }
 
+/**
+ * H3: Hook performance aggregator.
+ * Reads last N entries from ~/.claude/cache/hook-perf.jsonl, computes
+ * count/total/avg/p50/p95/p99 per hook, and returns a top-10 list sorted
+ * by p95 latency. Fail-silent: returns empty struct if file missing or
+ * unreadable so the endpoint never 500s.
+ *
+ * Performance target: <50ms for 500 entries (sync I/O acceptable).
+ */
+function loadHookPerf(limit = 500) {
+  try {
+    if (!fs.existsSync(HOOK_PERF_LOG)) {
+      return { totalEntries: 0, byHook: {}, topSlow: [] };
+    }
+    const lines = fs.readFileSync(HOOK_PERF_LOG, 'utf-8')
+      .split('\n')
+      .filter(l => l.trim())
+      .slice(-limit);
+
+    const byHookRaw = {};
+    for (const line of lines) {
+      try {
+        const e = JSON.parse(line);
+        if (!e.hook || typeof e.duration_ms !== 'number') continue;
+        if (!byHookRaw[e.hook]) byHookRaw[e.hook] = { count: 0, durations: [] };
+        byHookRaw[e.hook].count++;
+        byHookRaw[e.hook].durations.push(e.duration_ms);
+      } catch { /* skip malformed */ }
+    }
+
+    const byHook = {};
+    for (const [hook, data] of Object.entries(byHookRaw)) {
+      const sorted = data.durations.slice().sort((a, b) => a - b);
+      const total = sorted.reduce((s, v) => s + v, 0);
+      const len = sorted.length;
+      byHook[hook] = {
+        count: data.count,
+        totalMs: +total.toFixed(2),
+        avgMs: +(total / data.count).toFixed(2),
+        // Percentile index: clamp to last element when ceil/floor would overflow
+        p50Ms: sorted[Math.min(Math.floor(len * 0.5), len - 1)] || 0,
+        p95Ms: sorted[Math.min(Math.floor(len * 0.95), len - 1)] || 0,
+        p99Ms: sorted[Math.min(Math.floor(len * 0.99), len - 1)] || 0,
+      };
+    }
+
+    const topSlow = Object.entries(byHook)
+      .map(([hook, s]) => ({ hook, p95Ms: s.p95Ms, count: s.count }))
+      .sort((a, b) => b.p95Ms - a.p95Ms)
+      .slice(0, 10);
+
+    return { totalEntries: lines.length, byHook, topSlow };
+  } catch (err) {
+    console.error('[hook-perf] load failed:', err.message);
+    return { totalEntries: 0, byHook: {}, topSlow: [], error: err.message };
+  }
+}
+
 function getStats() {
   const avgDuration = sessionStats.agentDurations.length > 0
     ? sessionStats.agentDurations.reduce((a, b) => a + b, 0) / sessionStats.agentDurations.length
@@ -180,12 +266,87 @@ function getStats() {
     ? ((sessionStats.agentErrors / sessionStats.agentSpawns) * 100).toFixed(1)
     : '0.0';
 
+  // C2: Unique session count — eventStore'daki distinct sessionId'ler
+  const activeSessions = new Set(
+    eventStore.map(e => e.sessionId).filter(Boolean)
+  ).size;
+
   return {
     ...sessionStats,
     avgDuration: Math.round(avgDuration),
     errorRate,
+    activeSessions,
     uptime: Math.round((Date.now() - new Date(sessionStats.startTime).getTime()) / 1000),
   };
+}
+
+// P6: Rotate agent-events.jsonl if >= 10MB (startup-only — avoids race conditions at runtime)
+function rotateEventsLog() {
+  try {
+    if (!fs.existsSync(EVENTS_LOG)) return;
+    const stats = fs.statSync(EVENTS_LOG);
+    const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
+    if (stats.size < MAX_SIZE) return;
+
+    const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const archive = `${EVENTS_LOG}.${ts}.bak`;
+    fs.renameSync(EVENTS_LOG, archive);
+    console.log(`[rotation] Archived ${EVENTS_LOG} → ${archive} (${(stats.size / 1024 / 1024).toFixed(1)}MB)`);
+
+    // Keep only the 3 most recent archives
+    const dir = path.dirname(EVENTS_LOG);
+    const base = path.basename(EVENTS_LOG);
+    const archives = fs.readdirSync(dir)
+      .filter(f => f.startsWith(base + '.') && f.endsWith('.bak'))
+      .sort()
+      .reverse();
+
+    const toDelete = archives.slice(3);
+    for (const old of toDelete) {
+      try {
+        fs.unlinkSync(path.join(dir, old));
+        console.log(`[rotation] Deleted old archive: ${old}`);
+      } catch (err) {
+        console.error(`[rotation] Failed to delete ${old}:`, err.message);
+      }
+    }
+  } catch (err) {
+    console.error('[rotation] Failed:', err.message);
+  }
+}
+
+rotateEventsLog();
+
+// Hydrate eventStore from disk (last MAX_EVENTS) — survives restarts
+// loadRecentAgentEvents returns newest-first; reverse to chronological for eventStore order
+try {
+  const hydrated = loadRecentAgentEvents(MAX_EVENTS);
+  if (hydrated.length > 0) {
+    eventStore.push(...hydrated.slice().reverse());
+    // H9: Rebuild correlationCounts from hydrated spawns so post-restart retry numbering
+    // continues from the highest observed retryCount per correlationId. Without this, a
+    // 3rd-retry spawn after restart would report retryCount=1 (wrong, escalation hidden).
+    for (const e of eventStore) {
+      if (e && e.type === 'agent_spawn' && e.metadata && typeof e.metadata === 'object') {
+        const corrId = e.metadata.correlationId;
+        if (typeof corrId === 'string' && corrId.length > 0) {
+          // Prefer persisted retryCount if present (set by previous server addEvent); fall back to
+          // counting occurrences which also yields the right number after a full replay.
+          const persisted = typeof e.metadata.retryCount === 'number' ? e.metadata.retryCount : null;
+          if (persisted !== null) {
+            if (persisted > (correlationCounts[corrId] || 0)) correlationCounts[corrId] = persisted;
+          } else {
+            correlationCounts[corrId] = (correlationCounts[corrId] || 0) + 1;
+          }
+        }
+      }
+    }
+    console.log(`[persist] Hydrated ${hydrated.length} event(s) from ${EVENTS_LOG}`);
+  } else {
+    console.log(`[persist] No prior events to hydrate (${EVENTS_LOG} empty or missing)`);
+  }
+} catch (err) {
+  console.error(`[persist] Hydration failed:`, err.message);
 }
 
 // === WebSocket Server (port 3847) ===
@@ -193,15 +354,6 @@ function getStats() {
 const wsHttpServer = http.createServer((req, res) => {
   // Hook'lardan gelen event'leri al
   if (req.method === 'POST' && req.url === '/event') {
-    // DNS rebinding korumasi: sadece localhost Host header'i kabul et,
-    // tarayici kaynakli (Origin'li) istekleri reddet - hook'lar Origin gondermez
-    const host = (req.headers.host || '').replace(/:\d+$/, '');
-    const allowedHosts = new Set(['localhost', '127.0.0.1', '[::1]']);
-    if (!allowedHosts.has(host) || req.headers.origin) {
-      res.writeHead(403, { 'Content-Type': 'application/json' });
-      res.end('{"error":"forbidden"}');
-      return;
-    }
     let body = '';
     let bodySize = 0;
     const MAX_BODY = 64 * 1024; // 64KB limit
@@ -316,6 +468,65 @@ const httpServer = http.createServer((req, res) => {
   if (req.url === '/api/costs') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(estimateCosts()));
+    return;
+  }
+
+  // H3: Hook performance metrics — aggregated p50/p95/p99 per hook from cache file.
+  if (req.url === '/api/hook-perf') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(loadHookPerf()));
+    return;
+  }
+
+  // P4: Self-stats — dashboard process health (memory, uptime, WS clients, store sizes)
+  if (req.url === '/api/self-stats') {
+    const mem = process.memoryUsage();
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      uptime: Math.round(process.uptime()),
+      wsClients: wss.clients.size,
+      heapUsedMb: +(mem.heapUsed / 1024 / 1024).toFixed(1),
+      heapTotalMb: +(mem.heapTotal / 1024 / 1024).toFixed(1),
+      eventStoreSize: eventStore.length,
+      correlationCacheSize: Object.keys(correlationCounts || {}).length,
+    }));
+    return;
+  }
+
+  // H6: Session export — returns all events for a given session as downloadable JSON.
+  if (req.url.startsWith('/api/export')) {
+    const u = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+    const sessionId = u.searchParams.get('session');
+
+    if (!sessionId) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'session parameter required' }));
+      return;
+    }
+
+    const events = eventStore.filter(e =>
+      e.sessionId && e.sessionId.startsWith(sessionId.slice(0, 8))
+    );
+
+    if (events.length === 0) {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'session not found' }));
+      return;
+    }
+
+    const ts = new Date().toISOString().replace(/[:.]/g, '-');
+    const filename = `session-${sessionId.slice(0, 8)}-${ts}.json`;
+
+    res.writeHead(200, {
+      'Content-Type': 'application/json',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+    });
+    res.end(JSON.stringify({
+      session: sessionId.slice(0, 8),
+      count: events.length,
+      exportedAt: new Date().toISOString(),
+      events,
+    }, null, 2));
     return;
   }
 

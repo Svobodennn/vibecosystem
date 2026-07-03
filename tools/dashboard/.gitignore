@@ -1,0 +1,9 @@
+node_modules/
+*.log
+.DS_Store
+*.bak
+agent-events.jsonl
+agent-events-*.jsonl.bak
+
+# Agent worktree workspace
+.claude/

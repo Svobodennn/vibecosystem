@@ -79,6 +79,59 @@
     .timeline-bar.done { background: linear-gradient(90deg, #22c55e, #16a34a); }
     .timeline-bar.error { background: linear-gradient(90deg, #ef4444, #dc2626); }
 
+    /* T1: Selected bar (click -> detail panel). outline instead of box-shadow so it
+       never fights the H5 stuck inset shadows. z-index lifts it above the now-line. */
+    .timeline-bar.selected {
+      outline: 2px solid #e5e7eb;
+      outline-offset: 1px;
+      z-index: 3;
+    }
+
+    /* T2: Time axis + gridlines + now-line */
+    .tl-grid {
+      position: absolute; top: 0; bottom: 0; width: 1px;
+      background: rgba(255, 255, 255, 0.07);
+      pointer-events: none;
+    }
+    .tl-now {
+      position: absolute; top: 0; bottom: 0; width: 1px;
+      background: #f43f5e; opacity: 0.75;
+      pointer-events: none; z-index: 2;
+    }
+    .tl-axis-label {
+      position: absolute; top: 0; transform: translateX(-50%);
+      font-size: 9px; line-height: 14px; color: #6b7280;
+      white-space: nowrap; pointer-events: none;
+    }
+
+    /* T4: Time window zoom buttons */
+    .tl-zoom-btn {
+      font-size: 10px; padding: 1px 6px; border-radius: 4px;
+      border: 1px solid transparent; color: #6b7280;
+      cursor: pointer; background: transparent;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .tl-zoom-btn:hover { color: #e5e7eb; }
+    .tl-zoom-btn.tl-zoom-active {
+      color: #8b5cf6; border-color: rgba(139, 92, 246, 0.4);
+      background: rgba(139, 92, 246, 0.1);
+    }
+
+    /* H5: Stuck agent visual hints — overlay on running bars, never replace base color */
+    .timeline-bar.running.stuck-yellow {
+      box-shadow: inset 0 0 0 2px #eab308, 0 0 8px rgba(234, 179, 8, 0.4);
+      background: linear-gradient(90deg, #8b5cf6, #eab308);
+    }
+    .timeline-bar.running.stuck-red {
+      box-shadow: inset 0 0 0 2px #ef4444, 0 0 12px rgba(239, 68, 68, 0.6);
+      background: linear-gradient(90deg, #8b5cf6, #ef4444);
+      animation: stuckPulse 1s infinite;
+    }
+    @keyframes stuckPulse {
+      0%, 100% { opacity: 1; box-shadow: inset 0 0 0 2px #ef4444, 0 0 12px rgba(239, 68, 68, 0.6); }
+      50% { opacity: 0.7; box-shadow: inset 0 0 0 2px #ef4444, 0 0 20px rgba(239, 68, 68, 0.9); }
+    }
+
     #feed-container { max-height: 500px; overflow-y: auto; }
     #error-container { max-height: 400px; overflow-y: auto; }
     #timeline-container { max-height: 350px; overflow-y: auto; }
@@ -92,15 +145,32 @@
       color: #8b5cf6;
       border-bottom: 2px solid #8b5cf6;
     }
+
+    /* P7: Accessibility — visible focus ring for keyboard users. Mouse users still see
+       the default behavior (no big rings) because we use :focus-visible, not :focus. */
+    .feed-item:focus-visible {
+      outline: 2px solid #8b5cf6;
+      outline-offset: 2px;
+      background: rgba(139, 92, 246, 0.08);
+      border-radius: 4px;
+    }
+    button:focus-visible,
+    select:focus-visible,
+    input:focus-visible {
+      outline: 2px solid #8b5cf6;
+      outline-offset: 2px;
+    }
+    /* Skip default outline replaced by ring above; ensure no double outlines */
+    .feed-item:focus:not(:focus-visible) { outline: none; }
   </style>
 </head>
 <body class="min-h-screen">
 
-  <!-- Header -->
-  <header class="border-b border-vibe-border px-6 py-4">
-    <div class="flex items-center justify-between max-w-[1600px] mx-auto">
-      <div class="flex items-center gap-4">
-        <h1 class="text-xl font-bold">
+  <!-- Header — P3 responsive: stack on <md, row on md+ ; filters/buttons wrap on small screens -->
+  <header class="border-b border-vibe-border px-4 md:px-6 py-3 md:py-4">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4 max-w-[1600px] mx-auto">
+      <div class="flex items-center gap-3 md:gap-4 flex-wrap">
+        <h1 class="text-lg md:text-xl font-bold">
           <span class="text-vibe-accent">vibe</span><span class="text-vibe-muted">cosystem</span>
         </h1>
         <span class="text-xs mono text-vibe-muted bg-vibe-card px-2 py-1 rounded">Agent Monitor v2.0</span>
@@ -108,82 +178,151 @@
           DISCONNECTED
         </span>
       </div>
-      <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2 md:gap-4 flex-wrap">
         <!-- Filter -->
-        <select id="agent-filter" class="bg-vibe-card border border-vibe-border rounded px-3 py-1.5 text-sm mono text-vibe-text focus:border-vibe-accent outline-none">
+        <select id="agent-filter"
+          aria-label="Filter feed and timeline by agent type"
+          class="bg-vibe-card border border-vibe-border rounded px-3 py-1.5 text-sm mono text-vibe-text focus:border-vibe-accent outline-none focus-visible:ring-2 focus-visible:ring-vibe-accent">
           <option value="all">All Agents</option>
         </select>
+        <!-- Session Filter -->
+        <select id="session-filter"
+          aria-label="Filter events by Claude session ID"
+          class="bg-vibe-card border border-vibe-border rounded px-3 py-1.5 text-sm mono text-vibe-text focus:border-vibe-accent outline-none focus-visible:ring-2 focus-visible:ring-vibe-accent">
+          <option value="all">All Sessions</option>
+        </select>
+        <!-- H6: Export Button — disabled while "all sessions" selected -->
+        <button id="export-btn" onclick="exportSession()" disabled
+          aria-label="Export selected session events as JSON"
+          title="Önce bir session seç (All Sessions iken export edilemez)"
+          class="bg-vibe-card border border-vibe-border rounded px-3 py-1.5 text-xs mono text-vibe-muted opacity-50 cursor-not-allowed transition-colors">
+          EXPORT
+        </button>
         <!-- Pause/Resume -->
-        <button id="pause-btn" onclick="togglePause()" class="bg-vibe-card border border-vibe-border rounded px-3 py-1.5 text-sm mono hover:border-vibe-accent transition-colors">
+        <button id="pause-btn" onclick="togglePause()"
+          aria-label="Pause or resume live event stream"
+          class="bg-vibe-card border border-vibe-border rounded px-3 py-1.5 text-sm mono hover:border-vibe-accent transition-colors focus-visible:ring-2 focus-visible:ring-vibe-accent">
           PAUSE
         </button>
         <!-- Uptime -->
-        <span id="uptime" class="text-xs mono text-vibe-muted">00:00:00</span>
+        <span id="uptime" class="text-xs mono text-vibe-muted" aria-label="Dashboard uptime">00:00:00</span>
       </div>
     </div>
   </header>
 
-  <!-- Stats Bar -->
-  <div class="border-b border-vibe-border px-6 py-3">
-    <div class="flex gap-6 max-w-[1600px] mx-auto">
-      <div class="flex items-center gap-2">
+  <!-- Stats Bar — P3 responsive: 2-col grid on mobile, 4-col on md (tablet),
+       single flex row on lg+ (desktop). Each metric annotated with aria-label so
+       screen readers get e.g. "Spawns: 42" instead of "SPAWNS 42" (two stray cells). -->
+  <div class="border-b border-vibe-border px-4 md:px-6 py-3"
+       role="region" aria-label="Live aggregate statistics">
+    <div class="grid grid-cols-2 sm:grid-cols-4 lg:flex lg:gap-6 gap-x-4 gap-y-2 max-w-[1600px] mx-auto">
+      <div class="flex items-center gap-2" aria-label="Spawns total">
         <span class="text-vibe-muted text-xs">SPAWNS</span>
-        <span id="stat-spawns" class="mono text-lg font-bold text-vibe-accent">0</span>
+        <span id="stat-spawns" class="mono text-lg font-bold text-vibe-accent" aria-live="polite">0</span>
+        <!-- H7: spawn rate sparkline (last 60 min) -->
+        <span id="sparkline-spawn" class="inline-flex items-center" title="Spawn rate — last 60 min" aria-hidden="true"></span>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2" aria-label="Completed agents">
         <span class="text-vibe-muted text-xs">COMPLETE</span>
-        <span id="stat-completes" class="mono text-lg font-bold text-vibe-green">0</span>
+        <span id="stat-completes" class="mono text-lg font-bold text-vibe-green" aria-live="polite">0</span>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2" aria-label="Errored agents">
         <span class="text-vibe-muted text-xs">ERRORS</span>
-        <span id="stat-errors" class="mono text-lg font-bold text-vibe-red">0</span>
+        <span id="stat-errors" class="mono text-lg font-bold text-vibe-red" aria-live="polite">0</span>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2" aria-label="Tool calls">
         <span class="text-vibe-muted text-xs">TOOLS</span>
-        <span id="stat-tools" class="mono text-lg font-bold text-vibe-blue">0</span>
+        <span id="stat-tools" class="mono text-lg font-bold text-vibe-blue" aria-live="polite">0</span>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2" aria-label="Average agent duration">
         <span class="text-vibe-muted text-xs">AVG DURATION</span>
         <span id="stat-duration" class="mono text-lg font-bold text-vibe-yellow">-</span>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2" aria-label="Error rate percentage">
         <span class="text-vibe-muted text-xs">ERROR RATE</span>
-        <span id="stat-error-rate" class="mono text-lg font-bold text-vibe-red">0%</span>
+        <span id="stat-error-rate" class="mono text-lg font-bold text-vibe-red" aria-live="polite">0%</span>
+        <!-- H7: error rate sparkline (last 60 min) -->
+        <span id="sparkline-error" class="inline-flex items-center" title="Error rate — last 60 min" aria-hidden="true"></span>
+      </div>
+      <div class="flex items-center gap-2" aria-label="Active sessions">
+        <span class="text-vibe-muted text-xs">SESSIONS</span>
+        <span id="stat-sessions" class="mono text-lg font-bold text-vibe-accent">0</span>
+      </div>
+      <div class="flex items-center gap-2" aria-label="Estimated total tokens consumed">
+        <span class="text-vibe-muted text-xs">TOKENS</span>
+        <span id="stat-tokens" class="mono text-lg font-bold text-vibe-yellow" title="Estimated tokens consumed (char/4 heuristic)">-</span>
+        <!-- H7: token burn sparkline (last 60 min) -->
+        <span id="sparkline-tokens" class="inline-flex items-center" title="Token burn rate — last 60 min" aria-hidden="true"></span>
       </div>
     </div>
   </div>
 
-  <!-- Main Content -->
-  <main class="px-6 py-4 max-w-[1600px] mx-auto">
-    <div class="grid grid-cols-12 gap-4">
+  <!-- Main Content — P3 responsive: single column on mobile/tablet, 12-col grid on desktop.
+       Below lg (1024px) right-side panels stack BELOW timeline+feed, not beside.
+       pb-10 leaves room for the fixed self-stats footer (P4). -->
+  <main class="px-4 md:px-6 py-4 pb-10 max-w-[1600px] mx-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
-      <!-- Left: Timeline + Feed (8 cols) -->
-      <div class="col-span-8 space-y-4">
+      <!-- Left: Timeline + Feed (full width on mobile, 8 cols on lg+) -->
+      <div class="lg:col-span-8 space-y-4">
 
         <!-- Agent Timeline -->
         <div class="bg-vibe-card border border-vibe-border rounded-lg p-4">
-          <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center justify-between mb-3 gap-3 flex-wrap">
             <h2 class="text-sm font-semibold text-vibe-text">Agent Timeline</h2>
-            <span class="text-xs mono text-vibe-muted" id="timeline-count">0 agents</span>
+            <div class="flex items-center gap-3 ml-auto">
+              <!-- T4: Time window zoom — null = full span, otherwise trailing window anchored at now -->
+              <div class="flex items-center gap-1 mono" role="group" aria-label="Timeline time window">
+                <button onclick="setTimelineWindow(null)" id="tlw-all" class="tl-zoom-btn tl-zoom-active"
+                  aria-pressed="true">All</button>
+                <button onclick="setTimelineWindow(1800000)" id="tlw-30" class="tl-zoom-btn"
+                  aria-pressed="false">30m</button>
+                <button onclick="setTimelineWindow(900000)" id="tlw-15" class="tl-zoom-btn"
+                  aria-pressed="false">15m</button>
+                <button onclick="setTimelineWindow(300000)" id="tlw-5" class="tl-zoom-btn"
+                  aria-pressed="false">5m</button>
+              </div>
+              <span class="text-xs mono text-vibe-muted" id="timeline-count">0 agents</span>
+            </div>
           </div>
           <div id="timeline-container" class="space-y-2">
             <div class="text-center text-vibe-muted text-sm py-8">
               Waiting for agent events...
             </div>
           </div>
+          <!-- T1: Click-to-inspect detail panel. Populated by renderTimelineDetail();
+               hidden when no bar is selected. aria-live so SR users hear the selection. -->
+          <div id="timeline-detail" class="hidden mt-3 border-t border-vibe-border pt-3"
+               aria-live="polite" aria-label="Selected agent run details"></div>
         </div>
 
         <!-- Live Feed -->
         <div class="bg-vibe-card border border-vibe-border rounded-lg p-4">
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex gap-4">
-              <button onclick="setFeedTab('all')" class="text-sm font-semibold tab-active" id="tab-all">All Events</button>
-              <button onclick="setFeedTab('agents')" class="text-sm font-semibold text-vibe-muted hover:text-vibe-text" id="tab-agents">Agents Only</button>
-              <button onclick="setFeedTab('errors')" class="text-sm font-semibold text-vibe-muted hover:text-vibe-text" id="tab-errors">Errors</button>
+          <div class="flex items-center justify-between mb-3 gap-3 flex-wrap">
+            <div class="flex gap-4 items-center" role="tablist" aria-label="Feed filter tabs">
+              <button onclick="setFeedTab('all')" id="tab-all"
+                role="tab" aria-selected="true" aria-controls="feed-container"
+                class="text-sm font-semibold tab-active focus-visible:ring-2 focus-visible:ring-vibe-accent rounded px-1">All Events</button>
+              <button onclick="setFeedTab('agents')" id="tab-agents"
+                role="tab" aria-selected="false" aria-controls="feed-container"
+                class="text-sm font-semibold text-vibe-muted hover:text-vibe-text focus-visible:ring-2 focus-visible:ring-vibe-accent rounded px-1">Agents Only</button>
+              <button onclick="setFeedTab('errors')" id="tab-errors"
+                role="tab" aria-selected="false" aria-controls="feed-container"
+                class="text-sm font-semibold text-vibe-muted hover:text-vibe-text focus-visible:ring-2 focus-visible:ring-vibe-accent rounded px-1">Errors</button>
             </div>
-            <span class="text-xs mono text-vibe-muted" id="feed-count">0 events</span>
+            <div class="flex items-center gap-3 ml-auto">
+              <!-- H8: Search input — substring match across agent/prompt/tool/command (AND'ed with agent + session filters) -->
+              <input type="text" id="feed-search" placeholder="Search agent or prompt..."
+                aria-label="Filter feed events by substring"
+                class="bg-vibe-bg border border-vibe-border rounded px-2 py-1 text-xs mono text-vibe-text placeholder:text-vibe-muted focus:border-vibe-accent outline-none w-48 focus-visible:ring-2 focus-visible:ring-vibe-accent">
+              <span class="text-xs mono text-vibe-muted" id="feed-count" aria-live="polite">0 events</span>
+            </div>
           </div>
-          <div id="feed-container" class="space-y-1">
+          <!-- P7: role=log + aria-live=polite so screen readers announce new events without
+               interrupting the user. aria-label disambiguates from the timeline above. -->
+          <div id="feed-container" class="space-y-1"
+               role="log" aria-live="polite" aria-relevant="additions"
+               aria-label="Live event feed">
             <div class="text-center text-vibe-muted text-sm py-8">
               Live feed will appear here...
             </div>
@@ -191,8 +330,8 @@
         </div>
       </div>
 
-      <!-- Right: Errors + Agent Stats (4 cols) -->
-      <div class="col-span-4 space-y-4">
+      <!-- Right: Errors + Agent Stats (full width on mobile, 4 cols on lg+) -->
+      <div class="lg:col-span-4 space-y-4">
 
         <!-- Error Panel -->
         <div class="bg-vibe-card border border-vibe-border rounded-lg p-4">
@@ -216,9 +355,67 @@
             <div class="text-center text-vibe-muted text-sm py-4">No agent data yet</div>
           </div>
         </div>
+
+        <!-- Agent Health Panel (H1) -->
+        <div class="bg-vibe-card border border-vibe-border rounded-lg p-4">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-semibold text-vibe-text">Agent Health</h2>
+            <button onclick="fetchAgentHealth()" class="text-xs mono text-vibe-muted hover:text-vibe-accent transition-colors">
+              REFRESH
+            </button>
+          </div>
+          <div id="agent-health" class="space-y-1.5">
+            <div class="text-center text-vibe-muted text-sm py-4">Loading agent health...</div>
+          </div>
+        </div>
+
+        <!-- Token Burn Panel (C3) -->
+        <div class="bg-vibe-card border border-vibe-border rounded-lg p-4">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-semibold text-vibe-yellow">Token Burn</h2>
+            <button onclick="fetchTokenUsage()" class="text-xs mono text-vibe-muted hover:text-vibe-accent transition-colors">
+              REFRESH
+            </button>
+          </div>
+          <div class="mb-3 pb-3 border-b border-vibe-border">
+            <div class="flex items-baseline justify-between">
+              <span class="text-[11px] text-vibe-muted mono">TOTAL EST</span>
+              <span id="token-total" class="mono text-2xl font-bold text-vibe-yellow">-</span>
+            </div>
+            <div id="token-cost" class="text-[11px] mono text-vibe-muted mt-1">Cost estimate loading...</div>
+          </div>
+          <div class="mb-2">
+            <div class="text-[11px] text-vibe-muted mono mb-1.5">TOP AGENTS</div>
+            <div id="token-by-agent" class="space-y-1.5">
+              <div class="text-center text-vibe-muted text-xs py-2">No token data yet</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hook Performance Panel (H3) -->
+        <div class="bg-vibe-card border border-vibe-border rounded-lg p-4">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-semibold text-vibe-blue">Hook Performance</h2>
+            <span id="hook-perf-count" class="text-xs mono text-vibe-muted">- entries</span>
+          </div>
+          <div id="hook-perf" class="space-y-1">
+            <div class="text-center text-vibe-muted text-sm py-4">Loading hook performance...</div>
+          </div>
+        </div>
       </div>
     </div>
   </main>
+
+  <!-- P4: Self-Stats Footer — fixed bottom strip showing dashboard process health.
+       Endpoint `/api/self-stats` provided by spark in parallel. Sessizce gracefully
+       degrades to "loading..." when offline. z-10 ensures it stays above timeline
+       absolutely-positioned bars; main.pb-10 above leaves space so content isn't
+       hidden underneath. -->
+  <footer id="self-stats-footer"
+          class="fixed bottom-0 left-0 right-0 bg-vibe-card border-t border-vibe-border px-4 py-1 text-xs mono text-vibe-muted z-10"
+          role="contentinfo" aria-label="Dashboard health stats">
+    <span id="self-stats">Dashboard: loading...</span>
+  </footer>
 
 <script>
 // === State ===
@@ -227,31 +424,180 @@ let isPaused = false;
 let currentTab = 'all';
 let allEvents = [];
 let agentTimelines = {};
+// T4: Trailing time window in ms (null = show full span). Anchored at Date.now() each render.
+let timelineWindowMs = null;
+// T1: Currently inspected bar — { type, idx } into agentTimelines[type][idx], or null.
+// idx is stable: timeline entries are append-only (never spliced).
+let selectedTimelineBar = null;
 let agentTypes = new Set();
+let sessionIds = new Set(); // C2: unique session prefixes (8 char)
 let reconnectTimer = null;
 let uptimeStart = Date.now();
+let searchQuery = ''; // H8: feed search substring (lowercased, trimmed)
+
+// === H4: Exponential Backoff Reconnect State ===
+// Sequence: 1s -> 2s -> 4s -> 8s -> 16s -> 30s (cap). Reset to 1s on successful onopen.
+// Storm avoidance: only one outstanding reconnect timer at a time; only one countdown updater.
+const RECONNECT_INITIAL_DELAY = 1000;
+const RECONNECT_MAX_DELAY = 30000;
+let reconnectDelay = RECONNECT_INITIAL_DELAY;
+let reconnectCountdownTimer = null; // 1s interval for "retry in Xs" UI updates
+let reconnectScheduledAt = 0;       // performance.now() when current backoff was scheduled
+let manuallyClosed = false;         // future-proof: stop reconnect on intentional close
+
+// === P5: Background Error Notification ===
+// When the tab is hidden, accumulate new agent_error events into a counter shown
+// in (a) the document.title prefix "(N) ..." and (b) a red circle on the favicon.
+// Reset both when the user re-focuses the tab. Historical events replayed via
+// handleInit (silent=true) are EXPLICITLY skipped to avoid bogus "(42)" on load.
+//
+// Browser notification API permission is NOT requested for this — the title/
+// favicon overlay works regardless of permission state. (Notification API is
+// used separately by H5 stuck detection.)
+let bgErrorCount = 0;
+const originalTitle = document.title;
+// Capture the page's original favicon (if any) so we can restore on reset.
+const originalFaviconLink = document.querySelector("link[rel='icon']");
+const originalFaviconHref = originalFaviconLink ? originalFaviconLink.href : null;
+
+function updateFaviconBadge(count) {
+  // Draws a 32x32 favicon: solid dark base + red circle in top-right with the count.
+  // Counts > 9 render as "9+" to avoid overflow into adjacent pixels.
+  const canvas = document.createElement('canvas');
+  canvas.width = 32; canvas.height = 32;
+  const ctx = canvas.getContext('2d');
+  // Base: vibe-bg matches the dashboard theme
+  ctx.fillStyle = '#0a0a0f';
+  ctx.fillRect(0, 0, 32, 32);
+  // Optional letter "v" so the favicon remains recognizable as vibecosystem
+  ctx.fillStyle = '#8b5cf6';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('v', 12, 18);
+  // Badge: red circle top-right
+  ctx.fillStyle = '#ef4444';
+  ctx.beginPath();
+  ctx.arc(24, 8, 8, 0, Math.PI * 2);
+  ctx.fill();
+  // Badge number
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 10px sans-serif';
+  ctx.fillText(count > 9 ? '9+' : String(count), 24, 8);
+
+  let link = document.querySelector("link[rel='icon']");
+  if (!link) {
+    link = document.createElement('link');
+    link.rel = 'icon';
+    document.head.appendChild(link);
+  }
+  link.type = 'image/png';
+  link.href = canvas.toDataURL('image/png');
+}
+
+function resetFavicon() {
+  const link = document.querySelector("link[rel='icon']");
+  if (originalFaviconHref) {
+    // Restore the page's original favicon (if any was set in markup)
+    if (link) link.href = originalFaviconHref;
+  } else {
+    // No original favicon — just remove the data-url one we added
+    if (link) link.remove();
+  }
+}
+
+function notifyBgError() {
+  // Only count when tab is hidden. Visible tab => user is watching, no need for nag.
+  if (!document.hidden) return;
+  bgErrorCount++;
+  document.title = `(${bgErrorCount}) ${originalTitle}`;
+  updateFaviconBadge(bgErrorCount);
+}
+
+// Reset counter + restore favicon/title when user returns to the tab.
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && bgErrorCount > 0) {
+    bgErrorCount = 0;
+    document.title = originalTitle;
+    resetFavicon();
+  }
+});
+
+function updateConnectionStatus(state, retryInMs) {
+  const el = document.getElementById('connection-badge');
+  if (!el) return;
+  if (state === 'connected') {
+    el.className = 'text-xs mono px-2 py-1 rounded bg-green-900/30 text-green-400';
+    el.textContent = 'CONNECTED';
+  } else if (state === 'connecting') {
+    el.className = 'text-xs mono px-2 py-1 rounded bg-yellow-900/30 text-yellow-400';
+    el.textContent = 'CONNECTING...';
+  } else {
+    // disconnected
+    el.className = 'text-xs mono px-2 py-1 rounded bg-red-900/30 text-red-400';
+    const secs = Math.max(0, Math.ceil((retryInMs || 0) / 1000));
+    el.textContent = retryInMs > 0
+      ? `DISCONNECTED (retry ${secs}s)`
+      : 'DISCONNECTED';
+  }
+}
+
+function startReconnectCountdown(totalDelayMs) {
+  // Replace any existing countdown so we never have two updaters racing.
+  if (reconnectCountdownTimer) {
+    clearInterval(reconnectCountdownTimer);
+    reconnectCountdownTimer = null;
+  }
+  reconnectScheduledAt = performance.now();
+  // Initial paint
+  updateConnectionStatus('disconnected', totalDelayMs);
+  // Tick every 1s so the user sees a live countdown
+  reconnectCountdownTimer = setInterval(() => {
+    const remaining = totalDelayMs - (performance.now() - reconnectScheduledAt);
+    if (remaining <= 0) {
+      clearInterval(reconnectCountdownTimer);
+      reconnectCountdownTimer = null;
+      updateConnectionStatus('connecting', 0);
+      return;
+    }
+    updateConnectionStatus('disconnected', remaining);
+  }, 1000);
+}
 
 // === WebSocket Connection ===
 function connect() {
-  if (ws && ws.readyState <= 1) return;
+  if (ws && ws.readyState <= 1) return; // CONNECTING or OPEN -> no-op
+  if (manuallyClosed) return;
 
-  ws = new WebSocket('ws://127.0.0.1:3847');
+  ws = new WebSocket('ws://' + (location.hostname || '127.0.0.1') + ':3847');
 
   ws.onopen = () => {
-    document.getElementById('connection-badge').className =
-      'text-xs mono px-2 py-1 rounded bg-green-900/30 text-green-400';
-    document.getElementById('connection-badge').textContent = 'CONNECTED';
+    // Reset backoff so the next disconnect starts at 1s again.
+    reconnectDelay = RECONNECT_INITIAL_DELAY;
     if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+    if (reconnectCountdownTimer) { clearInterval(reconnectCountdownTimer); reconnectCountdownTimer = null; }
+    updateConnectionStatus('connected');
   };
 
   ws.onclose = () => {
-    document.getElementById('connection-badge').className =
-      'text-xs mono px-2 py-1 rounded bg-red-900/30 text-red-400';
-    document.getElementById('connection-badge').textContent = 'DISCONNECTED';
-    reconnectTimer = setTimeout(connect, 3000);
+    if (manuallyClosed) {
+      updateConnectionStatus('disconnected', 0);
+      return;
+    }
+    // Schedule next attempt with the CURRENT delay; then double it for the FOLLOWING attempt.
+    const delayThisAttempt = reconnectDelay;
+    startReconnectCountdown(delayThisAttempt);
+
+    if (reconnectTimer) clearTimeout(reconnectTimer);
+    reconnectTimer = setTimeout(() => {
+      reconnectTimer = null;
+      // Exponential growth, capped at MAX. This is the delay used for the NEXT failure.
+      reconnectDelay = Math.min(reconnectDelay * 2, RECONNECT_MAX_DELAY);
+      connect();
+    }, delayThisAttempt);
   };
 
-  ws.onerror = () => {};
+  ws.onerror = () => {}; // onclose will fire and handle the retry
 
   ws.onmessage = (msg) => {
     if (isPaused) return;
@@ -279,10 +625,26 @@ function handleEvent(event, silent) {
   allEvents.push(event);
   if (allEvents.length > 500) allEvents.shift();
 
+  // P5: Background error notification — only on FRESH events (not init replay).
+  // Triggered before any filter check because the user wants to know about ALL
+  // errors when away, regardless of which agent/session filter is active.
+  if (!silent && event.type === 'agent_error') {
+    notifyBgError();
+  }
+
   // Agent type tracking
   if (event.agentType) {
     agentTypes.add(event.agentType);
     updateAgentFilter();
+  }
+
+  // C2: Session ID tracking (8 char prefix — hook'tan zaten 8 char geliyor)
+  if (event.sessionId) {
+    const sid = String(event.sessionId).slice(0, 8);
+    if (!sessionIds.has(sid)) {
+      sessionIds.add(sid);
+      updateSessionFilter();
+    }
   }
 
   // Timeline tracking
@@ -290,15 +652,49 @@ function handleEvent(event, silent) {
     updateTimeline(event);
   }
 
-  // Check filter
-  const filter = document.getElementById('agent-filter').value;
-  if (filter !== 'all' && event.agentType !== filter) return;
+  // H7: Sparkline bucket update — runs BEFORE filter check so sparklines reflect
+  // global activity (not filtered view). Cheap O(1) per event.
+  recordSparklineEvent(event);
+
+  // Centralized agent + session + H8 search filter chain (AND).
+  // Behavior preservation: original code early-returned on filter mismatch (stats not
+  // updated for filtered-out events). We keep that — search behaves like agent/session.
+  if (!shouldShowEvent(event)) return;
 
   if (!silent) {
     addFeedItem(event);
     updateLocalStats(event);
     updateAgentBreakdown();
   }
+}
+
+// === H8: Unified feed filter chain (agent + session + search, AND'ed) ===
+// Used by both live event arrival and setFeedTab re-render.
+// IMPORTANT: searchQuery is already lowercased+trimmed by the input listener.
+function shouldShowEvent(event) {
+  const agentFilter = document.getElementById('agent-filter');
+  const sessionFilter = document.getElementById('session-filter');
+
+  if (agentFilter && agentFilter.value !== 'all' && event.agentType !== agentFilter.value) {
+    return false;
+  }
+  if (sessionFilter && sessionFilter.value !== 'all') {
+    const sid = event.sessionId ? String(event.sessionId).slice(0, 8) : '';
+    if (sid !== sessionFilter.value) return false;
+  }
+  if (searchQuery) {
+    const meta = event.metadata || {};
+    const searchable = [
+      event.agentType || '',
+      event.type || '',
+      meta.promptSummary || '',
+      meta.command || '',
+      meta.tool || '',
+      meta.detail || '',
+    ].join(' ').toLowerCase();
+    if (!searchable.includes(searchQuery)) return false;
+  }
+  return true;
 }
 
 // === Stats ===
@@ -328,6 +724,9 @@ function updateLocalStats(event) {
   const total = localStats.spawns + localStats.completes;
   const rate = total > 0 ? ((localStats.errors / total) * 100).toFixed(1) : '0.0';
   document.getElementById('stat-error-rate').textContent = rate + '%';
+
+  // C2: live session count
+  document.getElementById('stat-sessions').textContent = sessionIds.size;
 }
 
 function updateStatsDisplay(stats) {
@@ -345,13 +744,46 @@ function updateStatsDisplay(stats) {
     document.getElementById('stat-duration').textContent = stats.avgDuration + 'ms';
   }
   document.getElementById('stat-error-rate').textContent = (stats.errorRate || '0.0') + '%';
+
+  // C2: SESSIONS metric — server-side activeSessions (eventStore based)
+  // Lokal sessionIds.size daha guncel olabilir (init sonrasi gelen yeni event'lerden)
+  // O yuzden ikisinden buyugunu goster (server eski hydrate'e, lokal yeniye sahip)
+  const serverSessions = stats.activeSessions || 0;
+  const localSessions = sessionIds.size;
+  document.getElementById('stat-sessions').textContent = Math.max(serverSessions, localSessions);
 }
 
 // === Timeline ===
+// C4: Track agentId -> agentType so we can resolve parent links to types.
+// Populated from any event that carries both fields.
+const agentIdToType = {};
+// C4: Per-agentType, remember whether we have seen any event with a parentAgentId.
+// If yes -> render that row as a sub-agent (indent + connector).
+// If no -> classic flat render. Backward compat for old events without the field.
+const agentParentInfo = {}; // { [agentType]: { hasParent: bool, parentType: string|null } }
+// C4: One-shot info log when no parent env var appears in incoming events.
+let c4WarnedNoParent = false;
+
 function updateTimeline(event) {
   const key = event.agentType || 'unknown';
   if (!agentTimelines[key]) {
     agentTimelines[key] = [];
+  }
+
+  // C4: Maintain id->type map (best-effort; agentId may be the calling agent's runtime ID).
+  if (event.agentId && event.agentType) {
+    agentIdToType[event.agentId] = event.agentType;
+  }
+
+  // C4: Resolve parent link for this row. Defensive: parentAgentId may be undefined,
+  // null, "", or even the same as agentId (self-loop guard).
+  if (!agentParentInfo[key]) agentParentInfo[key] = { hasParent: false, parentType: null };
+  if (event.parentAgentId && event.parentAgentId !== event.agentId) {
+    agentParentInfo[key].hasParent = true;
+    const resolved = agentIdToType[event.parentAgentId];
+    if (resolved && resolved !== key) {
+      agentParentInfo[key].parentType = resolved;
+    }
   }
 
   if (event.type === 'agent_spawn') {
@@ -360,6 +792,10 @@ function updateTimeline(event) {
       end: null,
       status: 'running',
       metadata: event.metadata,
+      // T1: session prefix for the detail panel (same 8-char convention as the feed).
+      sessionId: event.sessionId ? String(event.sessionId).slice(0, 8) : null,
+      // C4: keep raw parent id on the entry for future use; render uses agentParentInfo.
+      parentAgentId: event.parentAgentId || null,
     });
   } else {
     // Son running entry'yi bul ve kapat
@@ -368,57 +804,391 @@ function updateTimeline(event) {
       if (entries[i].status === 'running') {
         entries[i].end = event.timestamp;
         entries[i].status = event.type === 'agent_error' ? 'error' : 'done';
+        // H5: Clear stuck state on this entry so completed bar shows its base done/error color.
+        // notifiedAgents Set is cleaned up by checkStuckAgents() — DO NOT delete here. If two
+        // concurrent stuck running entries of same type exist, deleting on first complete
+        // would cause a re-notify on the next tick. checkStuckAgents() correctly waits until
+        // NO running red entries remain for this type before clearing the key.
+        entries[i].stuckLevel = null;
         break;
       }
     }
   }
 
-  renderTimeline();
+  // P2: Use throttled scheduler — burst spawns coalesce into one frame.
+  scheduleRender();
 }
 
-function renderTimeline() {
+// === P2: rAF Throttle ===
+// Coalesce burst event arrivals (5 spawns within 16ms => single render frame) by
+// deferring the actual DOM work to the next animation frame. Heavy iteration in
+// renderTimelineNow() is O(types * entries) — running it 5 times per frame is wasted
+// work the user can't see anyway.
+// IMPORTANT: scheduleRender() is now the public entry point. All callers (event
+// handler, stuck-check interval, setInterval below) call scheduleRender, never
+// renderTimelineNow directly. Only renderTimelineNow may be called from inside
+// the rAF callback to avoid re-entry loops.
+let renderTimelinePending = false;
+function scheduleRender() {
+  if (renderTimelinePending) return;
+  renderTimelinePending = true;
+  requestAnimationFrame(() => {
+    renderTimelinePending = false;
+    renderTimelineNow();
+  });
+}
+// Back-compat alias: keep `renderTimeline` callable for any code path we may have
+// missed (e.g. future setInterval). It just defers to the throttled path.
+function renderTimeline() { scheduleRender(); }
+
+// === P1: Chronological Timeline Order ===
+// `Object.keys()` preserves V8 insertion order, but that is "first event we saw",
+// which can drift if a hook batches or replays events out-of-order. Sorting by the
+// earliest spawn timestamp guarantees deterministic order: maestro (started first)
+// stays on top, even if a child agent's spawn arrives before maestro's. Infinity
+// fallback keeps unknown rows at the bottom rather than crashing.
+function firstStart(type) {
+  const entries = agentTimelines[type];
+  if (!entries || entries.length === 0) return Infinity;
+  let min = Infinity;
+  for (const e of entries) {
+    const t = new Date(e.start).getTime();
+    if (Number.isFinite(t) && t < min) min = t;
+  }
+  return min;
+}
+
+// === T3: Lane assignment — greedy interval partitioning ===
+// Concurrent same-type runs used to paint over each other in a single 28px row.
+// Place each entry on the first lane whose previous bar ended before this one
+// starts; otherwise open a new lane. items: [{ entry, idx, startMs, endMs }].
+// Returns laneOf (Map: original entry idx -> lane) + laneCount for row height.
+function assignLanes(items) {
+  const sorted = [...items].sort((a, b) => a.startMs - b.startMs || a.endMs - b.endMs);
+  const laneEnds = [];
+  const laneOf = new Map();
+  for (const it of sorted) {
+    let lane = -1;
+    for (let l = 0; l < laneEnds.length; l++) {
+      if (laneEnds[l] <= it.startMs) { lane = l; break; }
+    }
+    if (lane === -1) { lane = laneEnds.length; laneEnds.push(it.endMs); }
+    else { laneEnds[lane] = it.endMs; }
+    laneOf.set(it.idx, lane);
+  }
+  return { laneOf, laneCount: Math.max(laneEnds.length, 1) };
+}
+
+// === T2: Time axis ticks ===
+// Pick a "nice" step targeting ~5 ticks across the span, aligned to wall-clock
+// multiples so labels read 14:30:00, not 14:29:47. Steps divide hours evenly, so
+// epoch-multiple alignment lands on local minute/second boundaries (TZs with a
+// :30/:45 offset may shift hour-level labels — acceptable for monitoring).
+function computeTicks(minTime, maxTime) {
+  const span = Math.max(maxTime - minTime, 1);
+  const STEPS = [
+    1000, 5000, 15000, 30000,
+    60e3, 2 * 60e3, 5 * 60e3, 10 * 60e3, 15 * 60e3, 30 * 60e3,
+    3600e3, 2 * 3600e3, 6 * 3600e3, 12 * 3600e3, 24 * 3600e3,
+  ];
+  const target = span / 5;
+  let step = STEPS[STEPS.length - 1];
+  for (const s of STEPS) { if (s >= target) { step = s; break; } }
+  const withSeconds = step < 60e3;
+  const ticks = [];
+  for (let t = Math.ceil(minTime / step) * step; t <= maxTime; t += step) {
+    ticks.push({ t, pct: ((t - minTime) / span) * 100, withSeconds });
+  }
+  return ticks;
+}
+
+function fmtClock(ms, withSeconds) {
+  const opts = withSeconds
+    ? { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }
+    : { hour12: false, hour: '2-digit', minute: '2-digit' };
+  return new Date(ms).toLocaleTimeString('en-US', opts);
+}
+
+function fmtDuration(ms) {
+  const s = Math.max(0, Math.round(ms / 1000));
+  if (s < 60) return s + 's';
+  const m = Math.floor(s / 60);
+  if (m < 60) return m + 'm ' + (s % 60) + 's';
+  return Math.floor(m / 60) + 'h ' + (m % 60) + 'm';
+}
+
+// === T4: Time window toggle ===
+// ms=null -> full span; otherwise a trailing window anchored at Date.now() each
+// render (the 5s scheduleRender interval keeps it sliding while you watch).
+function setTimelineWindow(ms) {
+  timelineWindowMs = ms;
+  const map = { 'tlw-all': null, 'tlw-30': 1800000, 'tlw-15': 900000, 'tlw-5': 300000 };
+  Object.keys(map).forEach(id => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    const active = map[id] === ms;
+    btn.classList.toggle('tl-zoom-active', active);
+    btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+  });
+  scheduleRender();
+}
+
+// === T1: Click-to-inspect detail panel ===
+function clearTimelineSelection() {
+  selectedTimelineBar = null;
+  scheduleRender();
+}
+
+function renderTimelineDetail() {
+  const panel = document.getElementById('timeline-detail');
+  if (!panel) return;
+  if (!selectedTimelineBar) {
+    if (!panel.classList.contains('hidden')) { panel.classList.add('hidden'); panel.innerHTML = ''; }
+    return;
+  }
+  const { type, idx } = selectedTimelineBar;
+  const entry = (agentTimelines[type] || [])[idx];
+  if (!entry) {
+    // Defensive: selection outlived the data (shouldn't happen — entries are append-only).
+    selectedTimelineBar = null;
+    panel.classList.add('hidden');
+    panel.innerHTML = '';
+    return;
+  }
+  const startMs = new Date(entry.start).getTime();
+  const running = entry.status === 'running';
+  const endMs = entry.end ? new Date(entry.end).getTime() : Date.now();
+  const meta = entry.metadata || {};
+  const retry = typeof meta.retryCount === 'number' ? meta.retryCount : 1;
+  const statusColor = entry.status === 'error' ? 'text-vibe-red'
+    : entry.status === 'done' ? 'text-vibe-green' : 'text-vibe-accent';
+  const stuckSuffix = entry.stuckLevel
+    ? ` <span class="text-vibe-yellow">(stuck-${escapeHtml(entry.stuckLevel)})</span>`
+    : '';
+
+  const fields = [
+    ['Status', `<span class="${statusColor} font-medium">${escapeHtml(entry.status)}</span>${stuckSuffix}`],
+    ['Start', escapeHtml(fmtClock(startMs, true))],
+    ['End', running ? '<span class="text-vibe-accent">running…</span>' : escapeHtml(fmtClock(endMs, true))],
+    ['Duration', escapeHtml(fmtDuration(endMs - startMs))],
+    ['Retry', retry > 1
+      ? `<span class="${retry >= 3 ? 'text-vibe-red' : 'text-vibe-yellow'}">↻${retry}/3</span>`
+      : '1/3'],
+  ];
+  if (entry.sessionId) fields.push(['Session', escapeHtml(entry.sessionId)]);
+  if (entry.parentAgentId) fields.push(['Parent', escapeHtml(String(entry.parentAgentId))]);
+
+  let cells = '';
+  fields.forEach(([label, valueHtml]) => {
+    cells += `<div><div class="text-[10px] uppercase tracking-wide text-vibe-muted">${label}</div>`
+      + `<div class="text-xs mono text-vibe-text">${valueHtml}</div></div>`;
+  });
+
+  const promptBlock = meta.promptSummary
+    ? `<div class="mt-2"><div class="text-[10px] uppercase tracking-wide text-vibe-muted">Prompt</div>`
+      + `<div class="text-xs text-vibe-text/90 break-words">${escapeHtml(String(meta.promptSummary))}</div></div>`
+    : '';
+
+  panel.innerHTML =
+    `<div class="flex items-start justify-between gap-3">`
+    + `<span class="text-xs mono text-vibe-accent font-semibold">${escapeHtml(type)} <span class="text-vibe-muted">#${idx + 1}</span></span>`
+    + `<button onclick="clearTimelineSelection()" class="text-xs mono text-vibe-muted hover:text-vibe-text" aria-label="Close run details">✕ close</button>`
+    + `</div>`
+    + `<div class="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-2 mt-2">${cells}</div>`
+    + promptBlock;
+  panel.classList.remove('hidden');
+}
+
+function renderTimelineNow() {
   const container = document.getElementById('timeline-container');
-  const types = Object.keys(agentTimelines);
+  // P1: Sort by first-spawn timestamp ascending. Children may be re-grouped under
+  // their parent later (see anyParentSeen branch); chronological order is the
+  // baseline for that grouping.
+  const types = Object.keys(agentTimelines).sort((a, b) => firstStart(a) - firstStart(b));
 
   if (types.length === 0) {
     container.innerHTML = '<div class="text-center text-vibe-muted text-sm py-8">Waiting for agent events...</div>';
     return;
   }
 
-  document.getElementById('timeline-count').textContent = types.length + ' agents';
+  // (timeline-count is updated at the end of this function — T4 window mode needs
+  // the visible-type count, which is only known after the render loop.)
 
-  // Zaman araligini hesapla
+  // C4: Detect whether ANY row has a parent link. If none after we have >=3
+  // agent types observed, log a one-shot info — env var likely not propagated.
+  const anyParentSeen = types.some(t => agentParentInfo[t] && agentParentInfo[t].hasParent);
+  if (!anyParentSeen && !c4WarnedNoParent && types.length >= 3) {
+    c4WarnedNoParent = true;
+    // Non-fatal: dashboard remains fully functional in flat mode.
+    // eslint-disable-next-line no-console
+    console.info('Sub-agent tree mode unavailable (CLAUDE_PARENT_AGENT_ID env var not propagated by Claude Code). Flat view active.');
+  }
+
+  // Zaman araligini hesapla.
+  // T4: window aktifse "now"a sabitlenmis kayan pencere; degilse veri sinirlari.
+  const nowMs = Date.now();
   let minTime = Infinity, maxTime = -Infinity;
-  types.forEach(type => {
-    agentTimelines[type].forEach(entry => {
-      const start = new Date(entry.start).getTime();
-      const end = entry.end ? new Date(entry.end).getTime() : Date.now();
-      if (start < minTime) minTime = start;
-      if (end > maxTime) maxTime = end;
+  if (timelineWindowMs) {
+    maxTime = nowMs;
+    minTime = nowMs - timelineWindowMs;
+  } else {
+    types.forEach(type => {
+      agentTimelines[type].forEach(entry => {
+        const start = new Date(entry.start).getTime();
+        const end = entry.end ? new Date(entry.end).getTime() : nowMs;
+        if (start < minTime) minTime = start;
+        if (end > maxTime) maxTime = end;
+      });
     });
-  });
+  }
 
   const totalSpan = Math.max(maxTime - minTime, 1000); // Min 1 saniye
 
-  let html = '';
-  types.forEach(type => {
-    const entries = agentTimelines[type];
-    html += '<div class="flex items-center gap-3">';
-    html += `<span class="text-xs mono text-vibe-muted w-28 shrink-0 truncate" title="${escapeHtml(type)}">${escapeHtml(type)}</span>`;
-    html += '<div class="flex-1 relative h-7 bg-vibe-bg rounded">';
+  // T2: Shared tick set — used by the sticky axis row AND every row's gridlines
+  // so they stay pixel-aligned (both are %-positioned in equal-width containers).
+  const ticks = computeTicks(minTime, maxTime);
+  // Now-line position; drawn only when inside the visible span ("All" view with
+  // no running agents ends at the last completion, leaving "now" off-scale).
+  const nowPct = ((nowMs - minTime) / totalSpan) * 100;
+  const showNowLine = nowPct >= 0 && nowPct <= 100;
 
-    entries.forEach(entry => {
-      const start = new Date(entry.start).getTime();
-      const end = entry.end ? new Date(entry.end).getTime() : Date.now();
-      const left = ((start - minTime) / totalSpan * 100).toFixed(2);
-      const width = Math.max(((end - start) / totalSpan * 100), 1).toFixed(2);
-      const duration = Math.round((end - start) / 1000);
+  // C4: Sort children directly after their parent type (best-effort grouping).
+  // If parentType unknown, child still rendered with indent at original position.
+  // If no parents anywhere, this sort is a no-op — flat order preserved.
+  const orderedTypes = (() => {
+    if (!anyParentSeen) return types; // Fast-path: classic flat order
+    const placed = new Set();
+    const result = [];
+    const place = (t) => {
+      if (placed.has(t) || !agentTimelines[t]) return;
+      placed.add(t);
+      result.push(t);
+      // Place direct children of t next, in original order.
+      types.forEach(c => {
+        const info = agentParentInfo[c];
+        if (info && info.hasParent && info.parentType === t) place(c);
+      });
+    };
+    // First place roots (no parent, or parent unresolved).
+    types.forEach(t => {
+      const info = agentParentInfo[t];
+      const isRoot = !info || !info.hasParent || !info.parentType;
+      if (isRoot) place(t);
+    });
+    // Place anything left (orphans whose parent type never seen — render flat).
+    types.forEach(t => place(t));
+    return result;
+  })();
+
+  // T2: Sticky axis row. The w-28 spacer mirrors each row's label column so tick
+  // percentages align with every bar area below (all are flex-1 siblings).
+  let axisInner = '';
+  ticks.forEach(tick => {
+    if (tick.pct < 2 || tick.pct > 98) return; // edge labels would clip — skip
+    axisInner += `<span class="tl-axis-label" style="left:${tick.pct.toFixed(2)}%">${escapeHtml(fmtClock(tick.t, tick.withSeconds))}</span>`;
+  });
+  if (showNowLine) {
+    axisInner += `<div class="tl-now" style="left:${nowPct.toFixed(2)}%" title="now"></div>`;
+  }
+  let html = `<div class="flex gap-3 sticky top-0 z-[4] bg-vibe-card" aria-hidden="true">`
+    + `<span class="w-28 shrink-0"></span>`
+    + `<div class="flex-1 relative mono" style="height:14px">${axisInner}</div></div>`;
+
+  let visibleTypeCount = 0;
+  orderedTypes.forEach(type => {
+    const entries = agentTimelines[type];
+
+    // T4: Keep only entries visible in the current window (all when no window).
+    // Original array index rides along — it is the stable id for click-to-inspect.
+    const items = [];
+    entries.forEach((entry, idx) => {
+      const startMs = new Date(entry.start).getTime();
+      const endMs = entry.end ? new Date(entry.end).getTime() : nowMs;
+      if (timelineWindowMs && endMs < minTime) return; // ended before the window
+      items.push({ entry, idx, startMs, endMs });
+    });
+    if (items.length === 0) return; // this type has nothing in-window — hide row
+    visibleTypeCount++;
+
+    // C4: Resolve indent + connector for this row. Safe fallbacks throughout.
+    // T2: Indent now lives INSIDE the fixed-width label column (padding-left)
+    // instead of margin on the row — child rows previously shifted their bar area
+    // 16px right, breaking the shared %-scale with gridlines and the now-line.
+    let info = null;
+    try { info = agentParentInfo[type] || null; } catch { info = null; }
+    const isChild = !!(info && info.hasParent);
+    const connector = isChild
+      ? '<span class="shrink-0" title="sub-agent of ' + escapeHtml(info.parentType || 'parent') + '">└─</span>'
+      : '';
+
+    // H9: Peak retryCount across VISIBLE entries — row label surfaces "this task
+    // has been retried N times" at a glance. Per-bar tooltips show entry values.
+    let maxRetry = 1;
+    for (const it of items) {
+      const rc = (it.entry.metadata && typeof it.entry.metadata.retryCount === 'number') ? it.entry.metadata.retryCount : 1;
+      if (rc > maxRetry) maxRetry = rc;
+    }
+    let rowRetryBadge = '';
+    if (maxRetry > 1) {
+      const colorClass = maxRetry >= 3 ? 'text-vibe-red animate-pulse' : 'text-vibe-yellow';
+      rowRetryBadge = ` <span class="text-[10px] mono ${colorClass} shrink-0" title="Peak retry ${maxRetry}/3 — escalation at 3">↻${maxRetry}</span>`;
+    }
+
+    // T3: Lane assignment — concurrent same-type runs stack on separate lanes.
+    // Single-lane rows keep the exact legacy height (28px == old h-7).
+    const { laneOf, laneCount } = assignLanes(items);
+    const rowH = laneCount * 26 + 2;
+
+    html += `<div class="flex items-center gap-3">`;
+    html += `<span class="text-xs mono text-vibe-muted w-28 shrink-0 flex items-center gap-1"${isChild ? ' style="padding-left:10px"' : ''} title="${escapeHtml(type)}">${connector}<span class="truncate">${escapeHtml(type)}</span>${rowRetryBadge}</span>`;
+    html += `<div class="flex-1 relative bg-vibe-bg rounded overflow-hidden" style="height:${rowH}px">`;
+
+    // T2: Per-row gridlines, same %-positions as the axis ticks above.
+    ticks.forEach(tick => {
+      if (tick.pct < 0 || tick.pct > 100) return;
+      html += `<div class="tl-grid" style="left:${tick.pct.toFixed(2)}%"></div>`;
+    });
+    if (showNowLine) {
+      html += `<div class="tl-now" style="left:${nowPct.toFixed(2)}%"></div>`;
+    }
+
+    items.forEach(it => {
+      const entry = it.entry;
+      // T4: Clip bars to the window edges; the duration label keeps the REAL
+      // run time (a 40m agent in the 15m view still says "40m").
+      const effStart = Math.max(it.startMs, minTime);
+      const effEnd = Math.min(it.endMs, maxTime);
+      const left = ((effStart - minTime) / totalSpan * 100).toFixed(2);
+      const width = Math.max(((effEnd - effStart) / totalSpan * 100), 1).toFixed(2);
+      const duration = Math.round((it.endMs - it.startMs) / 1000);
       const durationStr = duration < 60 ? duration + 's' : Math.round(duration / 60) + 'm';
 
-      html += `<div class="timeline-bar ${entry.status}" style="position:absolute; left:${left}%; width:${width}%; top:2px;"`;
-      html += ` title="${escapeHtml(type)}: ${durationStr} (${escapeHtml(entry.status)})">`;
+      // H5: Stuck level is set by checkStuckAgents() — null|'yellow'|'red'.
+      // Only applies to running entries; done/error keep their base style.
+      const stuckClass = (entry.status === 'running' && entry.stuckLevel)
+        ? ` stuck-${entry.stuckLevel}`
+        : '';
+      const stuckTitle = entry.stuckLevel
+        ? ` — stuck (${entry.stuckLevel === 'red' ? 'over p95x4' : 'over p95x2'})`
+        : '';
+
+      // H9: Per-bar retry indicator (tooltip + inline badge when width allows).
+      // Read from entry.metadata.retryCount (stamped by server.addEvent on spawn events).
+      const entryRetry = (entry.metadata && typeof entry.metadata.retryCount === 'number')
+        ? entry.metadata.retryCount
+        : 1;
+      const retryTitle = entryRetry > 1 ? ` — RETRY ${entryRetry}/3` : '';
+      const inlineRetryBadge = entryRetry > 1
+        ? `<span class="text-[10px] mono ${entryRetry >= 3 ? 'text-vibe-red' : 'text-vibe-yellow'} px-1">↻${entryRetry}</span>`
+        : '';
+
+      // T1/T3: data attrs feed the delegated click handler; lane sets vertical slot.
+      const lane = laneOf.get(it.idx) || 0;
+      const isSel = !!(selectedTimelineBar && selectedTimelineBar.type === type && selectedTimelineBar.idx === it.idx);
+      html += `<div class="timeline-bar ${entry.status}${stuckClass}${isSel ? ' selected' : ''}" data-tl-type="${escapeHtml(type)}" data-tl-idx="${it.idx}" style="position:absolute; left:${left}%; width:${width}%; top:${2 + lane * 26}px;"`;
+      html += ` title="${escapeHtml(type)}: ${durationStr} (${escapeHtml(entry.status)})${escapeHtml(stuckTitle)}${escapeHtml(retryTitle)} — click for details">`;
       if (parseFloat(width) > 5) {
-        html += `<span class="text-[10px] mono text-white/80 px-1 leading-6">${durationStr}</span>`;
+        html += `<span class="text-[10px] mono text-white/80 px-1 leading-6">${durationStr}${inlineRetryBadge}</span>`;
       }
       html += '</div>';
     });
@@ -426,7 +1196,139 @@ function renderTimeline() {
     html += '</div></div>';
   });
 
+  // T4: Count reflects what's on screen; "5/12" hints types exist outside the window.
+  document.getElementById('timeline-count').textContent = timelineWindowMs
+    ? `${visibleTypeCount}/${types.length} agents`
+    : `${types.length} agents`;
+
+  if (visibleTypeCount === 0) {
+    // Window active but nothing ran inside it (types.length>0 guaranteed above).
+    const mins = Math.round(timelineWindowMs / 60000);
+    container.innerHTML = `<div class="text-center text-vibe-muted text-sm py-8">No agent activity in the last ${mins}m</div>`;
+    renderTimelineDetail();
+    return;
+  }
+
   container.innerHTML = html;
+  // T1: Keep an open detail panel in sync — running durations tick up with the
+  // 5s render interval, and stale selections self-heal inside renderTimelineDetail.
+  renderTimelineDetail();
+}
+
+// === H5: Stuck Agent Detection ===
+// Strategy:
+//  - Baseline: p95 of completed agent durations across the current session.
+//  - Thresholds: yellow = p95 * 2, red = p95 * 4.
+//  - Fallback when sample size < 5: yellow = 10min, red = 30min (default).
+//    Rationale: new sessions have no data; default thresholds avoid false positives
+//    on cold start while still catching truly stuck agents.
+//  - Notification: one-shot per (agentType, runtimeWindow) — never spam.
+//    Permission requested only on FIRST red detection (lazy ask, not on page load).
+//  - Stuck level persists on entry until status changes (running -> done/error clears it).
+const STUCK_CHECK_INTERVAL_MS = 30 * 1000;
+const STUCK_FALLBACK_YELLOW_MS = 10 * 60 * 1000;  // 10 min
+const STUCK_FALLBACK_RED_MS = 30 * 60 * 1000;     // 30 min
+const STUCK_MIN_SAMPLES_FOR_P95 = 5;              // below this, use fallback thresholds
+const notifiedAgents = new Set();                  // key: agentType + '_red'
+
+function calculatePercentile(values, pct) {
+  if (!values || values.length === 0) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const idx = Math.min(sorted.length - 1, Math.floor(sorted.length * pct));
+  return sorted[idx];
+}
+
+function getAgentDurations() {
+  // Collect ms-duration of every completed (or errored) timeline entry across all agent types.
+  // We don't filter by status here — both 'done' and 'error' contribute to "how long agents usually run".
+  const durations = [];
+  for (const type of Object.keys(agentTimelines)) {
+    for (const entry of agentTimelines[type]) {
+      if (entry.end && entry.start && entry.status !== 'running') {
+        const ms = new Date(entry.end).getTime() - new Date(entry.start).getTime();
+        if (ms > 0) durations.push(ms);
+      }
+    }
+  }
+  return durations;
+}
+
+function getStuckThresholds() {
+  const durations = getAgentDurations();
+  if (durations.length < STUCK_MIN_SAMPLES_FOR_P95) {
+    // Not enough data yet — use conservative defaults to avoid spam on fresh session.
+    return { yellow: STUCK_FALLBACK_YELLOW_MS, red: STUCK_FALLBACK_RED_MS, source: 'fallback' };
+  }
+  const p95 = calculatePercentile(durations, 0.95);
+  // Floor at 60s so a session full of <1s agents doesn't fire instantly.
+  const safeP95 = Math.max(p95 || 0, 60 * 1000);
+  return { yellow: safeP95 * 2, red: safeP95 * 4, source: 'p95' };
+}
+
+function showStuckNotification(msg) {
+  // Browser Notification API guard: feature-detect, then check permission state.
+  // We request permission ONLY on first stuck detection — never on page load.
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'granted') {
+    try { new Notification('vibecosystem', { body: msg, tag: 'vibe-stuck' }); } catch {}
+  } else if (Notification.permission !== 'denied') {
+    // Lazy ask: triggered by an actual stuck event, not on load.
+    Notification.requestPermission().then(perm => {
+      if (perm === 'granted') {
+        try { new Notification('vibecosystem', { body: msg, tag: 'vibe-stuck' }); } catch {}
+      }
+    }).catch(() => {});
+  }
+  // If denied, we silently skip notifications. UI still shows red bar.
+}
+
+function checkStuckAgents() {
+  const { yellow, red } = getStuckThresholds();
+  const now = Date.now();
+  let changed = false;
+
+  for (const type of Object.keys(agentTimelines)) {
+    for (const entry of agentTimelines[type]) {
+      if (entry.status !== 'running') {
+        // Clear stuckLevel on completed entries (defensive — shouldn't have one anyway)
+        if (entry.stuckLevel) { entry.stuckLevel = null; changed = true; }
+        continue;
+      }
+      const startMs = new Date(entry.start).getTime();
+      const runtime = now - startMs;
+      let nextLevel = null;
+      if (runtime > red) nextLevel = 'red';
+      else if (runtime > yellow) nextLevel = 'yellow';
+
+      if (entry.stuckLevel !== nextLevel) {
+        entry.stuckLevel = nextLevel;
+        changed = true;
+      }
+
+      // One-shot notification per agentType at red threshold.
+      // Key includes type only — once notified, we don't re-notify until the entry completes.
+      if (nextLevel === 'red') {
+        const key = type + '_red';
+        if (!notifiedAgents.has(key)) {
+          notifiedAgents.add(key);
+          const mins = Math.round(runtime / 60000);
+          showStuckNotification(`${type} stuck for ${mins}m (over p95x4 threshold)`);
+        }
+      }
+    }
+  }
+
+  // Clean up notification keys for agent types that no longer have a red-stuck running entry.
+  // This allows a future red-stuck of the same type (e.g. new spawn) to notify again.
+  for (const key of [...notifiedAgents]) {
+    const type = key.replace(/_red$/, '');
+    const stillRed = (agentTimelines[type] || []).some(
+      e => e.status === 'running' && e.stuckLevel === 'red'
+    );
+    if (!stillRed) notifiedAgents.delete(key);
+  }
+
+  if (changed) scheduleRender(); // P2: throttled
 }
 
 // === Live Feed ===
@@ -447,17 +1349,61 @@ function addFeedItem(event) {
   const typeColor = getTypeColor(event.type);
   const detail = formatEventDetail(event);
 
+  // C2: 8 char session ID badge (escapeHtml zorunlu — XSS guard)
+  const sessionShort = event.sessionId ? String(event.sessionId).slice(0, 8) : '';
+
+  // H9: Retry badge — only shown when retryCount >= 2 (first spawn = no badge).
+  // Server.addEvent stamps retryCount on agent_spawn events; complete/error events inherit
+  // nothing here, but feed items for them keep the agentType so the visual signal is on the
+  // spawn row primarily. retryCount=2 -> yellow (warn), >=3 -> red+pulse (escalation imminent).
+  const retryCount = (event.metadata && typeof event.metadata.retryCount === 'number')
+    ? event.metadata.retryCount
+    : 1;
+  let retryBadgeHtml = '';
+  if (retryCount > 1) {
+    const colorClass = retryCount >= 3 ? 'text-vibe-red animate-pulse' : 'text-vibe-yellow';
+    retryBadgeHtml = `<span class="text-[10px] mono ${colorClass} shrink-0" title="Retry ${retryCount}/3 — escalation at 3">↻${retryCount}</span>`;
+  }
+
   const div = document.createElement('div');
-  div.className = `feed-item ${event.type} slide-in py-1.5`;
+  div.className = `feed-item ${event.type} slide-in py-1.5 cursor-pointer hover:bg-vibe-bg/40 rounded`;
+  // P7: keyboard navigation — Tab to focus, Enter/Space to expand.
+  // role=button + aria-expanded so screen readers announce both the action and state.
+  div.setAttribute('tabindex', '0');
+  div.setAttribute('role', 'button');
+  div.setAttribute('aria-expanded', 'false');
+  // Compose an accessible label so screen readers read "SPAWN kraken, 14:23:01, session abc12345"
+  // instead of just gluing all spans together.
+  const ariaLabelParts = [
+    typeLabel,
+    event.agentType || '',
+    time,
+    sessionShort ? 'session ' + sessionShort : '',
+    detail,
+  ].filter(Boolean);
+  div.setAttribute('aria-label', ariaLabelParts.join(', '));
   div.innerHTML = `
     <div class="flex items-start gap-2">
       <span class="mono text-[11px] text-vibe-muted shrink-0">${escapeHtml(time)}</span>
-      <span class="status-dot status-${escapeHtml(event.status || '')}"></span>
+      <span class="status-dot status-${escapeHtml(event.status || '')}" aria-hidden="true"></span>
       <span class="text-xs font-medium ${typeColor} shrink-0">${escapeHtml(typeLabel)}</span>
       ${event.agentType ? `<span class="text-xs mono text-vibe-accent shrink-0">${escapeHtml(event.agentType)}</span>` : ''}
+      ${retryBadgeHtml}
+      ${sessionShort ? `<span class="mono text-[10px] text-vibe-muted shrink-0" title="session ${escapeHtml(sessionShort)}">${escapeHtml(sessionShort)}</span>` : ''}
       <span class="text-xs text-vibe-muted truncate">${escapeHtml(detail)}</span>
     </div>
   `;
+
+  // H2: Click-to-expand — show full metadata + errorContext (XSS-safe via textContent)
+  div.addEventListener('click', () => toggleFeedExpand(div, event));
+  // P7: keyboard equivalent — Enter or Space toggles the same expand panel.
+  // preventDefault on Space stops the page from scrolling (default Space behavior).
+  div.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleFeedExpand(div, event);
+    }
+  });
 
   container.insertBefore(div, container.firstChild);
 
@@ -467,6 +1413,120 @@ function addFeedItem(event) {
   }
 
   document.getElementById('feed-count').textContent = container.children.length + ' events';
+}
+
+// === H2: Feed Item Expand ===
+// XSS-safe: uses textContent for all dynamic content (errorContext, prompt summary, metadata JSON).
+// Pattern: agent output may contain <script>, <img onerror=...>, etc. textContent renders them as
+// plain text — never executes. Do NOT switch to innerHTML here even if it looks shorter.
+function toggleFeedExpand(itemDiv, event) {
+  const existing = itemDiv.querySelector('.event-expand');
+  if (existing) {
+    existing.remove();
+    itemDiv.setAttribute('aria-expanded', 'false'); // P7: keep SR state in sync
+    return;
+  }
+
+  // Close other open expansions (single-expand mode) and reset their aria-expanded.
+  document.querySelectorAll('.event-expand').forEach(el => {
+    const parent = el.closest('.feed-item');
+    if (parent) parent.setAttribute('aria-expanded', 'false');
+    el.remove();
+  });
+
+  const exp = document.createElement('div');
+  exp.className = 'event-expand mt-2 ml-6 p-3 bg-vibe-bg border border-vibe-border rounded text-xs space-y-2';
+  // stopPropagation so clicking inside the expansion doesn't re-toggle the parent
+  exp.addEventListener('click', e => e.stopPropagation());
+
+  const meta = event.metadata || {};
+
+  // Header: type + timestamp + status
+  const header = document.createElement('div');
+  header.className = 'flex items-center gap-2 pb-2 border-b border-vibe-border';
+  const headerType = document.createElement('span');
+  headerType.className = 'mono font-semibold ' + getTypeColor(event.type);
+  headerType.textContent = formatEventType(event.type) + (event.agentType ? ' / ' + event.agentType : '');
+  header.appendChild(headerType);
+  if (event.timestamp) {
+    const ts = document.createElement('span');
+    ts.className = 'mono text-vibe-muted text-[11px]';
+    ts.textContent = new Date(event.timestamp).toLocaleString('en-US', { hour12: false });
+    header.appendChild(ts);
+  }
+  if (event.status) {
+    const st = document.createElement('span');
+    st.className = 'mono text-[10px] text-vibe-muted uppercase';
+    st.textContent = event.status;
+    header.appendChild(st);
+  }
+  exp.appendChild(header);
+
+  // Prompt summary (full, no truncate)
+  if (meta.promptSummary) {
+    const wrap = document.createElement('div');
+    const label = document.createElement('div');
+    label.className = 'text-[10px] mono text-vibe-muted uppercase mb-1';
+    label.textContent = 'Prompt';
+    const body = document.createElement('div');
+    body.className = 'text-vibe-text whitespace-pre-wrap break-words';
+    body.textContent = String(meta.promptSummary);  // textContent: XSS-safe
+    wrap.appendChild(label);
+    wrap.appendChild(body);
+    exp.appendChild(wrap);
+  }
+
+  // Error context (H2 core feature) — agent_error events only, when present
+  if (meta.errorContext) {
+    const wrap = document.createElement('div');
+    const label = document.createElement('div');
+    label.className = 'text-[10px] mono text-vibe-red uppercase mb-1';
+    label.textContent = 'Error Context (first 500 chars)';
+    const body = document.createElement('div');
+    body.className = 'mono text-vibe-red bg-black/40 p-2 rounded whitespace-pre-wrap break-words border border-red-900/30 max-h-48 overflow-auto';
+    body.textContent = String(meta.errorContext);  // textContent: XSS-safe (critical)
+    wrap.appendChild(label);
+    wrap.appendChild(body);
+    exp.appendChild(wrap);
+  }
+
+  // Other metadata: responseLength, command, tool, duration, etc.
+  const skipKeys = new Set(['promptSummary', 'errorContext']);
+  const otherKeys = Object.keys(meta).filter(k => !skipKeys.has(k));
+  if (otherKeys.length > 0 || event.duration != null || event.sessionId) {
+    const wrap = document.createElement('div');
+    const label = document.createElement('div');
+    label.className = 'text-[10px] mono text-vibe-muted uppercase mb-1';
+    label.textContent = 'Metadata';
+    const body = document.createElement('div');
+    body.className = 'mono text-vibe-muted space-y-0.5';
+    if (event.duration != null) {
+      const row = document.createElement('div');
+      row.textContent = 'duration: ' + event.duration + 'ms';
+      body.appendChild(row);
+    }
+    if (event.sessionId) {
+      const row = document.createElement('div');
+      row.textContent = 'sessionId: ' + String(event.sessionId);
+      body.appendChild(row);
+    }
+    for (const k of otherKeys) {
+      const row = document.createElement('div');
+      let v = meta[k];
+      if (typeof v === 'object' && v !== null) {
+        try { v = JSON.stringify(v); } catch { v = '[object]'; }
+      }
+      const sv = String(v == null ? '' : v);
+      row.textContent = k + ': ' + (sv.length > 200 ? sv.slice(0, 200) + '...' : sv);
+      body.appendChild(row);
+    }
+    wrap.appendChild(label);
+    wrap.appendChild(body);
+    exp.appendChild(wrap);
+  }
+
+  itemDiv.appendChild(exp);
+  itemDiv.setAttribute('aria-expanded', 'true'); // P7: SR announces expanded state
 }
 
 function formatEventType(type) {
@@ -504,21 +1564,33 @@ function setFeedTab(tab) {
   currentTab = tab;
   ['all', 'agents', 'errors'].forEach(t => {
     const el = document.getElementById('tab-' + t);
-    if (t === tab) {
-      el.className = 'text-sm font-semibold tab-active';
+    const selected = t === tab;
+    if (selected) {
+      el.className = 'text-sm font-semibold tab-active focus-visible:ring-2 focus-visible:ring-vibe-accent rounded px-1';
     } else {
-      el.className = 'text-sm font-semibold text-vibe-muted hover:text-vibe-text';
+      el.className = 'text-sm font-semibold text-vibe-muted hover:text-vibe-text focus-visible:ring-2 focus-visible:ring-vibe-accent rounded px-1';
     }
+    // P7: keep aria-selected in sync for screen readers
+    el.setAttribute('aria-selected', selected ? 'true' : 'false');
   });
 
-  // Re-render feed
+  // Re-render feed using unified filter chain (agent + session + H8 search, AND'ed).
   const container = document.getElementById('feed-container');
   container.innerHTML = '';
   allEvents.forEach(e => {
-    const filter = document.getElementById('agent-filter').value;
-    if (filter !== 'all' && e.agentType !== filter) return;
-    addFeedItem(e);
+    if (!shouldShowEvent(e)) return;
+    addFeedItem(e); // may further filter by tab (agent_* / agent_error only)
   });
+  // H8: empty state — if search/filters hide everything, show a helpful hint instead of a blank box.
+  // We count actual DOM children (post tab filter) rather than pre-filter count for accuracy.
+  if (container.children.length === 0) {
+    const hint = searchQuery
+      ? 'No events match "' + searchQuery + '". Clear search to see all events.'
+      : 'No events match the current filters.';
+    container.innerHTML = '<div class="text-center text-vibe-muted text-sm py-8">' + escapeHtml(hint) + '</div>';
+    const countEl = document.getElementById('feed-count');
+    if (countEl) countEl.textContent = '0 events';
+  }
 }
 
 // === Agent Filter ===
@@ -538,6 +1610,28 @@ function updateAgentFilter() {
     select.appendChild(opt);
   });
   select.value = current;
+}
+
+// === Session Filter (C2) ===
+function updateSessionFilter() {
+  const select = document.getElementById('session-filter');
+  const current = select.value;
+  const ids = [...sessionIds].sort();
+
+  // Sadece yeni session varsa guncelle
+  if (select.options.length - 1 === ids.length) return;
+
+  select.innerHTML = '<option value="all">All Sessions</option>';
+  ids.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s;
+    opt.textContent = s;
+    select.appendChild(opt);
+  });
+  // current hala set'te varsa koru, yoksa "all"a dus
+  select.value = ids.includes(current) || current === 'all' ? current : 'all';
+  // H6: programmatic value change does not fire 'change' event — sync export button manually.
+  if (typeof updateExportButtonState === 'function') updateExportButtonState();
 }
 
 // === Agent Breakdown ===
@@ -578,7 +1672,7 @@ function updateAgentBreakdown() {
 async function fetchErrors() {
   const container = document.getElementById('error-container');
   try {
-    const res = await fetch('http://127.0.0.1:3848/api/errors');
+    const res = await fetch('/api/errors');
     const errors = await res.json();
 
     if (errors.length === 0) {
@@ -610,10 +1704,373 @@ async function fetchErrors() {
   }
 }
 
+// === Token Burn Panel (C3) ===
+function formatTokenCount(n) {
+  if (!n || n < 1000) return String(n || 0);
+  if (n < 1_000_000) return (n / 1000).toFixed(1) + 'K';
+  return (n / 1_000_000).toFixed(2) + 'M';
+}
+
+async function fetchTokenUsage() {
+  try {
+    const [usageRes, costRes] = await Promise.all([
+      fetch('/api/tokens'),
+      fetch('/api/costs'),
+    ]);
+    const usage = await usageRes.json();
+    const costs = await costRes.json();
+
+    const total = (usage && usage.summary && usage.summary.total) || 0;
+
+    // Stats bar metric
+    const statEl = document.getElementById('stat-tokens');
+    if (statEl) statEl.textContent = formatTokenCount(total);
+
+    // Panel total
+    const totalEl = document.getElementById('token-total');
+    if (totalEl) totalEl.textContent = formatTokenCount(total);
+
+    // Cost estimate
+    const costEl = document.getElementById('token-cost');
+    if (costEl && costs && costs.estimatedCost) {
+      const c = costs.estimatedCost;
+      costEl.textContent = `~$${c.asSonnet} (sonnet) / ~$${c.asOpus} (opus)`;
+    } else if (costEl) {
+      costEl.textContent = 'No cost data yet';
+    }
+
+    // Top 5 agents
+    const byAgent = (usage && usage.summary && usage.summary.byAgent) || {};
+    const sorted = Object.entries(byAgent)
+      .filter(([k]) => k && k !== 'null' && k !== 'undefined')
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+
+    const agentContainer = document.getElementById('token-by-agent');
+    if (!agentContainer) return;
+
+    if (sorted.length === 0) {
+      agentContainer.innerHTML = '<div class="text-center text-vibe-muted text-xs py-2">No agent token data yet</div>';
+      return;
+    }
+
+    const max = sorted[0][1] || 1;
+    let html = '';
+    for (const [agent, count] of sorted) {
+      const pct = Math.max(2, Math.round((count / max) * 100));
+      html += `
+        <div class="space-y-0.5">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] mono text-vibe-accent truncate" title="${escapeHtml(agent)}">${escapeHtml(agent)}</span>
+            <span class="text-[11px] mono text-vibe-yellow shrink-0">${formatTokenCount(count)}</span>
+          </div>
+          <div class="h-1 bg-vibe-bg rounded-full overflow-hidden">
+            <div class="h-full bg-vibe-yellow/60" style="width: ${pct}%"></div>
+          </div>
+        </div>
+      `;
+    }
+    agentContainer.innerHTML = html;
+  } catch {
+    // Sessizce devam — dashboard offline ise bos goster
+    const statEl = document.getElementById('stat-tokens');
+    if (statEl && statEl.textContent === '-') statEl.textContent = '0';
+  }
+}
+
+// === H1: Agent Health Panel ===
+// Fetches /api/matrix (Canavar skill-matrix.json) and renders per-agent success rate.
+// Empty state handled: skill-matrix.json missing -> server returns {agents:{}} -> "No data yet".
+function getHealthColor(rate) {
+  if (rate >= 0.9) return 'text-vibe-green';
+  if (rate >= 0.7) return 'text-vibe-yellow';
+  return 'text-vibe-red';
+}
+
+async function fetchAgentHealth() {
+  const container = document.getElementById('agent-health');
+  if (!container) return;
+  try {
+    const res = await fetch('/api/matrix');
+    const data = await res.json();
+    const agents = (data && data.agents) || {};
+    const entries = Object.entries(agents);
+
+    if (entries.length === 0) {
+      container.innerHTML = '<div class="text-center text-vibe-muted text-sm py-4">No agent performance data yet</div>';
+      return;
+    }
+
+    // Sort: success rate descending (highest performers first)
+    entries.sort((a, b) => {
+      const ra = (a[1] && typeof a[1].successRate === 'number') ? a[1].successRate : -1;
+      const rb = (b[1] && typeof b[1].successRate === 'number') ? b[1].successRate : -1;
+      return rb - ra;
+    });
+
+    let html = '';
+    for (const [name, info] of entries) {
+      const successRate = (info && typeof info.successRate === 'number') ? info.successRate : null;
+      const totalRuns = (info && typeof info.totalRuns === 'number') ? info.totalRuns : 0;
+      const lastFailure = info && info.lastFailure ? info.lastFailure : null;
+
+      const ratePct = successRate != null ? (successRate * 100).toFixed(0) + '%' : '-';
+      const rateColor = successRate != null ? getHealthColor(successRate) : 'text-vibe-muted';
+      const lastFailStr = lastFailure
+        ? new Date(lastFailure).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })
+        : 'none';
+
+      html += `
+        <div class="flex items-center justify-between py-1 border-b border-vibe-border last:border-0">
+          <span class="text-xs mono text-vibe-accent truncate max-w-[40%]" title="${escapeHtml(name)}">${escapeHtml(name)}</span>
+          <div class="flex items-center gap-2 shrink-0">
+            <span class="text-[11px] mono ${rateColor}">${ratePct}</span>
+            <span class="text-[10px] mono text-vibe-muted">${totalRuns} runs</span>
+            <span class="text-[10px] mono text-vibe-muted" title="last failure: ${escapeHtml(lastFailStr)}">${escapeHtml(lastFailStr)}</span>
+          </div>
+        </div>
+      `;
+    }
+    container.innerHTML = html;
+  } catch {
+    container.innerHTML = '<div class="text-center text-vibe-muted text-sm py-4">Agent health unavailable</div>';
+  }
+}
+
+// === H3: Hook Performance Panel ===
+// Fetches /api/hook-perf (added by backend-dev) — top slow hooks by p95.
+// Empty state handled: hook-perf.jsonl missing -> totalEntries===0 -> "No data yet".
+function getHookPerfColor(ms) {
+  if (ms < 5) return 'text-vibe-green';
+  if (ms <= 20) return 'text-vibe-yellow';
+  return 'text-vibe-red';
+}
+
+async function fetchHookPerf() {
+  const container = document.getElementById('hook-perf');
+  const countEl = document.getElementById('hook-perf-count');
+  if (!container) return;
+  try {
+    const res = await fetch('/api/hook-perf');
+    if (!res.ok) throw new Error('hook-perf endpoint not ready');
+    const data = await res.json();
+    const total = (data && typeof data.totalEntries === 'number') ? data.totalEntries : 0;
+    if (countEl) countEl.textContent = total + ' entries';
+
+    if (!total) {
+      container.innerHTML = '<div class="text-center text-vibe-muted text-sm py-4">No hook performance data yet</div>';
+      return;
+    }
+
+    // Prefer server-computed topSlow; fall back to byHook map sorted by p95.
+    let rows = Array.isArray(data.topSlow) ? data.topSlow.slice() : [];
+    if (rows.length === 0 && data.byHook && typeof data.byHook === 'object') {
+      rows = Object.entries(data.byHook).map(([hook, m]) => ({
+        hook,
+        p95Ms: m && typeof m.p95Ms === 'number' ? m.p95Ms : 0,
+        count: m && typeof m.count === 'number' ? m.count : 0,
+      }));
+    }
+    rows.sort((a, b) => (b.p95Ms || 0) - (a.p95Ms || 0));
+    rows = rows.slice(0, 10);
+
+    if (rows.length === 0) {
+      container.innerHTML = '<div class="text-center text-vibe-muted text-sm py-4">No hook performance data yet</div>';
+      return;
+    }
+
+    let html = '';
+    for (const r of rows) {
+      const p95 = typeof r.p95Ms === 'number' ? r.p95Ms : 0;
+      const count = typeof r.count === 'number' ? r.count : 0;
+      const color = getHookPerfColor(p95);
+      html += `
+        <div class="flex items-center justify-between py-1 border-b border-vibe-border last:border-0">
+          <span class="text-xs mono text-vibe-blue truncate max-w-[55%]" title="${escapeHtml(r.hook || '')}">${escapeHtml(r.hook || '')}</span>
+          <div class="flex items-center gap-2 shrink-0">
+            <span class="text-[11px] mono ${color}">${p95.toFixed(1)}ms</span>
+            <span class="text-[10px] mono text-vibe-muted">${count}x</span>
+          </div>
+        </div>
+      `;
+    }
+    container.innerHTML = html;
+  } catch {
+    // Endpoint not yet wired by backend-dev -> graceful empty state, no scary message.
+    if (countEl) countEl.textContent = '- entries';
+    container.innerHTML = '<div class="text-center text-vibe-muted text-sm py-4">No hook performance data yet</div>';
+  }
+}
+
+// === H7: Inline SVG Sparklines (last 60 minutes) ===
+// Zero-dep: pure <svg><polyline>. No charting libs, no Canvas, no extra deps.
+// (Per Section 8 zero-dep rule — vanilla SVG only.)
+//
+// Bucket model:
+//   - 60 fixed-size buckets, one per minute. buckets[59] = newest, buckets[0] = oldest.
+//   - On each event we resolve "which minute does this belong to?" relative to now.
+//     If it's the newest bucket -> increment in place. If a minute has elapsed since
+//     the last bucket roll -> shift left by N (N = minutes elapsed), padding the right
+//     with empty buckets, then record into the new newest bucket.
+//   - "Null" vs "0" matters for ERROR RATE only: a minute with zero spawns/completes
+//     yields null (no point drawn), not 0% (which would be misleading).
+//
+// SVG: viewBox="0 0 100 30", preserveAspectRatio="none" — DOM width/height drives display.
+const SPARKLINE_BUCKET_COUNT = 60;
+const SPARKLINE_BUCKET_MS = 60 * 1000;
+const sparklineData = {
+  // For error rate we count spawns/completes/errors per bucket and compute the rate
+  // at render time. Storing the raw counts lets us re-derive the rate after shifts.
+  errSpawnsAndCompletes: new Array(SPARKLINE_BUCKET_COUNT).fill(0),
+  errErrors: new Array(SPARKLINE_BUCKET_COUNT).fill(0),
+  tokenBurn: new Array(SPARKLINE_BUCKET_COUNT).fill(0),
+  spawnRate: new Array(SPARKLINE_BUCKET_COUNT).fill(0),
+  // Minute index (Math.floor(ms / 60000)) the newest bucket represents.
+  // Initialized lazily on the first event.
+  currentMinuteIdx: null,
+};
+
+function sparklineMinuteOf(tsMs) {
+  return Math.floor(tsMs / SPARKLINE_BUCKET_MS);
+}
+
+function sparklineAdvanceToNow(nowMs) {
+  const nowIdx = sparklineMinuteOf(nowMs);
+  if (sparklineData.currentMinuteIdx === null) {
+    sparklineData.currentMinuteIdx = nowIdx;
+    return;
+  }
+  let delta = nowIdx - sparklineData.currentMinuteIdx;
+  if (delta <= 0) return;
+  // Cap shift at bucket count — anything more than 60 min idle resets all buckets.
+  if (delta > SPARKLINE_BUCKET_COUNT) delta = SPARKLINE_BUCKET_COUNT;
+  for (let i = 0; i < delta; i++) {
+    sparklineData.errSpawnsAndCompletes.shift();
+    sparklineData.errSpawnsAndCompletes.push(0);
+    sparklineData.errErrors.shift();
+    sparklineData.errErrors.push(0);
+    sparklineData.tokenBurn.shift();
+    sparklineData.tokenBurn.push(0);
+    sparklineData.spawnRate.shift();
+    sparklineData.spawnRate.push(0);
+  }
+  sparklineData.currentMinuteIdx = nowIdx;
+}
+
+// Called for every event arrival (before filter chain). Cheap O(1) work.
+function recordSparklineEvent(event) {
+  if (!event) return;
+  const ts = event.timestamp ? new Date(event.timestamp).getTime() : Date.now();
+  // Roll buckets forward to the event's minute (or now, whichever is newer).
+  sparklineAdvanceToNow(Math.max(ts, Date.now()));
+  const last = SPARKLINE_BUCKET_COUNT - 1;
+
+  if (event.type === 'agent_spawn') {
+    sparklineData.errSpawnsAndCompletes[last]++;
+    sparklineData.spawnRate[last]++;
+  } else if (event.type === 'agent_complete') {
+    sparklineData.errSpawnsAndCompletes[last]++;
+  } else if (event.type === 'agent_error') {
+    sparklineData.errErrors[last]++;
+  }
+
+  // Token burn: prefer explicit metadata.tokenEstimate (number), otherwise skip.
+  // Some events may carry estimates from token-logger; if not, sparkline shows
+  // burn over the events that DO carry it (graceful zero-fill otherwise).
+  const meta = event.metadata || {};
+  const tok = typeof meta.tokenEstimate === 'number' ? meta.tokenEstimate
+            : typeof meta.tokens === 'number' ? meta.tokens
+            : 0;
+  if (tok > 0) sparklineData.tokenBurn[last] += tok;
+}
+
+// Render a single sparkline. Returns SVG string or empty-state placeholder.
+// data: number array (length 60). null entries are skipped (no point drawn).
+// color: stroke color (hex or CSS).
+function renderSparkline(data, color) {
+  if (!Array.isArray(data) || data.length === 0) return '';
+  // Find max for normalization. Treat null as missing. If all null/zero -> flat baseline.
+  let max = 0;
+  let hasNonZero = false;
+  for (const v of data) {
+    if (v === null || v === undefined) continue;
+    if (v > max) max = v;
+    if (v > 0) hasNonZero = true;
+  }
+  if (!hasNonZero) {
+    // Render a faint flat baseline so the user knows the sparkline exists but is idle.
+    return '<svg viewBox="0 0 100 30" preserveAspectRatio="none" width="60" height="20" '
+      + 'class="inline-block ml-1" aria-hidden="true">'
+      + '<line x1="0" y1="29" x2="100" y2="29" stroke="' + color + '" stroke-opacity="0.25" stroke-width="1"/>'
+      + '</svg>';
+  }
+
+  const safeMax = max <= 0 ? 1 : max;
+  const pointStrs = [];
+  for (let i = 0; i < data.length; i++) {
+    const v = data[i];
+    if (v === null || v === undefined) continue;
+    const x = (i / (data.length - 1)) * 100;
+    // y: 0 = top of viewBox, 30 = bottom. Keep a 1px floor so a value of 0 still
+    // sits ON the baseline rather than below it.
+    const y = 29 - (v / safeMax) * 28;
+    pointStrs.push(x.toFixed(1) + ',' + y.toFixed(1));
+  }
+  if (pointStrs.length < 2) {
+    // A single point isn't a line — fall back to dot.
+    if (pointStrs.length === 1) {
+      const [x, y] = pointStrs[0].split(',');
+      return '<svg viewBox="0 0 100 30" preserveAspectRatio="none" width="60" height="20" '
+        + 'class="inline-block ml-1" aria-hidden="true">'
+        + '<circle cx="' + x + '" cy="' + y + '" r="1.5" fill="' + color + '"/>'
+        + '</svg>';
+    }
+    return '';
+  }
+  return '<svg viewBox="0 0 100 30" preserveAspectRatio="none" width="60" height="20" '
+    + 'class="inline-block ml-1" aria-hidden="true">'
+    + '<polyline points="' + pointStrs.join(' ') + '" stroke="' + color + '" '
+    + 'stroke-width="1.25" fill="none" stroke-linejoin="round" stroke-linecap="round"/>'
+    + '</svg>';
+}
+
+// Compute error-rate-per-bucket array (length 60, null where no data).
+function computeErrorRateBuckets() {
+  const arr = new Array(SPARKLINE_BUCKET_COUNT);
+  for (let i = 0; i < SPARKLINE_BUCKET_COUNT; i++) {
+    const spawns = sparklineData.errSpawnsAndCompletes[i];
+    const errs = sparklineData.errErrors[i];
+    const denom = spawns + errs;
+    arr[i] = denom > 0 ? (errs / denom) * 100 : null;
+  }
+  return arr;
+}
+
+function updateSparklines() {
+  // Time-march to NOW so idle minutes show as zero (not stale peaks).
+  sparklineAdvanceToNow(Date.now());
+
+  // Tailwind theme hex (matches vibe palette in <script tailwind.config>).
+  const COLOR_RED = '#ef4444';     // error rate
+  const COLOR_YELLOW = '#eab308';  // token burn
+  const COLOR_PURPLE = '#8b5cf6';  // spawn rate (accent)
+
+  const errEl = document.getElementById('sparkline-error');
+  const tokEl = document.getElementById('sparkline-tokens');
+  const spwEl = document.getElementById('sparkline-spawn');
+
+  if (errEl) errEl.innerHTML = renderSparkline(computeErrorRateBuckets(), COLOR_RED);
+  if (tokEl) tokEl.innerHTML = renderSparkline(sparklineData.tokenBurn, COLOR_YELLOW);
+  if (spwEl) spwEl.innerHTML = renderSparkline(sparklineData.spawnRate, COLOR_PURPLE);
+}
+
 // === Utilities ===
 function escapeHtml(str) {
   if (!str) return '';
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  // Single quotes too (M1): every attribute here is double-quoted today, but the
+  // function name promises full HTML escaping — don't leave a trap for the first
+  // future single-quoted attribute interpolation.
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 function togglePause() {
@@ -625,6 +2082,43 @@ function togglePause() {
     : 'bg-vibe-card border border-vibe-border rounded px-3 py-1.5 text-sm mono hover:border-vibe-accent transition-colors';
 }
 
+// === H6: Session Export ===
+// Triggers a download of /api/export?session=<id8>. Backend (spark) returns JSON with
+// Content-Disposition: attachment, so an invisible <a> click is enough — no window.open.
+// We disable the button while "all" is selected so users can't export a meaningless union.
+function exportSession() {
+  const sel = document.getElementById('session-filter');
+  const selectedSession = sel ? sel.value : 'all';
+  if (!selectedSession || selectedSession === 'all') {
+    // Defensive: button should be disabled, but guard anyway.
+    alert('Önce bir session seç (All Sessions iken export edilemez)');
+    return;
+  }
+  const a = document.createElement('a');
+  a.href = '/api/export?session=' + encodeURIComponent(selectedSession);
+  a.download = ''; // honor server's Content-Disposition filename
+  a.rel = 'noopener';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  // Note: 404 (no events) and 400 (no param) are handled by the server. The browser
+  // will simply show the JSON error response if anything goes wrong — graceful.
+}
+
+function updateExportButtonState() {
+  const btn = document.getElementById('export-btn');
+  const sel = document.getElementById('session-filter');
+  if (!btn || !sel) return;
+  const enabled = sel.value && sel.value !== 'all';
+  btn.disabled = !enabled;
+  btn.className = enabled
+    ? 'bg-vibe-card border border-vibe-border rounded px-3 py-1.5 text-xs mono text-vibe-text hover:border-vibe-accent hover:text-vibe-accent transition-colors cursor-pointer'
+    : 'bg-vibe-card border border-vibe-border rounded px-3 py-1.5 text-xs mono text-vibe-muted opacity-50 cursor-not-allowed transition-colors';
+  btn.title = enabled
+    ? 'Export events for session ' + sel.value
+    : 'Önce bir session seç (All Sessions iken export edilemez)';
+}
+
 function updateUptime() {
   const elapsed = Math.floor((Date.now() - uptimeStart) / 1000);
   const h = Math.floor(elapsed / 3600).toString().padStart(2, '0');
@@ -633,15 +2127,83 @@ function updateUptime() {
   document.getElementById('uptime').textContent = `${h}:${m}:${s}`;
 }
 
+// === P4: Self-Stats Footer ===
+// Polls /api/self-stats every 5s (provided by spark in parallel server.js change).
+// Endpoint may not be deployed when this UI first loads — graceful silent skip
+// keeps the footer at "loading..." until server catches up.
+// textContent is used (NOT innerHTML) to render server response — defense in depth.
+async function fetchSelfStats() {
+  const el = document.getElementById('self-stats');
+  if (!el) return;
+  try {
+    const res = await fetch('/api/self-stats');
+    if (!res.ok) return;
+    const s = await res.json();
+    // Defensive parsing — endpoint contract may evolve. Treat missing fields as 0/-.
+    const uptime = typeof s.uptime === 'number' ? s.uptime : 0;
+    const uptimeH = (uptime / 3600).toFixed(1);
+    const wsClients = typeof s.wsClients === 'number' ? s.wsClients : '-';
+    const heap = typeof s.heapUsedMb === 'number' ? s.heapUsedMb : '-';
+    const events = typeof s.eventStoreSize === 'number' ? s.eventStoreSize : '-';
+    el.textContent = `Dashboard: ${uptimeH}h uptime · ${wsClients} WS clients · ${heap}MB heap · ${events} events`;
+  } catch {
+    // Server offline / endpoint not yet deployed — keep last good text or default.
+    // Don't overwrite a previously successful response with "loading..." on transient
+    // network blip; only set placeholder if we never succeeded.
+    if (el.textContent === 'Dashboard: loading...') {
+      // leave as-is
+    }
+  }
+}
+
 // === Init ===
 connect();
 fetchErrors();
+fetchTokenUsage(); // C3: initial token data
+fetchAgentHealth(); // H1: initial agent health
+fetchHookPerf();    // H3: initial hook performance
+fetchSelfStats();   // P4: initial self-stats fetch
+updateExportButtonState(); // H6: ensure button starts in disabled state matching session-filter
+updateSparklines();         // H7: initial sparkline render (idle baselines)
+// T1: Delegated timeline click — innerHTML re-renders wipe per-bar nodes every
+// frame, but the container itself is permanent, so ONE listener covers all bars.
+// Clicking the selected bar again toggles the panel closed.
+document.getElementById('timeline-container').addEventListener('click', (ev) => {
+  const bar = ev.target.closest('.timeline-bar');
+  if (!bar || !bar.dataset.tlType) return;
+  const type = bar.dataset.tlType;
+  const idx = parseInt(bar.dataset.tlIdx, 10);
+  if (!Number.isFinite(idx)) return;
+  if (selectedTimelineBar && selectedTimelineBar.type === type && selectedTimelineBar.idx === idx) {
+    selectedTimelineBar = null;
+  } else {
+    selectedTimelineBar = { type, idx };
+  }
+  scheduleRender();
+});
+
 setInterval(updateUptime, 1000);
-setInterval(renderTimeline, 5000); // Running bar'lari guncellemek icin
+setInterval(scheduleRender, 5000); // P2: Running bar'lari guncellemek icin (rAF-throttled)
 setInterval(fetchErrors, 30000); // Error'lari 30 saniyede bir yenile
+setInterval(fetchTokenUsage, 15000); // C3: token data 15 saniyede bir yenile
+setInterval(fetchAgentHealth, 10000); // H1: skill matrix 10 saniyede bir yenile
+setInterval(fetchHookPerf, 30000);    // H3: hook perf 30 saniyede bir yenile (slow-changing)
+setInterval(checkStuckAgents, STUCK_CHECK_INTERVAL_MS); // H5: stuck agent detection (every 30s)
+setInterval(updateSparklines, 5000);  // H7: sparkline re-render every 5s (also rolls idle minutes)
+setInterval(fetchSelfStats, 5000);    // P4: self-stats refresh every 5s
 
 // Agent filter degistiginde feed'i yenile
 document.getElementById('agent-filter').addEventListener('change', () => setFeedTab(currentTab));
+// C2: Session filter degistiginde feed'i yenile + H6: export button enable/disable
+document.getElementById('session-filter').addEventListener('change', () => {
+  setFeedTab(currentTab);
+  updateExportButtonState();
+});
+// H8: search input — debounce-free (substring match is O(n) where n=allEvents.length<=500, trivial)
+document.getElementById('feed-search').addEventListener('input', (e) => {
+  searchQuery = (e.target.value || '').toLowerCase().trim();
+  setFeedTab(currentTab);
+});
 </script>
 
 </body>
