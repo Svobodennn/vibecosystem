@@ -17,7 +17,7 @@ describe('matchErrorPatterns — gerçek hatalar yakalanır', () => {
     ['Export template not found for preset Windows', 'godot-export-error'],
     ['error[E0382]: borrow of moved value', 'rust-error'],
     [' FAIL src/components/auth.test.ts\n  ● login fails', 'test-failure'],
-    ['FAIL\tgithub.com/demon/tide\t0.412s', 'go-test-failure'],
+    ['FAIL\tgithub.com/acme/app\t0.412s', 'go-test-failure'],
     ['FAILED tests/test_auth.py::test_login - AssertionError', 'pytest-failure'],
     ['Tests: 3 failed, 12 passed', 'test-failure'],
     // B3: boş test koşumu = false-green
