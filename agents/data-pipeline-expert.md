@@ -1,6 +1,6 @@
 ---
 name: data-pipeline-expert
-description: "ETL/ELT tasarimi, data quality, schema evolution, idempotent processing, pipeline debugging"
+description: "USE WHEN: ETL/ELT pipeline tasarımı (Airflow/Dagster/dbt), data quality framework, schema evolution (Avro/Parquet), idempotent processing, backfill strategy, pipeline debug. NOT FOR: ML pipeline (training/serving), ad-hoc analytics, streaming-only (Kafka Streams), data modeling. USE INSTEAD: neuron (ML pipeline+MLOps), data-analyst (analytics), kafka-expert (Kafka Streams), data-modeler (schema design)."
 tools: [Read, Bash, Grep, Glob]
 ---
 

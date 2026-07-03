@@ -1,8 +1,7 @@
 ---
 name: i18n-expert
-description: Internationalization and localization specialist for multi-language applications
+description: "USE WHEN: technical i18n — string extraction, ICU MessageFormat, pluralization rules (CLDR), framework setup (next-intl, react-i18next, formatjs), translation key management, lazy locale loading. NOT FOR: locale-aware UX design, cultural adaptation, RTL CSS implement, marketing translation. USE INSTEAD: babel (locale UX + RTL design + cultural), frontend-dev (RTL CSS), copywriter (translation copy)."
 tools: [Read, Write, Edit, Grep, Glob, Bash]
-isolation: worktree
 ---
 
 # Agent: i18n Expert
@@ -95,3 +94,27 @@ dashboard.chart.noData = "Veri bulunamadı"
 
 - frontend-patterns
 - accessibility-patterns
+
+
+## Worktree Handoff (ZORUNLU)
+
+Bu agent `isolation: worktree` ile **izole bir git worktree'sinde** calisir. Yaptigin degisiklikler ANA calisma dizininde GORUNMEZ; commit etmezsen worktree'de strand kalir ve `git worktree prune/remove --force` ile KAYBOLABILIR.
+
+**Dosya degistirdiysen, "tamamlandi" demeden ONCE calistir:**
+
+```bash
+git add -A
+git commit -m "i18n-expert: <kisa degisiklik ozeti>" && echo COMMITTED || echo NO_CHANGES
+echo "WORKTREE_BRANCH=$(git branch --show-current)"
+echo "WORKTREE_COMMIT=$(git rev-parse HEAD)"
+```
+
+**Cikti ozetinin SONUNA mutlaka ekle:**
+
+```
+## WORKTREE HANDOFF
+- Branch: <branch adi>
+- Commit: <hash>   (veya "degisiklik yoktu")
+```
+
+Worktree'ler ayni repo'nun git object store'unu paylasir → parent (Hizir) bu commit'i worktree dizinine hic girmeden `git merge <hash>` ile ana dala alir. **Commit atmadan `TASK STATUS: COMPLETE` deme** — degisiklik kaybolur.

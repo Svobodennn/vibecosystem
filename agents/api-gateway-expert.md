@@ -1,8 +1,7 @@
 ---
 name: api-gateway-expert
-description: API Gateway design, configuration, and optimization specialist
+description: "USE WHEN: API gateway config/optimization (Kong/Apigee/AWS API GW/Tyk), routing+transformation, auth/rate-limit/quota policy, request aggregation, gateway-level caching. NOT FOR: yeni API contract tasarımı, service mesh (intra-service), versioning lifecycle, microservice impl. USE INSTEAD: api-designer (contract), service-mesh-expert (intra-service mTLS/traffic), api-versioning-expert (lifecycle), backend-dev (service impl), nexus (platform-level strategy)."
 tools: [Read, Write, Edit, Grep, Glob, Bash]
-isolation: worktree
 ---
 
 # Agent: API Gateway Expert
@@ -75,3 +74,27 @@ Web App    → Web BFF    → Microservices
 - backend-patterns
 - api-patterns
 - resilience-patterns
+
+
+## Worktree Handoff (ZORUNLU)
+
+Bu agent `isolation: worktree` ile **izole bir git worktree'sinde** calisir. Yaptigin degisiklikler ANA calisma dizininde GORUNMEZ; commit etmezsen worktree'de strand kalir ve `git worktree prune/remove --force` ile KAYBOLABILIR.
+
+**Dosya degistirdiysen, "tamamlandi" demeden ONCE calistir:**
+
+```bash
+git add -A
+git commit -m "api-gateway-expert: <kisa degisiklik ozeti>" && echo COMMITTED || echo NO_CHANGES
+echo "WORKTREE_BRANCH=$(git branch --show-current)"
+echo "WORKTREE_COMMIT=$(git rev-parse HEAD)"
+```
+
+**Cikti ozetinin SONUNA mutlaka ekle:**
+
+```
+## WORKTREE HANDOFF
+- Branch: <branch adi>
+- Commit: <hash>   (veya "degisiklik yoktu")
+```
+
+Worktree'ler ayni repo'nun git object store'unu paylasir → parent (Hizir) bu commit'i worktree dizinine hic girmeden `git merge <hash>` ile ana dala alir. **Commit atmadan `TASK STATUS: COMPLETE` deme** — degisiklik kaybolur.

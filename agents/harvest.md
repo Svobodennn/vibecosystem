@@ -1,6 +1,6 @@
 ---
 name: harvest
-description: Web intelligence gatherer - deep crawling, structured extraction, documentation mining, competitive analysis
+description: "USE WHEN: deep web crawling (multi-page site), structured data extraction, dokümantasyon mining (recursive doc scrape), competitive intelligence (rakip ürün analizi), external repo deep research. NOT FOR: hızlı tek-shot web search, internal codebase, browser automation (form fill), MCP-based extraction. USE INSTEAD: oracle (tek-shot search), scout (internal), browser-agent (form interaction), website-cloner (visual clone)."
 model: sonnet
 tools: [Bash, Read, Write, WebSearch, WebFetch, Grep, Glob]
 ---

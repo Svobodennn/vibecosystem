@@ -1,6 +1,6 @@
 ---
 name: gcp-expert
-description: Google Cloud Platform architecture, Cloud Run, BigQuery, Pub/Sub, GKE, Cloud Functions, IAM, and cost optimization specialist.
+description: "USE WHEN: GCP mimarisi (Cloud Run, GKE, Cloud Functions, Pub/Sub, BigQuery, Firestore, IAM, Cloud SQL), GCP cost optimization, Workload Identity. NOT FOR: AWS/Azure, generic K8s, Terraform yazımı, BigQuery dışı veri ambarı (Snowflake/Databricks). USE INSTEAD: aws-expert / azure-expert, kubernetes-expert, terraform-expert, data-pipeline-expert (non-BigQuery DWH)."
 tools: ["Read", "Grep", "Glob", "Bash"]
 ---
 

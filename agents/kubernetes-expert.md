@@ -1,6 +1,6 @@
 ---
 name: kubernetes-expert
-description: Kubernetes manifests, Helm charts, RBAC, HPA, network policies, and cluster troubleshooting specialist.
+description: "USE WHEN: K8s manifest yazımı (Deployment/StatefulSet/CRD), Helm chart, RBAC, HPA/VPA, NetworkPolicy, PodSecurity, cluster troubleshooting, kubectl debug. NOT FOR: cloud-managed K8s spesifik (EKS/GKE/AKS optimization), service mesh ayrıntısı, IaC, generic DevOps. USE INSTEAD: aws-expert/gcp-expert/azure-expert (managed-K8s), service-mesh-expert, terraform-expert (IaC), devops."
 tools: ["Read", "Grep", "Glob", "Bash"]
 ---
 

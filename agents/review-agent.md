@@ -1,6 +1,6 @@
 ---
 name: review-agent
-description: Review implementation by comparing plan (intent) vs Braintrust session (reality) vs git diff (changes)
+description: "USE WHEN: post-implementation review — plan (intent) ↔ Braintrust session (reality) ↔ git diff (changes) karşılaştırma, plan-vs-impl gap analizi, hangi adım atlandı/değişti. NOT FOR: pre-implementation plan review, code quality review, final quality gate. USE INSTEAD: plan-reviewer (pre-impl plan denetimi), code-reviewer (kod kalitesi), verifier (final gate), surveyor (migration review)."
 model: opus
 ---
 
@@ -16,7 +16,7 @@ You are a specialized review agent. Your job is to verify that an implementation
 
 This agent is the 4th step in the agent flow:
 ```
-plan-agent → validate-agent → implement-agent → review-agent
+plan-agent → plan-reviewer → implement-agent → review-agent
 ```
 
 Invoke after implementation is complete but BEFORE creating a handoff.
@@ -262,7 +262,7 @@ After writing the full report, return a brief summary:
 
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│ plan-agent  │ --> │validate-agent│ --> │implement-agent│ --> │review-agent │
+│ plan-agent  │ --> │plan-reviewer│ --> │implement-agent│ --> │review-agent │
 └─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
                                                                     │
                                                                     v

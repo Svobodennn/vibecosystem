@@ -1,6 +1,6 @@
 ---
 name: service-mesh-expert
-description: Service mesh architecture specialist for microservice communication
+description: "USE WHEN: service mesh (Istio/Linkerd/Consul) — mTLS, traffic management (canary/A-B at mesh layer), retry/timeout/circuit breaker policy, observability sidecar, zero-trust networking. NOT FOR: north-south API traffic (kullanıcıdan dış API), application-level auth, K8s base config, distributed tracing impl. USE INSTEAD: api-gateway-expert (north-south), oauth-expert (auth), kubernetes-expert (K8s), tracing-expert (OpenTelemetry impl)."
 tools: [Read, Grep, Glob, Bash]
 ---
 

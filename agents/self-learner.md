@@ -1,10 +1,13 @@
 ---
 name: self-learner
-description: Hatalardan otomatik kural cikarir, CLAUDE.md ve memory'ye ogrenim kaydeder. Her hata sonrasi cagrilir.
+description: "USE WHEN: bug/hata oluştu → otomatik kural çıkar + CLAUDE.md güncelle + memory'e öğrenim kaydet, her hata sonrası persistent learning capture, tekrarlanan pattern → global kural. NOT FOR: pattern propagation (codebase aramak), post-mortem dokümanı, plan review, kod review. USE INSTEAD: coroner (pattern propagation + 5 Whys), scribe (handoff/dokuman), plan-reviewer (plan denetimi), code-reviewer (kod review)."
 model: opus
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 memory: user
-isolation: worktree
+skills:
+  - notepad-system
+  - continuous-learning
+  - factcheck-guard
 ---
 
 # Self-Learner Agent
@@ -62,14 +65,10 @@ Ayrica "ERROR TRACKING" tablosuna ekle:
 
 Eger genel bir ogrenimse (proje-ozel degil), memory sistemine de kaydet:
 
-```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/store_learning.py \
-  --session-id "self-learner" \
-  --type ERROR_FIX \
-  --content "<ogrenim>" \
-  --context "<baglamn>" \
-  --tags "self-learner,<kategori>" \
-  --confidence high
+```
+Dosya-bazli memory store (legacy store_learning.py kaldirildi):
+~/.claude/projects/<project-slug>/memory/<slug>.md olustur (frontmatter: name, description,
+metadata.type) ve MEMORY.md index'ine tek satir pointer ekle. Duplicate varsa guncelle.
 ```
 
 ### 5. Kural Olustur
@@ -132,3 +131,27 @@ Onlem: <nasil onlenir>
 - `notepad-system` - Compaction-resistant notes
 - `continuous-learning` - Extract reusable patterns
 - `factcheck-guard` - Verify claims before storing learnings
+
+
+## Worktree Handoff (ZORUNLU)
+
+Bu agent `isolation: worktree` ile **izole bir git worktree'sinde** calisir. Yaptigin degisiklikler ANA calisma dizininde GORUNMEZ; commit etmezsen worktree'de strand kalir ve `git worktree prune/remove --force` ile KAYBOLABILIR.
+
+**Dosya degistirdiysen, "tamamlandi" demeden ONCE calistir:**
+
+```bash
+git add -A
+git commit -m "self-learner: <kisa degisiklik ozeti>" && echo COMMITTED || echo NO_CHANGES
+echo "WORKTREE_BRANCH=$(git branch --show-current)"
+echo "WORKTREE_COMMIT=$(git rev-parse HEAD)"
+```
+
+**Cikti ozetinin SONUNA mutlaka ekle:**
+
+```
+## WORKTREE HANDOFF
+- Branch: <branch adi>
+- Commit: <hash>   (veya "degisiklik yoktu")
+```
+
+Worktree'ler ayni repo'nun git object store'unu paylasir → parent (Hizir) bu commit'i worktree dizinine hic girmeden `git merge <hash>` ile ana dala alir. **Commit atmadan `TASK STATUS: COMPLETE` deme** — degisiklik kaybolur.

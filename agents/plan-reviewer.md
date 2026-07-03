@@ -1,6 +1,6 @@
 ---
 name: plan-reviewer
-description: Reviews feature plans (from architect) and change plans (from phoenix)
+description: "USE WHEN: yazılmış plan review (architect/planner/phoenix çıktısı), tech-choice validation (best practices), tamamlık/risk/dependency denetimi, plan onay öncesi gate; verdict: APPROVED / APPROVED WITH CHANGES / REJECTED. NOT FOR: plan yazımı, post-implement review, kod review, migration tamamlığı review. USE INSTEAD: planner/architect/phoenix (plan yazımı), review-agent (plan-intent vs reality), code-reviewer (kod review), surveyor (migration review)."
 model: sonnet
 tools: [Bash, Read, Grep, Glob]
 ---
@@ -54,6 +54,7 @@ Analyze the plan content to determine type:
 - [ ] Interfaces well-defined
 - [ ] Dependencies identified
 - [ ] Phases logical and incremental
+- [ ] **Agent roster present**: every phase names executing + QA agents; names exist in `~/.claude/agents/` (verify with `ls`); assignments match `~/.claude/rules/agent-assignment-matrix.md` or carry a deviation rationale
 - [ ] Risks identified with mitigation
 - [ ] Auth approach secure (if applicable)
 - [ ] Error handling comprehensive
@@ -66,6 +67,7 @@ Analyze the plan content to determine type:
 - [ ] Tests exist for target code
 - [ ] Behavior preservation verified
 - [ ] Steps are reversible
+- [ ] **Agent roster present**: every phase names executing + QA agents (matrix-compliant or rationale given); agent names verified against `~/.claude/agents/`
 - [ ] Metrics defined (before/after)
 - [ ] Breaking changes identified
 - [ ] All usages found (grep/search verified)
@@ -152,6 +154,7 @@ Plan Source: phoenix
 | Tests exist | Yes / No |
 | Rollback documented | Yes / No |
 | Dependencies compatible | Yes / No |
+| Agent roster (per phase, valid names) | Yes / No |
 
 ## Issues
 
@@ -243,6 +246,8 @@ When reviewing change plans that involve refactoring:
 - No rate limiting on external APIs
 - Unclear interface contracts
 - Missing dependency analysis
+- Missing agent roster (phases without assigned agents → who implements? who QAs?)
+- Hallucinated agent names (not in `~/.claude/agents/`) or matrix-incompatible assignment without rationale
 
 ### Change Plans
 - No tests for refactored code
@@ -250,6 +255,7 @@ When reviewing change plans that involve refactoring:
 - Incomplete pattern replacement (mixed old/new)
 - Breaking changes without migration path
 - Untested dependency upgrades
+- Missing agent roster or invalid agent names per phase
 
 ## Examples
 

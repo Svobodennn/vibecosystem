@@ -1,6 +1,6 @@
 ---
 name: neuron
-description: ML/Data Engineer - data pipelines, model training, MLOps
+description: "USE WHEN: ML/Data Engineering — data pipeline (Airflow/Dagster), feature store, model training (sklearn/PyTorch/TF), MLOps (MLflow/Weights&Biases), model serving, training-serving skew. NOT FOR: LLM/RAG (generative AI), product analytics, vector DB ops, ETL-only. USE INSTEAD: ai-engineer (LLM/RAG/agent), data-analyst (product analytics), vector-db-expert (similarity), data-pipeline-expert (pure ETL)."
 tools: [Read, Write, Edit, Grep, Glob, Bash]
 ---
 

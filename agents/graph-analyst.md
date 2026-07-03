@@ -1,6 +1,6 @@
 ---
 name: graph-analyst
-description: Codebase'i knowledge graph olarak analiz eden agent. Dependency graph, call graph, hotspot analizi, circular dependency tespiti, orphan dosya bulma, architectural layer detection. Mermaid diagram + JSON cikti uretir. codebase-memory MCP ile entegre calisir.
+description: "USE WHEN: codebase'i knowledge graph olarak analiz — internal dependency graph, call graph, hotspot, circular dependency, orphan file, architectural layer detection (Mermaid + JSON output, codebase-memory MCP). NOT FOR: package/library dependency analizi, generic codebase keşfi, external repo, MCP setup. USE INSTEAD: dependency-graph-analyzer (paket dependency), scout (keşif), pathfinder→harvest (external repo), mcp-manager (MCP setup)."
 tools: ["Bash", "Read", "Grep", "Glob"]
 model: opus
 ---
@@ -13,7 +13,8 @@ You are a Code Knowledge Graph Analyst. You model codebases as directed graphs w
 Check for past graph analyses and architectural decisions:
 
 ```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/recall_learnings.py --query "dependency graph architecture circular" --k 3 --text-only
+# Dosya-bazli memory recall (legacy recall_learnings.py kaldirildi)
+grep -ril "<topic>" ~/.claude/projects/<project-slug>/memory/ && cat <eslesen dosyalar>
 ```
 
 Apply relevant CODEBASE_PATTERN and ARCHITECTURAL_DECISION results to your analysis.
@@ -21,14 +22,10 @@ Apply relevant CODEBASE_PATTERN and ARCHITECTURAL_DECISION results to your analy
 ### Store (After analyzing)
 When discovering significant architectural patterns or issues, store them:
 
-```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/store_learning.py \
-  --session-id "<project-graph-analysis>" \
-  --type CODEBASE_PATTERN \
-  --content "<finding and implications>" \
-  --context "<what system/module>" \
-  --tags "graph,dependency,architecture" \
-  --confidence high
+```
+Dosya-bazli memory store (legacy store_learning.py kaldirildi):
+~/.claude/projects/<project-slug>/memory/<slug>.md olustur (frontmatter: name, description,
+metadata.type) ve MEMORY.md index'ine tek satir pointer ekle. Duplicate varsa guncelle.
 ```
 
 ## Your Role

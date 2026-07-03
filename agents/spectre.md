@@ -1,6 +1,6 @@
 ---
 name: spectre
-description: Mobile Dev - cross-platform, React Native, Flutter, native performance
+description: "USE WHEN: cross-platform mobile (React Native, Flutter, Expo, Capacitor) — shared codebase, bridge optimization, native performance from RN/Flutter, App Store/Play Store setup. NOT FOR: iOS native Swift, Android native Kotlin, mobile paywall strategy, generic frontend (web). USE INSTEAD: swift-expert (iOS native), kotlin-expert (Android native), paywall-planner/monetization-expert (paywall), frontend-dev (web)."
 tools: [Read, Write, Edit, Grep, Glob, Bash]
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: canary-deploy-expert
-description: "Canary & progressive delivery specialist - Blue-green, rolling updates, traffic splitting, automated rollback, deployment strategies"
+description: "USE WHEN: progressive delivery stratejisi — canary, blue-green, rolling, shadow deployment, traffic splitting (Argo Rollouts/Flagger), automated rollback metrik bazlı. NOT FOR: feature flag (kullanıcı segmenti), generic release lifecycle, K8s base manifest, full incident management. USE INSTEAD: feature-flag-expert (user segment toggle), shipper (release lifecycle), kubernetes-expert (K8s base), sentinel (post-deploy monitoring)."
 tools: [Read, Grep, Glob, Bash]
 ---
 

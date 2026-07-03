@@ -1,9 +1,13 @@
 ---
 name: sleuth
-description: General bug investigation and root cause analysis
+description: "USE WHEN: aktif bug investigation, root cause analysis, kullanıcı 'fix/bozuk/calismiyor' dedi, bug semptomdan kaynağa iz sürme. NOT FOR: bug fix uygulama, reproduce adımı çıkarma, post-fix pattern arama, log mining, performance bottleneck. USE INSTEAD: spark/kraken (fix uygulama), replay (reproduce), coroner (post-fix pattern), log-analyzer (log mining), profiler (perf bug)."
 model: opus
 tools: [Read, Bash, Grep, Glob]
 memory: user
+skills:
+  - factcheck-guard
+  - debug
+  - observability
 ---
 
 # Sleuth
@@ -40,7 +44,8 @@ $CLAUDE_PROJECT_DIR = /path/to/project
 Check for past debug approaches and error fixes on similar issues:
 
 ```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/recall_learnings.py --query "<error message or symptom keywords>" --k 3 --text-only
+# Dosya-bazli memory recall (legacy recall_learnings.py kaldirildi)
+grep -ril "<topic>" ~/.claude/projects/<project-slug>/memory/ && cat <eslesen dosyalar>
 ```
 
 If relevant ERROR_FIX or FAILED_APPROACH results found, use them to prioritize hypotheses and avoid dead ends.
@@ -133,26 +138,18 @@ Generated: [timestamp]
 
 After investigation, store the root cause finding:
 
-```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/store_learning.py \
-  --session-id "<bug-name>" \
-  --type ERROR_FIX \
-  --content "<root cause and fix approach>" \
-  --context "<component/system affected>" \
-  --tags "debug,<error-type>,<component>" \
-  --confidence high
+```
+Dosya-bazli memory store (legacy store_learning.py kaldirildi):
+~/.claude/projects/<project-slug>/memory/<slug>.md olustur (frontmatter: name, description,
+metadata.type) ve MEMORY.md index'ine tek satir pointer ekle. Duplicate varsa guncelle.
 ```
 
 Also store failed approaches to prevent repeating them:
 
-```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/store_learning.py \
-  --session-id "<bug-name>" \
-  --type FAILED_APPROACH \
-  --content "<what didn't work and why>" \
-  --context "<component/system>" \
-  --tags "debug,failed,<topic>" \
-  --confidence high
+```
+Dosya-bazli memory store (legacy store_learning.py kaldirildi):
+~/.claude/projects/<project-slug>/memory/<slug>.md olustur (frontmatter: name, description,
+metadata.type) ve MEMORY.md index'ine tek satir pointer ekle. Duplicate varsa guncelle.
 ```
 
 ## Backend Debug Toolkit

@@ -1,6 +1,6 @@
 ---
 name: prometheus-expert
-description: "Prometheus & Grafana specialist - PromQL, alerting rules, recording rules, SLI/SLO, dashboard design, metric instrumentation"
+description: "USE WHEN: Prometheus + Grafana — PromQL query yazımı, alerting/recording rules, SLI/SLO + error budget, dashboard design, metric instrumentation (RED/USE), Alertmanager routing. NOT FOR: distributed tracing, log analysis, generic SRE strategy, chaos testing. USE INSTEAD: tracing-expert (OpenTelemetry trace), log-analyzer (log mining), sentinel (SRE strategy), chaos-engineer."
 tools: [Read, Grep, Glob, Bash]
 ---
 

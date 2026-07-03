@@ -1,6 +1,6 @@
 ---
 name: phoenix
-description: Refactoring planning AND migration planning
+description: "USE WHEN: refactor strategy planı, codebase yeniden yapılandırma, system/database migration planlama, tech-debt cleanup roadmap; HEM refactor HEM migration için tek planlama agent'i. NOT FOR: refactor uygulaması, dead code temizliği, dependency upgrade, plan review, migration review. USE INSTEAD: kraken (refactor implement), janitor (hygiene/dead code), migrator (dependency upgrade), plan-reviewer (review), surveyor (migration review)."
 model: opus
 tools: [Read, Bash, Grep, Glob]
 ---
@@ -39,7 +39,8 @@ $CLAUDE_PROJECT_DIR = /path/to/project
 Check for past refactoring patterns and decisions:
 
 ```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/recall_learnings.py --query "<refactoring topic>" --k 3 --text-only
+# Dosya-bazli memory recall (legacy recall_learnings.py kaldirildi)
+grep -ril "<topic>" ~/.claude/projects/<project-slug>/memory/ && cat <eslesen dosyalar>
 ```
 
 Apply relevant CODEBASE_PATTERN and ARCHITECTURAL_DECISION results to your plan.
@@ -138,10 +139,21 @@ function cleanFunction() {
 }
 ```
 
+## Agent Roster
+
+| Phase | Ana Agent | Yedek | QA Agent(s) |
+|-------|-----------|-------|-------------|
+| 0: Safety Net | tdd-guide | qa-engineer | arbiter |
+| 1: [Name] | kraken | spark | code-reviewer |
+| N: Cleanup | janitor | spark | verifier |
+
+Kaynak: `~/.claude/rules/agent-assignment-matrix.md`. Agent adi `~/.claude/agents/` icinde birebir var olmali. Matrix'ten sapma varsa tek satir gerekce yaz.
+
 ## Implementation Phases
 
 ### Phase 0: Safety Net
 **Goal:** Ensure we can detect breakage
+**Agents:** tdd-guide (write tests) → arbiter (run + verify)
 **Tasks:**
 - [ ] Add missing tests for current behavior
 - [ ] Verify all tests pass
@@ -151,6 +163,7 @@ function cleanFunction() {
 
 ### Phase 1: [First Transformation]
 **Goal:** [Specific improvement]
+**Agents:** kraken (implement) → code-reviewer (QA)
 **Tasks:**
 - [ ] Task 1 - `file.ts`
 - [ ] Task 2 - `file.ts`
@@ -162,10 +175,12 @@ function cleanFunction() {
 - [ ] Behavior unchanged
 
 ### Phase 2: [Second Transformation]
+**Agents:** ...
 ...
 
 ### Phase N: Cleanup
 **Goal:** Remove deprecated code
+**Agents:** janitor (dead code sweep) → verifier (final gate)
 **Tasks:**
 - [ ] Remove old functions
 - [ ] Update documentation
@@ -209,14 +224,10 @@ function oldFunction() {
 
 After planning, store refactoring patterns and decisions:
 
-```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/store_learning.py \
-  --session-id "<refactor-target>" \
-  --type CODEBASE_PATTERN \
-  --content "<refactoring pattern and approach>" \
-  --context "<what module/system>" \
-  --tags "refactoring,<pattern-type>,<language>" \
-  --confidence high
+```
+Dosya-bazli memory store (legacy store_learning.py kaldirildi):
+~/.claude/projects/<project-slug>/memory/<slug>.md olustur (frontmatter: name, description,
+metadata.type) ve MEMORY.md index'ine tek satir pointer ekle. Duplicate varsa guncelle.
 ```
 
 ## Rules
@@ -230,6 +241,7 @@ cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/store_learning.py \
 7. **Consider consumers** - maintain compatibility where needed
 8. **Store patterns** - Save refactoring approaches for future use
 9. **Write to shared plans** - persist for other agents
+10. **Assign agents per phase** - every phase names its executing + QA agents (Agent Roster table, source: `~/.claude/rules/agent-assignment-matrix.md`); plan-reviewer rejects plans without it
 
 ---
 
@@ -336,10 +348,23 @@ Author: phoenix-agent
 |--------|--------|-------------|--------|
 | Deprecation warning | Low | 5 files | 0.5 days |
 
+## Agent Roster
+
+| Phase | Ana Agent | Yedek | QA Agent(s) |
+|-------|-----------|-------|-------------|
+| 0: Preparation | tdd-guide | qa-engineer | arbiter |
+| 1: Dependency Updates | migrator | devops | verifier |
+| 2: Code Migrations | kraken | spark | code-reviewer |
+| 3: Core Upgrade | migrator | kraken | verifier + surveyor |
+| 4: Cleanup | janitor | spark | verifier |
+
+Kaynak: `~/.claude/rules/agent-assignment-matrix.md`. Post-migration review: surveyor.
+
 ## Implementation Phases
 
 ### Phase 0: Preparation
 **Goal:** Prepare for migration
+**Agents:** tdd-guide (coverage) → arbiter (verify)
 **Tasks:**
 - [ ] Increase test coverage to 80%+
 - [ ] Create feature flags for rollback
@@ -348,6 +373,7 @@ Author: phoenix-agent
 
 ### Phase 1: Dependency Updates
 **Goal:** Update compatible dependencies first
+**Agents:** migrator (upgrade + CVE check) → verifier (build/test gate)
 **Tasks:**
 - [ ] Update lib-b to 3.6
 - [ ] Update lib-c to 2.1
@@ -357,6 +383,7 @@ Author: phoenix-agent
 
 ### Phase 2: Code Migrations
 **Goal:** Update code for new APIs
+**Agents:** kraken (TDD transform) → code-reviewer (QA)
 **Tasks:**
 - [ ] Replace `oldAPI()` with `newAPI()`
 - [ ] Update import paths
@@ -369,6 +396,7 @@ npx codemod-tool --transform=v2-migration src/
 
 ### Phase 3: Core Upgrade
 **Goal:** Update the main framework/library
+**Agents:** migrator (core upgrade) → verifier (gate) → surveyor (migration completeness review)
 **Tasks:**
 - [ ] Update package.json
 - [ ] Run migrations if applicable
@@ -378,6 +406,7 @@ npx codemod-tool --transform=v2-migration src/
 
 ### Phase 4: Cleanup
 **Goal:** Remove old code and workarounds
+**Agents:** janitor (dead code) → verifier (final gate)
 **Tasks:**
 - [ ] Remove polyfills
 - [ ] Delete deprecated code

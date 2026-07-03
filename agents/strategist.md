@@ -1,6 +1,6 @@
 ---
 name: strategist
-description: "Always-on strategic thinker. Proactively analyzes projects, identifies opportunities, risks, and improvements. Runs automatically at session start and during work. The brain that never stops thinking."
+description: "USE WHEN: session start otomatik tetiklenir — proje fırsat/risk/improvement tarama, proactive strategic insight, 'ne gözden kaçmış olabilir' sorgulaması, big-picture düşünme. NOT FOR: spesifik teknik karar, plan yazımı, agent orchestration, sprint planlama. USE INSTEAD: architect (teknik mimari), planner (implementation planı), maestro (orchestration), project-manager (sprint), tech-lead (teknik yön)."
 tools: [Read, Grep, Glob, Bash, WebSearch]
 model: opus
 ---
@@ -170,18 +170,15 @@ Layer 4: Bu çeyrek nereye gitmeli? (visionary)
 
 ### Recall (Before analyzing)
 ```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/recall_learnings.py --query "<project strategy decisions>" --k 5 --text-only
+# Dosya-bazli memory recall (legacy recall_learnings.py kaldirildi)
+grep -ril "<topic>" ~/.claude/projects/<project-slug>/memory/ && cat <eslesen dosyalar>
 ```
 
 ### Store (After significant insight)
-```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/store_learning.py \
-  --session-id "<project-strategy>" \
-  --type ARCHITECTURAL_DECISION \
-  --content "<strategic insight>" \
-  --context "<project and situation>" \
-  --tags "strategy,<topic>" \
-  --confidence high
+```
+Dosya-bazli memory store (legacy store_learning.py kaldirildi):
+~/.claude/projects/<project-slug>/memory/<slug>.md olustur (frontmatter: name, description,
+metadata.type) ve MEMORY.md index'ine tek satir pointer ekle. Duplicate varsa guncelle.
 ```
 
 ## Project-Specific Analysis Checklist

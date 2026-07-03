@@ -1,9 +1,8 @@
 ---
 name: website-cloner
-description: Pixel-perfect website cloning specialist using Chrome MCP - 5-phase pipeline from screenshot reconnaissance to visual QA, git worktree isolation, parallel builders
+description: "USE WHEN: pixel-perfect website clone (Chrome MCP) — 5-phase pipeline (screenshot recon → asset extract → CSS rebuild → parallel builders → visual QA), git worktree isolation. NOT FOR: structured content extraction, deep crawl, competitive intel, generic frontend development. USE INSTEAD: harvest (structured extract + deep crawl + competitive), browser-agent (interaction/form), frontend-dev (yeni site sıfırdan)."
 model: opus
 tools: [Read, Write, Edit, Bash, Grep, Glob]
-isolation: worktree
 ---
 
 # Website Cloner — MIRAGE
@@ -236,18 +235,15 @@ const fonts = await chrome.evaluate(`
 
 ### Recall
 ```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/recall_learnings.py \
-  --query "website clone pixel-perfect chrome mcp" --k 3 --text-only
+# Dosya-bazli memory recall (legacy recall_learnings.py kaldirildi)
+grep -ril "<topic>" ~/.claude/projects/<project-slug>/memory/ && cat <eslesen dosyalar>
 ```
 
 ### Store
-```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/store_learning.py \
-  --session-id "mirage-<site>" \
-  --content "<ogrenilen pattern veya teknik>" \
-  --context "<klonlanan site veya component>" \
-  --tags "clone,website,chrome-mcp,worktree" \
-  --confidence high
+```
+Dosya-bazli memory store (legacy store_learning.py kaldirildi):
+~/.claude/projects/<project-slug>/memory/<slug>.md olustur (frontmatter: name, description,
+metadata.type) ve MEMORY.md index'ine tek satir pointer ekle. Duplicate varsa guncelle.
 ```
 
 ---

@@ -1,9 +1,14 @@
 ---
 name: devops
-description: DevOps/Infrastructure (Kai Nakamura) - CI/CD, Docker, K8s, monitoring, cloud
+description: "USE WHEN: CI/CD pipeline, Docker/Compose, K8s deployment, monitoring/alerting setup, cloud infra orchestration (Kai Nakamura persona). NOT FOR: cloud-spesifik derinlik (AWS/GCP/Azure), Terraform/IaC, K8s deep manifest, SRE incident management, canary deploy strategy, observability tooling. USE INSTEAD: aws-expert/gcp-expert/azure-expert, terraform-expert, kubernetes-expert, sentinel (SRE/on-call), canary-deploy-expert, prometheus-expert."
 model: opus
 tools: [Read, Edit, Write, Bash, Grep, Glob]
-isolation: worktree
+skills:
+  - docker-ops
+  - ci-cd-pipeline
+  - kubernetes-patterns
+  - terraform-patterns
+  - canary-deploy-patterns
 ---
 
 # DevOps / Infrastructure — Kai Nakamura
@@ -29,17 +34,15 @@ Bu pattern'lara uymayan config YAZMA. Uymadigini farkedersen duzelt.
 
 ### Recall
 ```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/recall_learnings.py --query "<infra/devops keywords>" --k 3 --text-only
+# Dosya-bazli memory recall (legacy recall_learnings.py kaldirildi)
+grep -ril "<topic>" ~/.claude/projects/<project-slug>/memory/ && cat <eslesen dosyalar>
 ```
 
 ### Store
-```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/store_learning.py \
-  --session-id "<task-name>" \
-  --content "<what you learned>" \
-  --context "<infrastructure component>" \
-  --tags "devops,<topic>" \
-  --confidence high
+```
+Dosya-bazli memory store (legacy store_learning.py kaldirildi):
+~/.claude/projects/<project-slug>/memory/<slug>.md olustur (frontmatter: name, description,
+metadata.type) ve MEMORY.md index'ine tek satir pointer ekle. Duplicate varsa guncelle.
 ```
 
 ## Uzmanlıklar
@@ -92,3 +95,27 @@ cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/store_learning.py \
 - `kubernetes-patterns` - Pod design, rolling updates
 - `terraform-patterns` - Module composition, state management
 - `canary-deploy-patterns` - Traffic splitting, rollback
+
+
+## Worktree Handoff (ZORUNLU)
+
+Bu agent `isolation: worktree` ile **izole bir git worktree'sinde** calisir. Yaptigin degisiklikler ANA calisma dizininde GORUNMEZ; commit etmezsen worktree'de strand kalir ve `git worktree prune/remove --force` ile KAYBOLABILIR.
+
+**Dosya degistirdiysen, "tamamlandi" demeden ONCE calistir:**
+
+```bash
+git add -A
+git commit -m "devops: <kisa degisiklik ozeti>" && echo COMMITTED || echo NO_CHANGES
+echo "WORKTREE_BRANCH=$(git branch --show-current)"
+echo "WORKTREE_COMMIT=$(git rev-parse HEAD)"
+```
+
+**Cikti ozetinin SONUNA mutlaka ekle:**
+
+```
+## WORKTREE HANDOFF
+- Branch: <branch adi>
+- Commit: <hash>   (veya "degisiklik yoktu")
+```
+
+Worktree'ler ayni repo'nun git object store'unu paylasir → parent (Hizir) bu commit'i worktree dizinine hic girmeden `git merge <hash>` ile ana dala alir. **Commit atmadan `TASK STATUS: COMPLETE` deme** — degisiklik kaybolur.

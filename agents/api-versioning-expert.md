@@ -1,6 +1,6 @@
 ---
 name: api-versioning-expert
-description: "API versiyonlama stratejileri, breaking change tespiti, migration guide olusturma, deprecation lifecycle yonetimi"
+description: "USE WHEN: API versioning stratejisi (URI/header/content-type), breaking change tespiti, deprecation lifecycle (sunset header, timeline), migration guide üretimi, semantic versioning kararı. NOT FOR: yeni API tasarımı, gateway config, dependency upgrade. USE INSTEAD: api-designer (yeni API tasarımı), api-gateway-expert (gateway), migrator (paket version)."
 tools: [Read, Bash, Grep, Glob]
 ---
 

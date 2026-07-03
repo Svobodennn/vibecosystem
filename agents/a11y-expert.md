@@ -1,6 +1,6 @@
 ---
 name: a11y-expert
-description: WCAG 2.2 AA/AAA audit, axe-core integration, screen reader testing, color contrast analysis, keyboard navigation
+description: "USE WHEN: accessibility audit — WCAG 2.2 AA/AAA compliance, axe-core integration, screen reader (NVDA/JAWS/VoiceOver) test, color contrast hesaplama, keyboard navigation, ARIA pattern doğrulama, focus management. NOT FOR: accessibility implementation (component yazma), design system, i18n/RTL, content tone. USE INSTEAD: frontend-dev (impl), designer (design system + a11y in design), babel (RTL+locale UX), copywriter (inclusive language)."
 model: opus
 tools: [Read, Bash, Grep, Glob]
 ---

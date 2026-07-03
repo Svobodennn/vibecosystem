@@ -1,6 +1,6 @@
 ---
 name: go-reviewer
-description: Expert Go code reviewer specializing in idiomatic Go, concurrency patterns, error handling, and performance. Use for all Go code changes. MUST BE USED for Go projects.
+description: "USE WHEN: Go kodu yazıldı → idiomatic Go review, concurrency patterns (goroutine/channel/sync), error handling konvansiyonu (wrap/sentinel/typed), Go-spesifik performance (escape, allocs), interface design. NOT FOR: Python/TS review, Go build hatası, generic kod kalite, Go paket upgrade. USE INSTEAD: code-reviewer (TS/JS/Java/generic), python-reviewer (Python), go-build-resolver (build fail), migrator (paket upgrade)."
 tools: ["Read", "Grep", "Glob", "Bash"]
 model: opus
 ---

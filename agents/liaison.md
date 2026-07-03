@@ -1,6 +1,6 @@
 ---
 name: liaison
-description: Integration and API review
+description: "USE WHEN: integration/API review — 3rd-party API entegrasyon kalite kontrolü, contract-to-impl gap analizi, integration test coverage review, vendor SDK kullanım denetimi. NOT FOR: API tasarımı (yeni), contract testing, kod review, plan review. USE INSTEAD: api-designer (yeni API tasarımı), contract-testing-expert (Pact), code-reviewer (kod), plan-reviewer (plan)."
 model: sonnet
 tools: [Bash, Read, Grep, Glob]
 ---

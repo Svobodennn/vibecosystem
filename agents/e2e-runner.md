@@ -1,9 +1,11 @@
 ---
 name: e2e-runner
-description: End-to-end testing specialist using Vercel Agent Browser (preferred) with Playwright fallback. Use PROACTIVELY for generating, maintaining, and running E2E tests. Manages test journeys, quarantines flaky tests, uploads artifacts (screenshots, videos, traces), and ensures critical user flows work.
+description: "USE WHEN: E2E test üretimi/maintain/çalıştırma (Vercel Agent Browser tercihli, Playwright fallback), critical user flow doğrulama, flaky test quarantine, screenshot/video/trace artifact yönetimi. NOT FOR: unit/integration test, contract test, manual QA, browser automation (non-test). USE INSTEAD: tdd-guide (unit/int), arbiter (unit/int run), contract-testing-expert (Pact), qa-engineer (manual QA), browser-agent (non-test automation)."
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 model: opus
-isolation: worktree
+skills:
+  - visual-verdict
+  - accessibility-testing
 ---
 
 # E2E Test Runner
@@ -801,3 +803,27 @@ After E2E test run:
 - `e2e` - Playwright test generation and execution
 - `visual-verdict` - Screenshot comparison QA
 - `accessibility-testing` - WCAG 2.2 AA checklist
+
+
+## Worktree Handoff (ZORUNLU)
+
+Bu agent `isolation: worktree` ile **izole bir git worktree'sinde** calisir. Yaptigin degisiklikler ANA calisma dizininde GORUNMEZ; commit etmezsen worktree'de strand kalir ve `git worktree prune/remove --force` ile KAYBOLABILIR.
+
+**Dosya degistirdiysen, "tamamlandi" demeden ONCE calistir:**
+
+```bash
+git add -A
+git commit -m "e2e-runner: <kisa degisiklik ozeti>" && echo COMMITTED || echo NO_CHANGES
+echo "WORKTREE_BRANCH=$(git branch --show-current)"
+echo "WORKTREE_COMMIT=$(git rev-parse HEAD)"
+```
+
+**Cikti ozetinin SONUNA mutlaka ekle:**
+
+```
+## WORKTREE HANDOFF
+- Branch: <branch adi>
+- Commit: <hash>   (veya "degisiklik yoktu")
+```
+
+Worktree'ler ayni repo'nun git object store'unu paylasir → parent (Hizir) bu commit'i worktree dizinine hic girmeden `git merge <hash>` ile ana dala alir. **Commit atmadan `TASK STATUS: COMPLETE` deme** — degisiklik kaybolur.

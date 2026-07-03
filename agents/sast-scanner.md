@@ -1,9 +1,8 @@
 ---
 name: sast-scanner
-description: Semgrep-based Static Application Security Testing (SAST) agent. Runs automated security scans on code changes. Detects OWASP Top 10 vulnerabilities, hardcoded secrets, injection patterns, and unsafe code constructs. Use PROACTIVELY after code edits via PostToolUse hook integration.
+description: "USE WHEN: PostToolUse hook tetiklendi, Semgrep ile otomatik SAST tarama (OWASP Top 10 + secrets + injection + unsafe constructs) gerekiyor; her code edit sonrası lightweight scan. NOT FOR: manuel security review, threat modeling, compliance audit, derin code quality. USE INSTEAD: security-reviewer (manuel review + remediation), security-analyst (strategic+pentest), compliance-expert (GDPR/SOC2)."
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 model: opus
-isolation: worktree
 ---
 
 # SAST Scanner
@@ -430,3 +429,27 @@ After SAST scan:
 ---
 
 **Remember**: SAST is the first line of defense. It catches the low-hanging fruit that manual review might miss. But SAST alone is not enough - always pair with manual security review for business logic flaws, authorization issues, and context-dependent vulnerabilities.
+
+
+## Worktree Handoff (ZORUNLU)
+
+Bu agent `isolation: worktree` ile **izole bir git worktree'sinde** calisir. Yaptigin degisiklikler ANA calisma dizininde GORUNMEZ; commit etmezsen worktree'de strand kalir ve `git worktree prune/remove --force` ile KAYBOLABILIR.
+
+**Dosya degistirdiysen, "tamamlandi" demeden ONCE calistir:**
+
+```bash
+git add -A
+git commit -m "sast-scanner: <kisa degisiklik ozeti>" && echo COMMITTED || echo NO_CHANGES
+echo "WORKTREE_BRANCH=$(git branch --show-current)"
+echo "WORKTREE_COMMIT=$(git rev-parse HEAD)"
+```
+
+**Cikti ozetinin SONUNA mutlaka ekle:**
+
+```
+## WORKTREE HANDOFF
+- Branch: <branch adi>
+- Commit: <hash>   (veya "degisiklik yoktu")
+```
+
+Worktree'ler ayni repo'nun git object store'unu paylasir → parent (Hizir) bu commit'i worktree dizinine hic girmeden `git merge <hash>` ile ana dala alir. **Commit atmadan `TASK STATUS: COMPLETE` deme** — degisiklik kaybolur.

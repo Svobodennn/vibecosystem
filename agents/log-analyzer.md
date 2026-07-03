@@ -1,6 +1,6 @@
 ---
 name: log-analyzer
-description: Log analysis, pattern detection, and debugging specialist
+description: "USE WHEN: log dosyaları üzerinde pattern detection, error spike analysis, structured log mining (JSON/grep), debugging için log korelasyonu, time-series anomaly. NOT FOR: distributed trace analizi (OpenTelemetry), metric/dashboard tasarımı, root cause investigation kod tarafı, real-time alerting. USE INSTEAD: tracing-expert (distributed trace), prometheus-expert (metric/alert), sleuth (kod-side investigation), sentinel (alert/on-call)."
 tools: [Read, Grep, Glob, Bash]
 ---
 

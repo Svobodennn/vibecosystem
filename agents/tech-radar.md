@@ -1,6 +1,6 @@
 ---
 name: tech-radar
-description: "Teknoloji degerlendirme (adopt/trial/assess/hold), trend analizi, tech stack uyumluluk, migration onceliklendirme"
+description: "USE WHEN: teknoloji değerlendirmesi (adopt/trial/assess/hold quadrant), yeni library/framework analizi, tech stack compatibility kontrolu, migration önceliklendirme, ThoughtWorks Tech Radar tarzı analiz. NOT FOR: technical vision (uzun vadeli), sistem mimarisi, dependency upgrade, plan yazımı. USE INSTEAD: tech-lead (vision), architect (system design), migrator (dep upgrade), planner (implementation planı)."
 tools: [Read, Bash, Grep, Glob]
 ---
 

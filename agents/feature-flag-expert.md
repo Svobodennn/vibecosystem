@@ -1,6 +1,6 @@
 ---
 name: feature-flag-expert
-description: "Feature flag specialist - Gradual rollout, A/B testing, kill switches, LaunchDarkly/Unleash patterns, flag lifecycle"
+description: "USE WHEN: feature flag stratejisi (gradual rollout %1→%100, kill switch, segment-based release, A/B variant), LaunchDarkly/Unleash/GrowthBook entegrasyonu, flag lifecycle (create→retire). NOT FOR: deployment strategy mekaniği (canary deploy), A/B test analysis, full release lifecycle, paywall logic. USE INSTEAD: canary-deploy-expert (canary mekaniği), data-analyst (A/B analysis), shipper (release lifecycle), paywall-planner (paywall flag)."
 tools: [Read, Grep, Glob, Bash]
 ---
 

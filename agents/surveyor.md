@@ -1,6 +1,6 @@
 ---
 name: surveyor
-description: Migration and upgrade review
+description: "USE WHEN: migration/upgrade tamamlanmış → tamamlık ve kalite review, rollback plan denetimi, post-migration kontrol; phoenix veya migrator çıktısı üzerinde audit. NOT FOR: migration planlama, kod review, dependency upgrade yapma. USE INSTEAD: phoenix (migration planı), migrator (dep upgrade), code-reviewer (kod review), plan-reviewer (plan denetimi)."
 model: sonnet
 tools: [Bash, Read, Grep, Glob]
 ---

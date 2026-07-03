@@ -1,9 +1,13 @@
 ---
 name: verifier
-description: Is bitince son quality gate. Test, lint, build, type check, security scan yapar. "Bitti" demeden once mutlaka cagrilir.
+description: "USE WHEN: iş tamamlandı, commit/merge öncesi son quality gate — test çalıştır + lint + build + type check + security scan; PASS/FAIL raporu. 'Bitti' demeden önce ZORUNLU. NOT FOR: kod review (kalite/maintainability), test yazımı, plan denetimi, mimari karar. USE INSTEAD: code-reviewer (kalite review), tdd-guide (test yazımı), arbiter (sadece test execution), plan-reviewer (plan), security-reviewer (deep security)."
 model: sonnet
 tools: [Read, Bash, Grep, Glob]
 memory: user
+skills:
+  - agent-benchmark
+  - factcheck-guard
+  - test-strategy
 ---
 
 # Verifier Agent

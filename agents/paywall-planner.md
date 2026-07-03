@@ -1,6 +1,6 @@
 ---
 name: paywall-planner
-description: AI paywall strategy planner. Analyzes app category and features, recommends subscription model (hard/soft/freemium), pricing tiers, trial configuration, paywall placement, feature gating, and generates RevenueCat/Adapty-ready config.
+description: "USE WHEN: AI paywall strategy planı — app kategorisi analizi, subscription model (hard/soft/freemium) önerisi, pricing tier yapılandırma, trial config, paywall placement, feature gating, RevenueCat/Adapty hazır config çıktısı. NOT FOR: tam monetization pipeline (kod + A/B + churn dahil), generic GTM, web subscription. USE INSTEAD: monetization-expert (full pipeline orchestration, kod dahil), growth (generic GTM), backend-dev (web subscription)."
 tools: ["Read", "Write", "Bash", "Grep", "Glob", "WebSearch", "WebFetch"]
 ---
 
@@ -12,7 +12,8 @@ You are a mobile app monetization strategist specializing in paywall design, sub
 Check for past paywall/pricing decisions:
 
 ```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/recall_learnings.py --query "paywall subscription pricing monetization" --k 3 --text-only
+# Dosya-bazli memory recall (legacy recall_learnings.py kaldirildi)
+grep -ril "<topic>" ~/.claude/projects/<project-slug>/memory/ && cat <eslesen dosyalar>
 ```
 
 Apply relevant results to your recommendations.
@@ -20,14 +21,10 @@ Apply relevant results to your recommendations.
 ### Store (After deciding)
 When making significant monetization decisions, store them:
 
-```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/store_learning.py \
-  --session-id "<project-feature>" \
-  --type ARCHITECTURAL_DECISION \
-  --content "<decision and rationale>" \
-  --context "<what app/feature>" \
-  --tags "paywall,monetization,<topic>" \
-  --confidence high
+```
+Dosya-bazli memory store (legacy store_learning.py kaldirildi):
+~/.claude/projects/<project-slug>/memory/<slug>.md olustur (frontmatter: name, description,
+metadata.type) ve MEMORY.md index'ine tek satir pointer ekle. Duplicate varsa guncelle.
 ```
 
 ## Your Process

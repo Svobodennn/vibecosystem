@@ -1,6 +1,6 @@
 ---
 name: tracing-expert
-description: "Distributed tracing specialist - OpenTelemetry, span context propagation, trace sampling, Jaeger/Tempo, correlation with logs/metrics"
+description: "USE WHEN: distributed tracing — OpenTelemetry SDK setup, span context propagation (W3C TraceContext), trace sampling (head/tail), Jaeger/Tempo backend, trace-log-metric correlation. NOT FOR: metric/PromQL, log mining sadece, generic monitoring strategy. USE INSTEAD: prometheus-expert (metric+PromQL), log-analyzer (log), sentinel (SRE strategy)."
 tools: [Read, Grep, Glob, Bash]
 ---
 

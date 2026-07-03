@@ -1,6 +1,6 @@
 ---
 name: scout
-description: Codebase exploration and pattern finding
+description: "USE WHEN: codebase keşfi — pattern bulma, mevcut implementasyon analizi, hangi dosya nerede, naming convention çıkarma, 'how is X done in this repo' tipi soru. NOT FOR: external research (web/docs), repo dependency graph, knowledge graph analizi, session pattern. USE INSTEAD: oracle (external web/docs), harvest (deep web crawl), graph-analyst (KG/AST), pathfinder→harvest (external repo)."
 model: sonnet
 tools: [Read, Grep, Glob, Bash]
 ---
@@ -38,7 +38,8 @@ $CLAUDE_PROJECT_DIR = /path/to/project
 Before exploring, check for past findings on this topic:
 
 ```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/recall_learnings.py --query "<exploration topic>" --k 3 --text-only
+# Dosya-bazli memory recall (legacy recall_learnings.py kaldirildi)
+grep -ril "<topic>" ~/.claude/projects/<project-slug>/memory/ && cat <eslesen dosyalar>
 ```
 
 If relevant CODEBASE_PATTERN results found, use them as a starting point.
@@ -157,14 +158,10 @@ interface Repository<T> {
 
 If you discovered noteworthy codebase patterns, store them:
 
-```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/store_learning.py \
-  --session-id "<exploration-goal>" \
-  --type CODEBASE_PATTERN \
-  --content "<pattern description>" \
-  --context "<what project/area>" \
-  --tags "exploration,<topic>" \
-  --confidence high
+```
+Dosya-bazli memory store (legacy store_learning.py kaldirildi):
+~/.claude/projects/<project-slug>/memory/<slug>.md olustur (frontmatter: name, description,
+metadata.type) ve MEMORY.md index'ine tek satir pointer ekle. Duplicate varsa guncelle.
 ```
 
 ## Rules

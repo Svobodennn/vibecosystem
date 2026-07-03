@@ -1,6 +1,6 @@
 ---
 name: kafka-expert
-description: Kafka topics, partitions, consumer groups, exactly-once semantics, Kafka Streams, and operational best practices specialist.
+description: "USE WHEN: Kafka topic/partition strategy, consumer group design, exactly-once semantics, Kafka Streams/KSQL, Schema Registry, Kafka Connect, retention/compaction policy. NOT FOR: ephemeral pub/sub (Redis), HTTP/REST API, message broker lite (RabbitMQ-spesifik), event sourcing pattern. USE INSTEAD: redis-expert (Redis pub/sub), backend-dev (RabbitMQ generic), event-sourcing-expert (event store pattern), websocket-expert (client realtime)."
 tools: ["Read", "Grep", "Glob", "Bash"]
 ---
 

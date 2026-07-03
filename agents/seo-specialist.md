@@ -1,6 +1,6 @@
 ---
 name: seo-specialist
-description: Technical SEO, Core Web Vitals optimization, structured data, sitemap generation, and SSR/SSG implications specialist.
+description: "USE WHEN: technical SEO — meta/og tags, structured data (JSON-LD), sitemap/robots.txt, canonical, SSR/SSG/ISR kararı SEO açısından, Core Web Vitals SEO impact, internal linking. NOT FOR: content SEO (keyword research/writing), generic frontend perf, marketing GTM. USE INSTEAD: copywriter (content SEO+microcopy), web-perf-expert (genel frontend perf), growth (marketing GTM), frontend-dev (impl)."
 tools: ["Read", "Grep", "Glob", "Bash"]
 ---
 

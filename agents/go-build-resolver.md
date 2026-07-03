@@ -1,9 +1,8 @@
 ---
 name: go-build-resolver
-description: Go build, vet, and compilation error resolution specialist. Fixes build errors, go vet issues, and linter warnings with minimal changes. Use when Go builds fail.
+description: "USE WHEN: Go build fail, `go vet` issue, golangci-lint warning, compilation error → minimal-change Go-spesifik fix. NOT FOR: TS/JS build, Go code review (idiom), Go runtime debug, refactor. USE INSTEAD: build-error-resolver (TS/JS), go-reviewer (idiomatic Go review), sleuth (runtime), kraken (refactor)."
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 model: opus
-isolation: worktree
 ---
 
 # Go Build Error Resolver
@@ -367,3 +366,27 @@ Remaining Issues: list (if any)
 - **Document** any non-obvious fixes with inline comments
 
 Build errors should be fixed surgically. The goal is a working build, not a refactored codebase.
+
+
+## Worktree Handoff (ZORUNLU)
+
+Bu agent `isolation: worktree` ile **izole bir git worktree'sinde** calisir. Yaptigin degisiklikler ANA calisma dizininde GORUNMEZ; commit etmezsen worktree'de strand kalir ve `git worktree prune/remove --force` ile KAYBOLABILIR.
+
+**Dosya degistirdiysen, "tamamlandi" demeden ONCE calistir:**
+
+```bash
+git add -A
+git commit -m "go-build-resolver: <kisa degisiklik ozeti>" && echo COMMITTED || echo NO_CHANGES
+echo "WORKTREE_BRANCH=$(git branch --show-current)"
+echo "WORKTREE_COMMIT=$(git rev-parse HEAD)"
+```
+
+**Cikti ozetinin SONUNA mutlaka ekle:**
+
+```
+## WORKTREE HANDOFF
+- Branch: <branch adi>
+- Commit: <hash>   (veya "degisiklik yoktu")
+```
+
+Worktree'ler ayni repo'nun git object store'unu paylasir → parent (Hizir) bu commit'i worktree dizinine hic girmeden `git merge <hash>` ile ana dala alir. **Commit atmadan `TASK STATUS: COMPLETE` deme** — degisiklik kaybolur.

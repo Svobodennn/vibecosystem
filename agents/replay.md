@@ -1,6 +1,6 @@
 ---
 name: replay
-description: "Bug Reproduction & Scenario Reconstruction Agent - %100 reproducible adımlar oluşturur, flaky test analizi, race condition detection, environment matching"
+description: "USE WHEN: bug reproduce edilemiyor → %100 reproducible adımları çıkar, flaky test analizi, race condition detection, environment matching (versiyon/data/state). NOT FOR: root cause analysis, fix uygulama, post-fix pattern arama, log mining. USE INSTEAD: sleuth (root cause), spark/kraken (fix), coroner (pattern propagation), log-analyzer (log mining)."
 model: sonnet
 tools: [Read, Bash, Grep, Glob]
 ---

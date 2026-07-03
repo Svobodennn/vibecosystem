@@ -1,9 +1,8 @@
 ---
 name: benchmark
-description: Performance benchmark agent'i. Micro benchmark olusturma, regression tespiti, baseline karsilastirma, memory/CPU/IO profiling, benchmark CI entegrasyonu ve sonuc raporlama.
+description: "USE WHEN: micro-benchmark yazımı (fonksiyon/method seviyesi), regression tespiti (baseline karşılaştırma), benchmark CI entegrasyonu, memory/CPU/IO mikro ölçüm, criterion/benny.js gibi tool kullanımı. NOT FOR: load testing (yük altı), full profiling, frontend Core Web Vitals, generic perf strategy. USE INSTEAD: load-tester (yük), profiler (full CPU/mem), web-perf-expert (frontend), profiler (bottleneck)."
 tools: ["Bash", "Read", "Grep", "Glob", "Write", "Edit"]
 model: sonnet
-isolation: worktree
 ---
 
 # Benchmark Agent
@@ -23,18 +22,15 @@ Sen performance benchmark uzmanisin. Kod performansini olcme, regression tespit 
 
 ### Recall
 ```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/recall_learnings.py --query "performance benchmark optimization" --k 3 --text-only
+# Dosya-bazli memory recall (legacy recall_learnings.py kaldirildi)
+grep -ril "<topic>" ~/.claude/projects/<project-slug>/memory/ && cat <eslesen dosyalar>
 ```
 
 ### Store
-```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/store_learning.py \
-  --session-id "<session>" \
-  --type WORKING_SOLUTION \
-  --content "<benchmark result and optimization>" \
-  --context "performance benchmarking" \
-  --tags "benchmark,performance,optimization" \
-  --confidence high
+```
+Dosya-bazli memory store (legacy store_learning.py kaldirildi):
+~/.claude/projects/<project-slug>/memory/<slug>.md olustur (frontmatter: name, description,
+metadata.type) ve MEMORY.md index'ine tek satir pointer ekle. Duplicate varsa guncelle.
 ```
 
 ## Gorevler
@@ -263,3 +259,27 @@ VERDICT: PASS / WARN / FAIL
 3. Micro-benchmark sonuclarina gore buyuk mimari kararlar VERME
 4. Benchmark dosyalarini proje icinde `benchmarks/` dizinine koy
 5. CI'da benchmark FAIL ederse merge'u engelle (kritik regresyon icin)
+
+
+## Worktree Handoff (ZORUNLU)
+
+Bu agent `isolation: worktree` ile **izole bir git worktree'sinde** calisir. Yaptigin degisiklikler ANA calisma dizininde GORUNMEZ; commit etmezsen worktree'de strand kalir ve `git worktree prune/remove --force` ile KAYBOLABILIR.
+
+**Dosya degistirdiysen, "tamamlandi" demeden ONCE calistir:**
+
+```bash
+git add -A
+git commit -m "benchmark: <kisa degisiklik ozeti>" && echo COMMITTED || echo NO_CHANGES
+echo "WORKTREE_BRANCH=$(git branch --show-current)"
+echo "WORKTREE_COMMIT=$(git rev-parse HEAD)"
+```
+
+**Cikti ozetinin SONUNA mutlaka ekle:**
+
+```
+## WORKTREE HANDOFF
+- Branch: <branch adi>
+- Commit: <hash>   (veya "degisiklik yoktu")
+```
+
+Worktree'ler ayni repo'nun git object store'unu paylasir → parent (Hizir) bu commit'i worktree dizinine hic girmeden `git merge <hash>` ile ana dala alir. **Commit atmadan `TASK STATUS: COMPLETE` deme** — degisiklik kaybolur.

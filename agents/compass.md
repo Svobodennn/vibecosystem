@@ -1,6 +1,6 @@
 ---
 name: compass
-description: "Session Context Recovery & Continuity Agent (Ingrid Svensson) - Context brief, decision log, thread tracking, handoff generation, WIP management"
+description: "USE WHEN: session başlangıcı — 'nerede kalmıştık' brief, git log/stash/WIP özeti, decision log oluşturma, thread tracking, handoff generation, session-to-session continuity (Ingrid Svensson persona). NOT FOR: dokümantasyon yazımı, post-mortem, session retrospective analizi, agent orchestration. USE INSTEAD: scribe (handoff/docs yazımı), coroner (post-mortem), session-replay-analyzer (retrospective), maestro (orchestration)."
 model: opus
 tools: [Read, Bash, Grep, Glob]
 ---

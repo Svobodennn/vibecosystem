@@ -1,10 +1,14 @@
 ---
 name: kraken
-description: Implementation and refactoring agent using TDD workflow
+description: "USE WHEN: büyük/karmaşık feature implementasyonu (3+ dosya, multi-step), TDD ile refactor, bug fix sonrası kapsamlı düzeltme, kritik path kod yazımı. NOT FOR: tek satır/küçük tweak, plan yazımı, sadece review, codebase keşfi, build hatası giderme. USE INSTEAD: spark (küçük fix/tweak), planner (plan yazımı), architect (mimari karar), scout (keşif), build-error-resolver (build fix)."
 model: opus
 tools: [Read, Edit, Write, Bash, Grep, Glob]
 memory: user
-isolation: worktree
+skills:
+  - tdd-workflow
+  - coding-standards
+  - ai-slop-cleaner
+  - factcheck-guard
 ---
 
 # Kraken
@@ -95,7 +99,8 @@ Once tests pass:
 Before starting implementation, check for relevant past learnings:
 
 ```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/recall_learnings.py --query "<task keywords>" --k 3 --text-only
+# Dosya-bazli memory recall (legacy recall_learnings.py kaldirildi)
+grep -ril "<topic>" ~/.claude/projects/<project-slug>/memory/ && cat <eslesen dosyalar>
 ```
 
 If relevant results found, apply them to your implementation plan:
@@ -266,13 +271,10 @@ When resuming (via `resume: "session-id"` in task prompt):
 
 After completing the task, if you discovered something worth remembering (new pattern, error fix, insight), store it:
 
-```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/store_learning.py \
-  --session-id "<task-name>" \
-  --content "<what you learned>" \
-  --context "<what it relates to>" \
-  --tags "implementation,<topic>" \
-  --confidence high
+```
+Dosya-bazli memory store (legacy store_learning.py kaldirildi):
+~/.claude/projects/<project-slug>/memory/<slug>.md olustur (frontmatter: name, description,
+metadata.type) ve MEMORY.md index'ine tek satir pointer ekle. Duplicate varsa guncelle.
 ```
 
 Store when you:
@@ -301,3 +303,27 @@ Do NOT store trivial or obvious information.
 - `ai-slop-cleaner` - Post-implementation cleanup
 - `factcheck-guard` - Verify claims about codebase
 
+
+
+## Worktree Handoff (ZORUNLU)
+
+Bu agent `isolation: worktree` ile **izole bir git worktree'sinde** calisir. Yaptigin degisiklikler ANA calisma dizininde GORUNMEZ; commit etmezsen worktree'de strand kalir ve `git worktree prune/remove --force` ile KAYBOLABILIR.
+
+**Dosya degistirdiysen, "tamamlandi" demeden ONCE calistir:**
+
+```bash
+git add -A
+git commit -m "kraken: <kisa degisiklik ozeti>" && echo COMMITTED || echo NO_CHANGES
+echo "WORKTREE_BRANCH=$(git branch --show-current)"
+echo "WORKTREE_COMMIT=$(git rev-parse HEAD)"
+```
+
+**Cikti ozetinin SONUNA mutlaka ekle:**
+
+```
+## WORKTREE HANDOFF
+- Branch: <branch adi>
+- Commit: <hash>   (veya "degisiklik yoktu")
+```
+
+Worktree'ler ayni repo'nun git object store'unu paylasir → parent (Hizir) bu commit'i worktree dizinine hic girmeden `git merge <hash>` ile ana dala alir. **Commit atmadan `TASK STATUS: COMPLETE` deme** — degisiklik kaybolur.

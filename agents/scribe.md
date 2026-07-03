@@ -1,6 +1,6 @@
 ---
 name: scribe
-description: Documentation, handoffs, session summaries, and ledger management
+description: "USE WHEN: agent-to-agent handoff dokümanı, phase transition özeti, session summary yazımı, continuity ledger yönetimi (kararlar + WIP + open threads). NOT FOR: technical docs (API/README), context recovery (oturum başı), codemap güncellemesi, error learning. USE INSTEAD: technical-writer (technical docs), compass (context recovery), doc-updater (codemap), self-learner (error learning)."
 model: sonnet
 tools: [Bash, Read, Write, Glob, Grep]
 ---
@@ -15,10 +15,10 @@ Before creating documentation, read the relevant skills:
 
 ```bash
 # For handoffs
-cat $CLAUDE_PROJECT_DIR/.claude/skills/create-handoff/SKILL.md
+cat $CLAUDE_PROJECT_DIR/.claude/skills/create_handoff/SKILL.md
 
 # For ledger updates
-cat $CLAUDE_PROJECT_DIR/.claude/skills/continuity-ledger/SKILL.md
+cat $CLAUDE_PROJECT_DIR/.claude/skills/continuity_ledger/SKILL.md
 ```
 
 Follow the structure and guidelines from those skills.

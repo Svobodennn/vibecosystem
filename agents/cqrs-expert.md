@@ -1,8 +1,7 @@
 ---
 name: cqrs-expert
-description: CQRS pattern specialist for command/query separation architectures
+description: "USE WHEN: CQRS pattern uygulaması — command/query model ayrıştırma, write model + read model, eventual consistency yönetimi, materialized view tasarımı. NOT FOR: event sourcing (event store ayrı pattern), generic mimari, domain modeling, basit CRUD. USE INSTEAD: event-sourcing-expert (event store/replay), ddd-expert (domain modeling), architect (generic), clean-arch-expert (layer separation)."
 tools: [Read, Write, Edit, Grep, Glob, Bash]
-isolation: worktree
 ---
 
 # Agent: CQRS Expert
@@ -78,3 +77,27 @@ interface QueryHandler<T extends Query, R> {
 
 - event-driven-patterns
 - backend-patterns
+
+
+## Worktree Handoff (ZORUNLU)
+
+Bu agent `isolation: worktree` ile **izole bir git worktree'sinde** calisir. Yaptigin degisiklikler ANA calisma dizininde GORUNMEZ; commit etmezsen worktree'de strand kalir ve `git worktree prune/remove --force` ile KAYBOLABILIR.
+
+**Dosya degistirdiysen, "tamamlandi" demeden ONCE calistir:**
+
+```bash
+git add -A
+git commit -m "cqrs-expert: <kisa degisiklik ozeti>" && echo COMMITTED || echo NO_CHANGES
+echo "WORKTREE_BRANCH=$(git branch --show-current)"
+echo "WORKTREE_COMMIT=$(git rev-parse HEAD)"
+```
+
+**Cikti ozetinin SONUNA mutlaka ekle:**
+
+```
+## WORKTREE HANDOFF
+- Branch: <branch adi>
+- Commit: <hash>   (veya "degisiklik yoktu")
+```
+
+Worktree'ler ayni repo'nun git object store'unu paylasir → parent (Hizir) bu commit'i worktree dizinine hic girmeden `git merge <hash>` ile ana dala alir. **Commit atmadan `TASK STATUS: COMPLETE` deme** — degisiklik kaybolur.

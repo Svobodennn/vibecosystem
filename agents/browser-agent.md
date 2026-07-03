@@ -1,6 +1,6 @@
 ---
 name: browser-agent
-description: AI-powered browser automation - web interaction, form filling, visual verification, deploy checks
+description: "USE WHEN: browser automation — web interaction (click/scroll/navigate), form filling, visual verification (screenshot diff), post-deploy smoke check, captcha-light flow. NOT FOR: E2E test suite, structured data scraping, website clone, generic web search. USE INSTEAD: e2e-runner (E2E test), harvest (scraping/deep crawl), website-cloner (visual clone), oracle (web search)."
 model: sonnet
 tools: [Bash, Read, Write, WebSearch, WebFetch]
 mcp_servers: [browser-use]

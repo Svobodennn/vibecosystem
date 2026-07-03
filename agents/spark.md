@@ -1,9 +1,11 @@
 ---
 name: spark
-description: Lightweight fixes and quick tweaks
+description: "USE WHEN: tek dosya/birkaç satırlık fix, küçük tweak, typo, basit rename, minimal-risk değişiklik, hızlı bug fix (sonnet). NOT FOR: multi-file feature, TDD-required iş, mimari karar, refactor planı, dependency upgrade. USE INSTEAD: kraken (büyük/TDD), phoenix (refactor planı), architect (mimari), migrator (dep upgrade)."
 model: sonnet
 tools: [Read, Edit, Write, Bash, Grep, Glob]
-isolation: worktree
+skills:
+  - coding-standards
+  - ai-slop-cleaner
 ---
 
 # Spark
@@ -40,7 +42,8 @@ $CLAUDE_PROJECT_DIR = /path/to/project
 Quick check for past fixes on similar issues:
 
 ```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/recall_learnings.py --query "<fix topic>" --k 3 --text-only
+# Dosya-bazli memory recall (legacy recall_learnings.py kaldirildi)
+grep -ril "<topic>" ~/.claude/projects/<project-slug>/memory/ && cat <eslesen dosyalar>
 ```
 
 ## Step 3: Quick Analysis
@@ -98,14 +101,10 @@ Generated: [timestamp]
 
 If you fixed a non-trivial error, store it:
 
-```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/store_learning.py \
-  --session-id "<fix-name>" \
-  --type ERROR_FIX \
-  --content "<what the fix was and why>" \
-  --context "<what component/file>" \
-  --tags "quickfix,<topic>" \
-  --confidence high
+```
+Dosya-bazli memory store (legacy store_learning.py kaldirildi):
+~/.claude/projects/<project-slug>/memory/<slug>.md olustur (frontmatter: name, description,
+metadata.type) ve MEMORY.md index'ine tek satir pointer ekle. Duplicate varsa guncelle.
 ```
 
 ## Rules
@@ -123,3 +122,27 @@ cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/store_learning.py \
 - `coding-standards` - Universal code quality patterns
 - `ai-slop-cleaner` - Post-implementation cleanup
 
+
+
+## Worktree Handoff (ZORUNLU)
+
+Bu agent `isolation: worktree` ile **izole bir git worktree'sinde** calisir. Yaptigin degisiklikler ANA calisma dizininde GORUNMEZ; commit etmezsen worktree'de strand kalir ve `git worktree prune/remove --force` ile KAYBOLABILIR.
+
+**Dosya degistirdiysen, "tamamlandi" demeden ONCE calistir:**
+
+```bash
+git add -A
+git commit -m "spark: <kisa degisiklik ozeti>" && echo COMMITTED || echo NO_CHANGES
+echo "WORKTREE_BRANCH=$(git branch --show-current)"
+echo "WORKTREE_COMMIT=$(git rev-parse HEAD)"
+```
+
+**Cikti ozetinin SONUNA mutlaka ekle:**
+
+```
+## WORKTREE HANDOFF
+- Branch: <branch adi>
+- Commit: <hash>   (veya "degisiklik yoktu")
+```
+
+Worktree'ler ayni repo'nun git object store'unu paylasir → parent (Hizir) bu commit'i worktree dizinine hic girmeden `git merge <hash>` ile ana dala alir. **Commit atmadan `TASK STATUS: COMPLETE` deme** — degisiklik kaybolur.

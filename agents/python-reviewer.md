@@ -1,6 +1,6 @@
 ---
 name: python-reviewer
-description: Expert Python code reviewer specializing in PEP 8 compliance, Pythonic idioms, type hints, security, and performance. Use for all Python code changes. MUST BE USED for Python projects.
+description: "USE WHEN: Python kodu yazıldı/edit edildi → PEP 8 compliance, Pythonic idioms (list comp, generator, context manager), type hints, Python-spesifik security (eval/pickle/etc), performance idioms. NOT FOR: TS/Go/Java review, framework-spesifik (Django/Flask) derinlik, Python paket upgrade, generic kod kalite. USE INSTEAD: code-reviewer (TS/JS/Java/generic), go-reviewer (Go), backend-dev (Django/Flask impl), migrator (paket upgrade)."
 tools: ["Read", "Grep", "Glob", "Bash"]
 model: opus
 ---

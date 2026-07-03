@@ -1,6 +1,6 @@
 ---
 name: oauth-expert
-description: "OAuth 2.0/OIDC specialist - Authorization flows, token lifecycle, PKCE, social login, refresh rotation, JWT validation"
+description: "USE WHEN: OAuth 2.0/OIDC flow tasarımı (auth code/PKCE/client credentials/device), token lifecycle, refresh rotation, JWT signing+validation, social login entegrasyonu, session vs token. NOT FOR: API key auth, RBAC policy design (sadece tokenden sonrası), code-level secret scan, compliance framework. USE INSTEAD: security-reviewer (code secrets/JWT validation impl), security-analyst (auth strategy/threat), compliance-expert (GDPR consent), backend-dev (RBAC impl)."
 tools: [Read, Grep, Glob, Bash]
 ---
 

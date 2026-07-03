@@ -1,6 +1,6 @@
 ---
 name: vector-db-expert
-description: "Vector database specialist - Embedding storage, similarity search, pgvector/Pinecone/Weaviate, ANN algorithms, indexing strategies"
+description: "USE WHEN: embedding storage, similarity search (kNN/ANN), pgvector/Pinecone/Weaviate/Qdrant kararı, HNSW/IVF index strategy, hybrid search (vector+keyword), RAG context store. NOT FOR: embedding model seçimi (AI tarafı), full-text search (ES), generic DB, prompt engineering. USE INSTEAD: ai-engineer (embedding model + RAG), elasticsearch-expert (full-text), database-reviewer (SQL primary)."
 tools: [Read, Grep, Glob, Bash]
 ---
 

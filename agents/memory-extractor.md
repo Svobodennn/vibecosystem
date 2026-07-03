@@ -1,6 +1,6 @@
 ---
 name: memory-extractor
-description: Extract perception changes from session thinking blocks and store as learnings
+description: "USE WHEN: session sonu otomatik — thinking block'larından perception change'leri ekstrakte et, learning olarak memory store'a kaydet, persistent insight capture. NOT FOR: error-based learning, context recovery, generic doc, retrospective. USE INSTEAD: self-learner (hata bazlı kural çıkarma), compass (context recovery), scribe (handoff doc), session-replay-analyzer (analiz)."
 model: sonnet
 tools: [Bash, Read]
 ---
@@ -78,36 +78,10 @@ For each block that represents a genuine perception change (not just procedural 
 
 For each extracted perception change, use the mapped type from Step 3:
 
-```bash
-# Example for a CORRECTION → ERROR_FIX
-(cd $CLAUDE_PROJECT_DIR/opc && uv run python scripts/core/store_learning.py \
-  --session-id "$SESSION_ID" \
-  --type "ERROR_FIX" \
-  --context "what this relates to" \
-  --tags "perception,correction,topic" \
-  --confidence "high" \
-  --content "The actual learning: X was Y because Z" \
-  --json)
-
-# Example for a REALIZATION/INSIGHT → CODEBASE_PATTERN
-(cd $CLAUDE_PROJECT_DIR/opc && uv run python scripts/core/store_learning.py \
-  --session-id "$SESSION_ID" \
-  --type "CODEBASE_PATTERN" \
-  --context "what this relates to" \
-  --tags "perception,insight,topic" \
-  --confidence "high" \
-  --content "The actual learning: X was Y because Z" \
-  --json)
-
-# Example for a DEBUGGING_APPROACH → WORKING_SOLUTION
-(cd $CLAUDE_PROJECT_DIR/opc && uv run python scripts/core/store_learning.py \
-  --session-id "$SESSION_ID" \
-  --type "WORKING_SOLUTION" \
-  --context "debugging methodology" \
-  --tags "perception,debugging,approach" \
-  --confidence "high" \
-  --content "The actual learning: X was Y because Z" \
-  --json)
+```
+Dosya-bazli memory store (legacy store_learning.py kaldirildi):
+~/.claude/projects/<project-slug>/memory/<slug>.md olustur (frontmatter: name, description,
+metadata.type) ve MEMORY.md index'ine tek satir pointer ekle. Duplicate varsa guncelle.
 ```
 
 ### Step 5: Output Summary

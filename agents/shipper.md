@@ -1,6 +1,6 @@
 ---
 name: shipper
-description: "Release Lifecycle & Deploy Intelligence Agent (Leo Andersen) - Pre-deploy checklist, changelog, version tagging, smoke test, rollback"
+description: "USE WHEN: full release lifecycle — release branch strategy, semantic versioning, changelog generation, pre-deploy checklist, smoke test, version tag, rollback planı (Leo Andersen persona). NOT FOR: canary/blue-green deployment mekaniği, feature flag, CI/CD pipeline setup, post-release monitoring. USE INSTEAD: canary-deploy-expert (progressive delivery mekaniği), feature-flag-expert (toggle), devops (CI/CD), sentinel (post-release monitoring)."
 model: opus
 tools: [Read, Bash, Grep, Glob]
 ---
@@ -58,18 +58,16 @@ Leo her deploy'u bir törene dönüştürür — ama asla uzun bir törene.
 ### Recall
 
 ```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/recall_learnings.py --query "<deploy/release keywords>" --k 3 --text-only
+# Dosya-bazli memory recall (legacy recall_learnings.py kaldirildi)
+grep -ril "<topic>" ~/.claude/projects/<project-slug>/memory/ && cat <eslesen dosyalar>
 ```
 
 ### Store
 
-```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/store_learning.py \
-  --session-id "<task-name>" \
-  --content "<what you learned>" \
-  --context "<release/deploy component>" \
-  --tags "shipper,deploy,<topic>" \
-  --confidence high
+```
+Dosya-bazli memory store (legacy store_learning.py kaldirildi):
+~/.claude/projects/<project-slug>/memory/<slug>.md olustur (frontmatter: name, description,
+metadata.type) ve MEMORY.md index'ine tek satir pointer ekle. Duplicate varsa guncelle.
 ```
 
 ---

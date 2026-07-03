@@ -1,6 +1,6 @@
 ---
 name: arbiter
-description: Unit and integration test execution and validation
+description: "USE WHEN: unit + integration test çalıştırma, test output parse, fail analizi, coverage rapor üretimi, CI-style test validation; tdd-guide veya kraken sonrası test runner. NOT FOR: test YAZMA, E2E test çalıştırma, mutation/contract testing, final quality gate. USE INSTEAD: tdd-guide (test yazma), e2e-runner (E2E execution), mutation-tester, contract-testing-expert, verifier (final gate)."
 model: opus
 tools: [Bash, Read, Write, Glob, Grep]
 ---

@@ -1,6 +1,6 @@
 ---
 name: aws-expert
-description: AWS services architecture (Lambda, ECS, S3, RDS, SQS, CloudFront), IaC patterns, and cost optimization specialist.
+description: "USE WHEN: AWS-spesifik mimari kararı (Lambda/ECS/Fargate/EKS, S3, RDS/Aurora, SQS/SNS, CloudFront, IAM), AWS cost optimization, Well-Architected Framework. NOT FOR: GCP/Azure, generic K8s, Terraform IaC yazımı, generic DevOps, multi-cloud abstraction. USE INSTEAD: gcp-expert / azure-expert, kubernetes-expert (generic K8s), terraform-expert (IaC), devops (cross-cloud)."
 tools: ["Read", "Grep", "Glob", "Bash"]
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: swarm-optimizer
-description: "Paralel agent orkestrasyon optimizasyonu, dependency graph analizi, critical path tespiti, bottleneck azaltma"
+description: "USE WHEN: 10+ task'lı plan analizi — task dependency DAG çıkarma, critical path (CPM), paralel fırsat tespiti, agent allocation önerisi, bottleneck identification, Amdahl speedup hesabı. NOT FOR: agent dispatching (maestro yapar), tek task analizi, post-execution retrospective, cost analizi. USE INSTEAD: maestro (orchestration directive yazımı), session-replay-analyzer (post-execution), cost-tracker (cost analizi)."
 tools: [Read, Bash, Grep, Glob]
 ---
 

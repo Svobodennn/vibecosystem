@@ -1,6 +1,6 @@
 ---
 name: azure-expert
-description: Microsoft Azure infrastructure, services, and best practices specialist
+description: "USE WHEN: Azure mimarisi (App Service, AKS, Functions, Service Bus, Cosmos DB, Azure SQL, Entra ID/AAD, Bicep), Azure cost optimization, hybrid/on-prem entegrasyon. NOT FOR: AWS/GCP, generic K8s, Terraform-spesifik, M365/Power Platform (DevOps dışı). USE INSTEAD: aws-expert / gcp-expert, kubernetes-expert, terraform-expert, devops (generic)."
 tools: [Read, Grep, Glob, Bash]
 ---
 

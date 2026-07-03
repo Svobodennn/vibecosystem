@@ -1,8 +1,12 @@
 ---
 name: profiler
-description: Performance profiling, race conditions, memory issues
+description: "USE WHEN: performance profiling (CPU/memory/IO), race condition detection, memory leak analysis, bottleneck identification, hot path analysis, flame graph yorumlama. NOT FOR: load testing (yük altında), micro-benchmark, frontend Core Web Vitals, log analizi. USE INSTEAD: load-tester (k6/Artillery yük), benchmark (micro-benchmark), web-perf-expert (Core Web Vitals), log-analyzer (log)."
 model: opus
 tools: [Read, Bash, Grep, Glob]
+skills:
+  - performance-testing
+  - load-testing-patterns
+  - observability
 ---
 
 # Profiler

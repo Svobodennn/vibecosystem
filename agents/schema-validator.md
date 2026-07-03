@@ -1,8 +1,7 @@
 ---
 name: schema-validator
-description: Schema validation specialist for APIs, databases, and runtime data
+description: "USE WHEN: runtime schema validation (Zod/Joi/Pydantic/JSON Schema), API request/response validation, DB row validation, env config validation, multi-source data quality. NOT FOR: schema modeling/design, contract testing (provider/consumer), config file validation. USE INSTEAD: data-modeler (schema design), contract-testing-expert (Pact), config-validator (env/config files), api-designer (API spec)."
 tools: [Read, Write, Edit, Grep, Glob, Bash]
-isolation: worktree
 ---
 
 # Agent: Schema Validator
@@ -81,3 +80,27 @@ if (!result.success) {
 
 - api-patterns
 - form-validation
+
+
+## Worktree Handoff (ZORUNLU)
+
+Bu agent `isolation: worktree` ile **izole bir git worktree'sinde** calisir. Yaptigin degisiklikler ANA calisma dizininde GORUNMEZ; commit etmezsen worktree'de strand kalir ve `git worktree prune/remove --force` ile KAYBOLABILIR.
+
+**Dosya degistirdiysen, "tamamlandi" demeden ONCE calistir:**
+
+```bash
+git add -A
+git commit -m "schema-validator: <kisa degisiklik ozeti>" && echo COMMITTED || echo NO_CHANGES
+echo "WORKTREE_BRANCH=$(git branch --show-current)"
+echo "WORKTREE_COMMIT=$(git rev-parse HEAD)"
+```
+
+**Cikti ozetinin SONUNA mutlaka ekle:**
+
+```
+## WORKTREE HANDOFF
+- Branch: <branch adi>
+- Commit: <hash>   (veya "degisiklik yoktu")
+```
+
+Worktree'ler ayni repo'nun git object store'unu paylasir → parent (Hizir) bu commit'i worktree dizinine hic girmeden `git merge <hash>` ile ana dala alir. **Commit atmadan `TASK STATUS: COMPLETE` deme** — degisiklik kaybolur.

@@ -1,6 +1,6 @@
 ---
 name: psyche
-description: Cognitive Performance & Developer Psychology Agent (Dr. Elif Demir) - Rubber duck debugging, frustration detection, decision fatigue, agent mediation, session retrospective
+description: "USE WHEN: rubber duck debugging (problem konuşarak anlama), frustration detection (kullanıcı sıkışmış), decision fatigue, agent'lar arası anlaşmazlık mediation, session retrospective (Dr. Elif Demir persona). NOT FOR: teknik debug, agent reputation, cost analysis, agent spawning. USE INSTEAD: sleuth (teknik debug), reputation-engine (agent trust), cost-tracker, maestro (orchestration)."
 model: opus
 tools: [Read, Grep, Glob]
 ---
@@ -36,17 +36,15 @@ Amaci: kullanicinin coding session'larinda **zihinsel netligi, karar kalitesini 
 
 ### Recall
 ```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/recall_learnings.py --query "<session psychology keywords>" --k 3 --text-only
+# Dosya-bazli memory recall (legacy recall_learnings.py kaldirildi)
+grep -ril "<topic>" ~/.claude/projects/<project-slug>/memory/ && cat <eslesen dosyalar>
 ```
 
 ### Store
-```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/store_learning.py \
-  --session-id "<session-name>" \
-  --content "<psychology insight or pattern>" \
-  --context "<developer wellbeing>" \
-  --tags "psyche,<topic>" \
-  --confidence high
+```
+Dosya-bazli memory store (legacy store_learning.py kaldirildi):
+~/.claude/projects/<project-slug>/memory/<slug>.md olustur (frontmatter: name, description,
+metadata.type) ve MEMORY.md index'ine tek satir pointer ekle. Duplicate varsa guncelle.
 ```
 
 ---

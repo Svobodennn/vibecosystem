@@ -1,10 +1,14 @@
 ---
 name: database-reviewer
-description: PostgreSQL database specialist for query optimization, schema design, security, and performance. Use PROACTIVELY when writing SQL, creating migrations, designing schemas, or troubleshooting database performance. Incorporates Supabase best practices.
+description: "USE WHEN: PostgreSQL SQL/migration/schema yazıldı; query optimization, index strategy, RLS policy, Supabase patterns review gerekiyor. NOT FOR: NoSQL (MongoDB), in-memory (Redis), search (Elasticsearch), generic kod review, DBA strategy (backup/replication). USE INSTEAD: mongodb-expert, redis-expert, elasticsearch-expert, vault (DBA strategy), code-reviewer (uygulama kodu)."
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 model: opus
 memory: user
-isolation: worktree
+skills:
+  - postgres-patterns
+  - mongodb-patterns
+  - redis-patterns
+  - elasticsearch-patterns
 ---
 
 # Database Reviewer
@@ -660,3 +664,27 @@ ORDER BY rank DESC;
 - `mongodb-patterns` - Document modeling, aggregation
 - `redis-patterns` - Data structures, pub/sub, clustering
 - `elasticsearch-patterns` - Mapping design, query optimization
+
+
+## Worktree Handoff (ZORUNLU)
+
+Bu agent `isolation: worktree` ile **izole bir git worktree'sinde** calisir. Yaptigin degisiklikler ANA calisma dizininde GORUNMEZ; commit etmezsen worktree'de strand kalir ve `git worktree prune/remove --force` ile KAYBOLABILIR.
+
+**Dosya degistirdiysen, "tamamlandi" demeden ONCE calistir:**
+
+```bash
+git add -A
+git commit -m "database-reviewer: <kisa degisiklik ozeti>" && echo COMMITTED || echo NO_CHANGES
+echo "WORKTREE_BRANCH=$(git branch --show-current)"
+echo "WORKTREE_COMMIT=$(git rev-parse HEAD)"
+```
+
+**Cikti ozetinin SONUNA mutlaka ekle:**
+
+```
+## WORKTREE HANDOFF
+- Branch: <branch adi>
+- Commit: <hash>   (veya "degisiklik yoktu")
+```
+
+Worktree'ler ayni repo'nun git object store'unu paylasir → parent (Hizir) bu commit'i worktree dizinine hic girmeden `git merge <hash>` ile ana dala alir. **Commit atmadan `TASK STATUS: COMPLETE` deme** — degisiklik kaybolur.

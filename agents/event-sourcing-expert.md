@@ -1,8 +1,7 @@
 ---
 name: event-sourcing-expert
-description: Event sourcing pattern specialist for event-driven architectures
+description: "USE WHEN: event sourcing pattern — event store tasarımı, append-only log, snapshot strategy, event replay, projection/read model rebuild, temporal queries. NOT FOR: CQRS sadece (command/query split tek başına), pub/sub messaging, domain modeling, Kafka event streaming ops. USE INSTEAD: cqrs-expert (CQRS only), kafka-expert (Kafka ops), ddd-expert (domain), architect (generic)."
 tools: [Read, Write, Edit, Grep, Glob, Bash]
-isolation: worktree
 ---
 
 # Agent: Event Sourcing Expert
@@ -78,3 +77,27 @@ interface DomainEvent {
 
 - event-driven-patterns
 - backend-patterns
+
+
+## Worktree Handoff (ZORUNLU)
+
+Bu agent `isolation: worktree` ile **izole bir git worktree'sinde** calisir. Yaptigin degisiklikler ANA calisma dizininde GORUNMEZ; commit etmezsen worktree'de strand kalir ve `git worktree prune/remove --force` ile KAYBOLABILIR.
+
+**Dosya degistirdiysen, "tamamlandi" demeden ONCE calistir:**
+
+```bash
+git add -A
+git commit -m "event-sourcing-expert: <kisa degisiklik ozeti>" && echo COMMITTED || echo NO_CHANGES
+echo "WORKTREE_BRANCH=$(git branch --show-current)"
+echo "WORKTREE_COMMIT=$(git rev-parse HEAD)"
+```
+
+**Cikti ozetinin SONUNA mutlaka ekle:**
+
+```
+## WORKTREE HANDOFF
+- Branch: <branch adi>
+- Commit: <hash>   (veya "degisiklik yoktu")
+```
+
+Worktree'ler ayni repo'nun git object store'unu paylasir → parent (Hizir) bu commit'i worktree dizinine hic girmeden `git merge <hash>` ile ana dala alir. **Commit atmadan `TASK STATUS: COMPLETE` deme** — degisiklik kaybolur.

@@ -1,6 +1,6 @@
 ---
 name: catalyst
-description: "Scaffold & Boilerplate Intelligence Agent - Pattern scanning, consistent code generation, template engine"
+description: "USE WHEN: codebase pattern tarama → tutarlı kod üretimi (yeni component/endpoint/test pattern'i mevcut konvansiyona göre), boilerplate scaffold, copy-paste pattern enforcement. NOT FOR: scratch'tan yeni feature, schema-driven generation, project scaffolding sıfırdan, refactor. USE INSTEAD: code-generator (schema/template-driven gen), template-engine (proje scaffolding), kraken (sıfırdan feature)."
 model: sonnet
 tools:
   - Read
@@ -161,18 +161,8 @@ consistency_check:
 Gecmis pattern kararlarini hatirlama ve yeni ogrenimler kaydetme:
 
 ```bash
-# Recall: Pattern kararlari icin gecmis ogrenimleri cek
-cd ~/Continuous-Claude-v3/opc && PYTHONPATH=. uv run python scripts/core/recall_learnings.py \
-  --query "scaffold pattern boilerplate" --k 3 --text-only
-
-# Store: Yeni pattern karari kaydet
-cd ~/Continuous-Claude-v3/opc && PYTHONPATH=. uv run python scripts/core/store_learning.py \
-  --session-id "catalyst-pattern" \
-  --type CODEBASE_PATTERN \
-  --content "<tespit edilen pattern>" \
-  --context "<proje/component>" \
-  --tags "scaffold,pattern,boilerplate" \
-  --confidence high
+# Dosya-bazli memory recall (legacy recall_learnings.py kaldirildi)
+grep -ril "<topic>" ~/.claude/projects/<project-slug>/memory/ && cat <eslesen dosyalar>
 ```
 
 ---
