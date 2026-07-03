@@ -22,6 +22,21 @@
 
 </div>
 
+> ## 🔱 About this fork — Adopted & Extended
+>
+> This is my daily-driver fork of [vibeeval/vibecosystem](https://github.com/vibeeval/vibecosystem). I run it as my actual development environment and have extended it substantially on top of upstream:
+>
+> - **Canavar error-learning system** — a 4-layer pipeline that scans agent transcripts for tool errors, attributes them per agent, enforces an error-report contract (agents can't claim "done" while hiding failures), detects unverified claims ("tests pass" with no test run in the transcript), retry storms, and hung agents. Errors feed a shared ledger + skill matrix so one agent's mistake trains the whole team.
+> - **Shared hook library with tests** — extracted common hook logic (`hooks/src/shared/`: error-pattern detection for TS/C#/Godot/Rust/vitest/pytest/go, stop policies, canavar store, agent-error scanning) into a tested module library instead of copy-pasted hook scripts.
+> - **Agent Monitoring Dashboard v2.1** — extended the dashboard with WebSocket auto-reconnect, stuck-agent detection, retry tracking via synthetic correlation, export API, sparklines and search, plus a smoke-test suite per sprint. Fixed the emitter so `agent_spawn` events actually fire from PostToolUse.
+> - **Worktree handoff protocol** — a rule + agent contract that prevents worktree-isolated agents from stranding uncommitted changes (born from a real data-near-loss incident).
+> - **New hooks** — intent classifier v2, token logger, comment-density guard, session-start continuity, skill-validation prompt.
+> - **New agents & rules** — `godot-expert`, agent error-reporting rule, evolved agent definitions integrated with a file-based persistent memory system.
+>
+> Upstream credit goes to [@vibeeval](https://github.com/vibeeval). Everything below this section is the original project documentation.
+
+---
+
 vibecosystem turns Claude Code into a full AI software team — 138 specialized agents that plan, build, review, test, and learn from every mistake. No configuration needed — just install and code.
 
 > **v2.0**: 13 new agents (sast-scanner, mutation-tester, graph-analyst, mcp-manager, community-manager, benchmark, dependency-auditor, api-designer, incident-responder, data-modeler, test-architect, release-engineer, documentation-architect) + 23 new skills (SAST, compliance, product, marketing, MCP) + 4 new hooks + Agent Monitoring Dashboard + GitHub Actions CI/CD + MCP Auto-Discovery. See [UPGRADING.md](UPGRADING.md) for details.
