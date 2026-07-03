@@ -3,7 +3,7 @@
 ## Ilgili Kurallar
 - `agent-assignment-matrix.md` → Hangi task hangi agent'a gider
 - `qa-loop.md` → Dev-QA dongusu, retry logic, escalation
-- `skills/handoff-templates/SKILL.md` → Agent arasi mesaj sablonlari
+- `handoff-templates.md` → Agent arasi mesaj sablonlari
 
 ## Available Agents
 
@@ -18,7 +18,6 @@ Located in `~/.claude/agents/`:
 | security-reviewer | Security analysis | Before commits |
 | build-error-resolver | Fix build errors | When build fails |
 | e2e-runner | E2E testing | Critical user flows |
-| refactor-cleaner | Dead code cleanup | Code maintenance |
 | doc-updater | Documentation | Updating docs |
 | self-learner | Hatalardan ogrenim | Her hata sonrasi |
 | verifier | Son quality gate | "Bitti" demeden once |

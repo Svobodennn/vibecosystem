@@ -13,7 +13,10 @@ node ~/.claude/hooks/dist/canavar-cli.mjs agent <isim>  # Agent detay
 node ~/.claude/hooks/dist/canavar-cli.mjs errors        # Son 7 gun hatalari
 node ~/.claude/hooks/dist/canavar-cli.mjs weak          # En zayif agent'lar
 node ~/.claude/hooks/dist/canavar-cli.mjs leaderboard   # Basari siralaması
+node ~/.claude/hooks/dist/canavar-cli.mjs cmdfail [gun] # Agent'lar hangi komutlarda fail yiyor
 ```
+
+Subagent hata yakalama + HATA RAPORU zorlamasi: `agent-error-reporting.md`
 
 ## Veri Dosyalari
 

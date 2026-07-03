@@ -33,9 +33,9 @@ kullanici bir proje dizininde calisiyorsa, OTOMATIK yap:
 | K8s manifest degisti | @kubernetes-expert cagir | HAYIR |
 | Terraform dosya degisti | @terraform-expert cagir | HAYIR |
 | i18n key eklendi | @i18n-expert kontrol | HAYIR |
-| Accessibility sorunu | @a11y-expert + accessibility-testing skill | HAYIR |
+| Accessibility sorunu | @a11y-expert | HAYIR |
 | Feature flag kullanildi | @feature-flag-expert review | HAYIR |
-| API doc degisti | @api-doc-generator guncelle | HAYIR |
+| API doc degisti | @technical-writer guncelle | HAYIR |
 | Config degisti | @config-validator kontrol | HAYIR |
 | Schema degisti | @schema-validator kontrol | HAYIR |
 
@@ -120,7 +120,7 @@ kullanici buyuk scope'lu bir is istedginde (yeni feature, modul, sistem):
 
 ### Go
 - golang-patterns, golang-testing
-- Komutlar: /go-build (build hatasinda), /go-review (review'da) - agent karsiliklari: go-build-resolver, go-reviewer
+- go-build (build hatasinda), go-review (review'da)
 
 ### Java / Spring Boot
 - springboot-patterns, springboot-security, springboot-tdd
@@ -166,8 +166,8 @@ kullanici buyuk scope'lu bir is istedginde (yeni feature, modul, sistem):
 - kotlin-patterns (Android projesi ise)
 
 ### Microservices
-- Skill'ler: event-driven-patterns, grpc-patterns
-- Agent'lar: api-gateway-expert, service-mesh-expert, cqrs-expert, ddd-expert
+- api-gateway-expert, service-mesh-expert
+- event-driven-patterns, cqrs-expert, ddd-expert
 
 ### gRPC
 - grpc-patterns
@@ -204,7 +204,7 @@ Phase 5 (Final):       self-learner + docs + growth
 Quality Gate:          Phase gecislerinde TUM kriterler saglanmali
 ```
 
-Agent iletisimi: skills/handoff-templates/SKILL.md sablonlari.
+Agent iletisimi: handoff-templates.md sablonlari.
 
 ---
 
@@ -215,7 +215,7 @@ Agent API hatasi (FailedToOpenSocket, timeout, vb.) aldiginda:
 1. **1. deneme basarisiz** → 5 saniye bekle, tekrar dene
 2. **2. deneme basarisiz** → Ayni gorevi farkli agent'a devret:
    - code-reviewer fail → dogrudan Grep+Read ile manual review yap
-   - sleuth fail → dogrudan scout ile investigate et
+   - sleuth fail → dogrudan debug-agent veya scout ile investigate et
    - security-reviewer fail → Grep ile manual secret/injection scan yap
 3. **3. deneme basarisiz** → kullaniciya bildir: "X agent'i calismiyor, Y alternatif var"
 

@@ -14,12 +14,12 @@ Hangi is hangi agent'a gider. Maestro ve /swarm bu tabloyu referans alir.
 | AI/LLM entegrasyon | ai-engineer | backend-dev | code-reviewer |
 | Buyuk feature (TDD) | kraken | backend-dev | tdd-guide + verifier |
 | Kucuk fix/tweak | spark | frontend-dev | code-reviewer |
-| Refactoring | phoenix + refactor-cleaner | kraken | code-reviewer |
+| Refactoring | phoenix + janitor | kraken | code-reviewer |
 | Test yazimi | tdd-guide | qa-engineer | arbiter |
 | E2E test | e2e-runner | qa-engineer | verifier |
 | Performans | profiler | backend-dev | verifier |
 | Dokumantasyon | technical-writer | doc-updater | code-reviewer |
-| Tech debt/cleanup | janitor | refactor-cleaner | code-reviewer |
+| Tech debt/cleanup | janitor | phoenix | code-reviewer |
 | Dependency upgrade | migrator | devops | verifier |
 | Release/deploy | shipper | devops | verifier |
 | Scaffold/boilerplate | catalyst | frontend-dev | code-reviewer |
@@ -56,9 +56,9 @@ Hangi is hangi agent'a gider. Maestro ve /swarm bu tabloyu referans alir.
 | Clean architecture | clean-arch-expert | architect | code-reviewer |
 | Micro frontend | micro-frontend-expert | frontend-dev | code-reviewer |
 | Compliance/audit | compliance-expert | security-reviewer | security-reviewer |
-| API documentation | api-doc-generator | technical-writer | code-reviewer |
-| Migration planning | migration-planner | migrator | verifier |
-| Dependency tracking | dependency-tracker | migrator | verifier |
+| API documentation | technical-writer | api-designer | code-reviewer |
+| Migration planning | phoenix | migrator | verifier |
+| Dependency tracking | migrator | dependency-graph-analyzer | verifier |
 | Log analysis | log-analyzer | profiler | verifier |
 | Config validation | config-validator | devops | verifier |
 | Schema validation | schema-validator | database-reviewer | code-reviewer |
@@ -77,14 +77,14 @@ Hangi is hangi agent'a gider. Maestro ve /swarm bu tabloyu referans alir.
 | Go code review | go-reviewer | code-reviewer | verifier |
 | Go build hatasi | go-build-resolver | devops | verifier |
 | Plan review | plan-reviewer | architect | code-reviewer |
-| External repo arastirma | pathfinder | scout | code-reviewer |
+| External repo arastirma | harvest | scout | code-reviewer |
 | ML/Data pipeline | neuron | ai-engineer | code-reviewer |
 | Mobile cross-platform | spectre | frontend-dev | code-reviewer |
 | DB optimization | vault | database-reviewer | code-reviewer |
 | Browser otomasyon | browser-agent | e2e-runner | verifier |
 | Web crawling/scraping | harvest | oracle | code-reviewer |
 | Config security audit | security-reviewer | config-validator | verifier |
-| Performance optimization loop | nitro + experiment-loop | profiler | verifier |
+| Performance optimization loop | profiler + experiment-loop | benchmark | verifier |
 
 ## Arastirma & Analiz Assignment
 
@@ -107,11 +107,11 @@ Hangi is hangi agent'a gider. Maestro ve /swarm bu tabloyu referans alir.
 | Context recovery | compass | scribe |
 | Session handoff | compass | scribe |
 | Teknik karar | tech-lead | architect |
-| Performans analizi | nitro | profiler |
+| Performans analizi | profiler | benchmark |
 | Agent performans | psyche | reputation-engine |
 | Session analizi | session-replay-analyzer | data-analyst |
 | Tech stack degerlendirme | tech-radar | architect |
-| Dependency analizi | dependency-graph-analyzer | dependency-tracker |
+| Dependency analizi | dependency-graph-analyzer | migrator |
 
 ## Review Assignment
 
@@ -171,10 +171,8 @@ Task 3 kez QA'den gecemezse:
 | spectre | Mobile Dev (cross-platform) | React Native, Flutter, mobile app |
 | babel | Localization & i18n Operator | Cok dilli uygulama, locale, RTL |
 | psyche | Agent performance psychology | Agent basarisizlik analizi |
-| commander | Engineering Manager | Ekip yonetimi, sprint planlama |
 | neuron | ML/Data Engineer | Data pipeline, model training, MLOps |
 | vault | DBA / Database Operator | DB optimization, migration, backup |
-| nitro | Performance Engineer | Profiling, optimization, bottleneck |
 | reputation-engine | Agent trust scoring | Agent guvenilirlik |
 | swarm-optimizer | Swarm efficiency tuning | /swarm sonrasi analiz |
 | tech-lead | Tech Leader | Teknik vizyon, mimari karar |
@@ -194,7 +192,7 @@ Phase 2 (Gelistirme):  backend-dev + frontend-dev + designer + devops
                         graphql-expert, websocket-expert, redis-expert, kafka-expert,
                         ddd-expert, cqrs-expert, event-sourcing-expert, i18n-expert,
                         seo-specialist, web-perf-expert, micro-frontend-expert,
-                        nexus, spectre, babel, neuron, vault, nitro, harvest
+                        nexus, spectre, babel, neuron, vault, harvest
 Phase 3 (Review):      code-reviewer + security-reviewer + qa-engineer + data-analyst
                         (+ compliance-expert, a11y-expert gerekirse)
                         (+ browser-agent deploy dogrulama gerekirse)
