@@ -350,8 +350,8 @@ This prevents the failure loop of using the same weak model repeatedly on a hard
 ### Memory Recall
 Before scoring, check if a similar task has been attempted before:
 ```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/recall_learnings.py \
-  --query "model routing [task description]" --text-only
+# Dosya-bazli memory recall (legacy recall_learnings.py kaldirildi)
+grep -ril "<topic>" ~/.claude/projects/<project-slug>/memory/ && cat <eslesen dosyalar>
 ```
 
 If a prior attempt used a different tier and succeeded or failed, factor that into the context signal score.

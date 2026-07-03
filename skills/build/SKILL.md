@@ -144,7 +144,7 @@ options:
 **Mapping:**
 - "Just implement" → standard chain
 - "Tests first" → tdd mode (overrides previous if not refactor)
-- "Validate plan" → keep validate-agent in chain
+- "Validate plan" → keep plan-reviewer in chain
 
 **If Answer is Unclear (via "Other"):**
 ```yaml
@@ -156,7 +156,7 @@ options:
   - label: "Write tests first (TDD)"
     description: "Test-driven - tests before implementation"
   - label: "Validate plan before coding"
-    description: "Review plan with validate-agent first"
+    description: "Review plan with plan-reviewer first"
   - label: "Neither - let me explain differently"
     description: "I have a different workflow in mind"
 ```
@@ -227,8 +227,8 @@ This ensures the user knows exactly what will happen before any agents spawn.
 
 | Mode | Chain | Use Case |
 |------|-------|----------|
-| `greenfield` | discovery-interview -> plan-agent -> validate-agent -> implement_plan -> commit -> describe_pr | New feature from scratch |
-| `brownfield` | onboard -> research-codebase -> plan-agent -> validate-agent -> implement_plan | Feature in existing codebase |
+| `greenfield` | discovery-interview -> plan-agent -> plan-reviewer -> implement_plan -> commit -> describe_pr | New feature from scratch |
+| `brownfield` | onboard -> research-codebase -> plan-agent -> plan-reviewer -> implement_plan | Feature in existing codebase |
 | `tdd` | plan-agent -> test-driven-development -> implement_plan | Test-first implementation |
 | `refactor` | tldr-code (impact) -> plan-agent -> test-driven-development -> implement_plan | Safe refactoring with impact analysis |
 
@@ -265,8 +265,8 @@ Build the skill chain based on mode:
 
 ```python
 CHAINS = {
-    "greenfield": ["discovery-interview", "plan-agent", "validate-agent", "implement_plan", "commit", "describe_pr"],
-    "brownfield": ["onboard", "research-codebase", "plan-agent", "validate-agent", "implement_plan"],
+    "greenfield": ["discovery-interview", "plan-agent", "plan-reviewer", "implement_plan", "commit", "describe_pr"],
+    "brownfield": ["onboard", "research-codebase", "plan-agent", "plan-reviewer", "implement_plan"],
     "tdd": ["plan-agent", "test-driven-development", "implement_plan"],
     "refactor": ["tldr-impact", "plan-agent", "test-driven-development", "implement_plan"]
 }
@@ -274,7 +274,7 @@ CHAINS = {
 
 Apply options to modify chain:
 - `--skip-discovery`: Remove "discovery-interview" from chain
-- `--skip-validate`: Remove "validate-agent" from chain
+- `--skip-validate`: Remove "plan-reviewer" from chain
 - `--skip-commit`: Remove "commit" from chain
 - `--skip-pr`: Remove "describe_pr" from chain
 
@@ -418,12 +418,12 @@ Please review the plan. Options:
 [Show plan summary]
 ```
 
-**validate-agent:**
+**plan-reviewer:**
 ```
 Task(
-  subagent_type="validate-agent",
+  subagent_type="plan-reviewer",
   prompt="""
-  [Contents of validate-agent SKILL.md]
+  [Contents of plan-reviewer SKILL.md]
 
   ---
 
@@ -435,7 +435,7 @@ Task(
 ```
 Output: Validation handoff at `<session>/validation-<name>.md`
 
-**CHECKPOINT: After validate-agent (if issues found)**
+**CHECKPOINT: After plan-reviewer (if issues found)**
 ```
 Validation complete with issues:
 - [Issue 1]
@@ -526,7 +526,7 @@ If any phase fails or returns blocked status:
 phases:
   - skill: plan-agent
     status: complete
-  - skill: validate-agent
+  - skill: plan-reviewer
     status: blocked
     error: "Validation found deprecated library"
     blocker: "Need to replace X with Y"
@@ -534,7 +534,7 @@ phases:
 
 Present to user:
 ```
-Workflow blocked at: validate-agent
+Workflow blocked at: plan-reviewer
 
 Issue: Validation found deprecated library
 Blocker: Need to replace X with Y
@@ -575,7 +575,7 @@ Checkpoints pause for human verification at critical decision points:
 |-------------|-------------------|
 | discovery-interview | Verify spec captures requirements |
 | plan-agent | Approve implementation plan |
-| validate-agent (if issues) | Acknowledge validation concerns |
+| plan-reviewer (if issues) | Acknowledge validation concerns |
 | Each implement task | Verify phase works before continuing |
 | commit | Approve commit message and files |
 
@@ -601,7 +601,7 @@ User: /build greenfield Add user authentication with OAuth
 Claude: Starting greenfield workflow for "Add user authentication with OAuth"
 
 Creating session: build-20260108-user-auth-oauth
-Chain: discovery-interview -> plan-agent -> validate-agent -> implement_plan -> commit -> describe_pr
+Chain: discovery-interview -> plan-agent -> plan-reviewer -> implement_plan -> commit -> describe_pr
 
 Phase 1/6: Discovery Interview
 [Spawns discovery-interview agent]
@@ -634,7 +634,7 @@ Approve plan and continue? [Y/n]
 User: Y
 
 Phase 3/6: Validation
-[Spawns validate-agent]
+[Spawns plan-reviewer]
 
 Validation: PASSED
 All tech choices are current best practices.
@@ -753,7 +753,7 @@ Phase 2/4: Planning
 ### If a phase fails:
 
 ```
-Phase 3 (validate-agent) failed:
+Phase 3 (plan-reviewer) failed:
 
 Error: WebSearch unavailable
 
@@ -832,7 +832,7 @@ Set in `.claude/settings.json`:
 
 - `/discovery-interview` - Deep interview for requirements
 - `/plan-agent` - Create implementation plans
-- `/validate-agent` - Validate tech choices
+- `/plan-reviewer` - Validate tech choices
 - `/implement_plan` - Execute implementation plans
 - `/implement_task` - Single task implementation
 - `/test-driven-development` - TDD workflow

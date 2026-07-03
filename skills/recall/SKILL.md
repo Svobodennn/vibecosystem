@@ -32,7 +32,8 @@ Query the memory system for relevant learnings from past sessions.
 When this skill is invoked, run:
 
 ```bash
-cd $CLAUDE_OPC_DIR && PYTHONPATH=. uv run python scripts/core/recall_learnings.py --query "<ARGS>" --k 5
+# Dosya-bazli memory recall (legacy recall_learnings.py kaldirildi)
+grep -ril "<topic>" ~/.claude/projects/<project-slug>/memory/ && cat <eslesen dosyalar>
 ```
 
 Where `<ARGS>` is the query provided by the user.

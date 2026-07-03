@@ -394,15 +394,15 @@ Skipped details:
 Test status: ALL PASSING (127/127)
 ```
 
-## Integration with refactor-cleaner Agent
+## Integration with janitor Agent
 
-AI slop cleaner runs at the code level (syntactic cleanup). The refactor-cleaner agent runs at the architecture level (structural refactoring). Run this skill first, then refactor-cleaner if structural improvement is needed.
+AI slop cleaner runs at the code level (syntactic cleanup). The janitor agent runs at the architecture level (structural refactoring). Run this skill first, then janitor if structural improvement is needed.
 
 Order:
 ```
 1. ai-slop-cleaner (remove the noise)
 2. code-reviewer (verify quality after cleanup)
-3. refactor-cleaner (structural improvements if needed)
+3. janitor (structural improvements if needed)
 4. verifier (final gate)
 ```
 

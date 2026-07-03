@@ -73,7 +73,7 @@ Orchestrate multi-agent pipelines for complex tasks.
 | /security | Vulnerability analysis | aegis |
 | /explore | Codebase discovery | scout |
 | /test | Test execution and validation | arbiter, atlas |
-| /release | Version bumps, changelog | herald |
+| /release | Version bumps, changelog | shipper |
 | /migrate | Framework/infrastructure changes | pioneer, phoenix |
 
 **Usage**: Just describe your goal. Claude routes to the right workflow.
@@ -93,7 +93,7 @@ Spawn via Task tool with subagent_type.
 |-------|---------|-------|
 | scout | Codebase exploration, pattern finding | sonnet |
 | oracle | External research (web, docs, APIs) | sonnet |
-| pathfinder | External repository analysis | sonnet |
+| harvest | External repository analysis | sonnet |
 
 ### Planning & Architecture
 | Agent | Purpose | Model |
@@ -164,11 +164,8 @@ Requires: LM Studio running Godel-Prover model locally.
 Store and recall learnings across sessions.
 
 ```bash
-# Recall past learnings
-(cd opc && uv run python scripts/core/recall_learnings.py --query "hook patterns")
-
-# Store new learning (via /remember skill)
-/remember "Hook X works by..."
+# Dosya-bazli memory recall (legacy recall_learnings.py kaldirildi)
+grep -ril "<topic>" ~/.claude/projects/<project-slug>/memory/ && cat <eslesen dosyalar>
 ```
 
 ### Premortem Risk Analysis

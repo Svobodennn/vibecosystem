@@ -43,12 +43,12 @@ Output to: .claude/cache/agents/plan-agent/<task>-plan.md
 
 ### 3. Validation Agent
 ```
-Task(subagent_type="validate-agent", run_in_background=true, prompt="""
+Task(subagent_type="plan-reviewer", run_in_background=true, prompt="""
 Read: .claude/cache/agents/plan-agent/<task>-plan.md
 Read: .claude/cache/agents/oracle/<task>-research.md
 Review plan against research findings and best practices.
 
-Output to: .claude/cache/agents/validate-agent/<task>-validated.md
+Output to: .claude/cache/agents/plan-reviewer/<task>-validated.md
 """)
 ```
 - Reviews plan against research
@@ -57,7 +57,7 @@ Output to: .claude/cache/agents/validate-agent/<task>-validated.md
 ### 4. Implementation Agent
 ```
 Task(subagent_type="agentica-agent", run_in_background=true, prompt="""
-Read: .claude/cache/agents/validate-agent/<task>-validated.md
+Read: .claude/cache/agents/plan-reviewer/<task>-validated.md
 Read: .claude/cache/agents/oracle/<task>-research.md
 
 TDD approach: Write failing tests FIRST, then implement.
@@ -74,7 +74,7 @@ Output summary to: .claude/cache/agents/implement-agent/<task>-implementation.md
 ```
 Task(subagent_type="review-agent", run_in_background=true, prompt="""
 Read: .claude/cache/agents/implement-agent/<task>-implementation.md
-Read: .claude/cache/agents/validate-agent/<task>-validated.md
+Read: .claude/cache/agents/plan-reviewer/<task>-validated.md
 Read: .claude/cache/agents/oracle/<task>-research.md
 
 Cross-reference implementation against plan and research.
@@ -113,7 +113,7 @@ wc -c /tmp/claude/.../tasks/<id>.output
 │   └── <task>-research.md
 ├── plan-agent/
 │   └── <task>-plan.md
-├── validate-agent/
+├── plan-reviewer/
 │   └── <task>-validated.md
 ├── implement-agent/
 │   └── <task>-implementation.md

@@ -1,42 +1,11 @@
 ---
 name: layered-recall
-description: "Progressive memory recall with 4 scope layers AND 3 depth layers. Scope: identity > project > room > deep. Depth: IDs only > summary > full. 10-50x token savings through fetch-on-confirmation pattern."
+description: "4-layer memory recall system. Layer 1 (identity) always loaded, Layer 2 (critical facts) per-project, Layer 3 (room recall) on-demand, Layer 4 (deep search) when needed. Progressive context loading for token efficiency."
 ---
 
 # Layered Recall
 
-Progressive memory system with **two orthogonal dimensions** of lazy loading:
-1. **Scope layers** - What is relevant (identity, project, domain, deep)
-2. **Depth layers** - How much detail to fetch (IDs, summary, full)
-
-Combined savings: 10-50x tokens vs eager loading.
-
-## Depth Pattern (Fetch-on-Confirmation)
-
-Instead of loading full memory entries upfront, agents fetch in 3 depths:
-
-```
-Depth 1: IDs only        (~10 tokens per match)
-  Agent decides which are worth investigating
-
-Depth 2: Summary         (~50 tokens per match)
-  Room, type, preview (first 80 chars)
-  Agent confirms relevance
-
-Depth 3: Full content    (~500+ tokens per match)
-  Only fetched for confirmed matches
-```
-
-**Example flow:**
-```
-1. Agent searches "auth refresh token"
-2. Depth 1 returns 8 IDs: d-abc123, d-def456, ...
-3. Agent requests Depth 2 for IDs 1-3
-4. Sees room=authentication, type=decision, preview="Chose JWT..."
-5. Agent confirms IDs 1,3 are relevant
-6. Requests Depth 3 only for those 2 entries
-7. Gets full content for ~1000 tokens instead of 4000+
-```
+4-layer progressive memory system. Each layer adds more context only when needed, saving tokens while ensuring nothing important is missed.
 
 ## The 4 Layers
 

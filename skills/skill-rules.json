@@ -1,0 +1,161 @@
+{
+  "version": "1.0",
+  "description": "Global Vibecosystem Agent and Skill Routing Rules",
+  "skills": {
+    "frontend-patterns": {
+      "type": "domain",
+      "priority": "medium",
+      "enforcement": "suggest",
+      "description": "Frontend development patterns and best practices",
+      "promptTriggers": {
+        "keywords": ["react", "next.js", "frontend", "ui", "css", "tailwind", "component"]
+      }
+    },
+    "backend-patterns": {
+      "type": "domain",
+      "priority": "medium",
+      "enforcement": "suggest",
+      "description": "Backend development patterns and API structuring",
+      "promptTriggers": {
+        "keywords": ["backend", "api", "endpoint", "database", "sql"]
+      }
+    },
+    "tdd-workflow": {
+      "type": "workflow",
+      "priority": "high",
+      "enforcement": "suggest",
+      "description": "Test Driven Development workflow patterns",
+      "promptTriggers": {
+        "keywords": ["test", "tdd", "coverage", "mock", "spec"]
+      }
+    }
+  },
+  "agents": {
+    "kraken": {
+      "type": "development",
+      "priority": "high",
+      "enforcement": "suggest",
+      "description": "Primary feature implementation and complex coding tasks",
+      "promptTriggers": {
+       "keywords": ["implement", "build a feature", "create a feature", "develop"]
+      }
+    },
+    "spark": {
+      "type": "development",
+      "priority": "high",
+      "enforcement": "suggest",
+      "description": "Quick, small fixes and code tweaks",
+      "promptTriggers": {
+        "keywords": ["tweak", "small fix", "quick update", "minor change"]
+      }
+    },
+    "sleuth": {
+      "type": "debugging",
+      "priority": "high",
+      "enforcement": "suggest",
+      "description": "Deep bug investigation and troubleshooting",
+      "promptTriggers": {
+        "keywords": ["investigate", "bug", "crash", "troubleshoot", "why is it failing"]
+      }
+    },
+    "architect": {
+      "type": "planning",
+      "priority": "high",
+      "enforcement": "suggest",
+      "description": "System design and technical architecture planning",
+      "promptTriggers": {
+        "keywords": ["architect", "design system", "system design", "architecture"]
+      }
+    },
+    "scout": {
+      "type": "exploration",
+      "priority": "medium",
+      "enforcement": "suggest",
+      "description": "Codebase exploration and pattern finding",
+      "promptTriggers": {
+        "keywords": ["explore", "find out how", "look into the codebase", "discover"]
+      }
+    },
+    "code-reviewer": {
+      "type": "validation",
+      "priority": "high",
+      "enforcement": "suggest",
+      "description": "Code quality review and pattern adherence",
+      "promptTriggers": {
+        "keywords": ["review code", "code review", "pr preview"]
+      }
+    },
+    "security-reviewer": {
+      "type": "validation",
+      "priority": "critical",
+      "enforcement": "suggest",
+      "description": "Security auditing and vulnerability scanning",
+      "promptTriggers": {
+        "keywords": ["security", "audit", "vulnerability", "auth flow"]
+      }
+    },
+    "tdd-guide": {
+      "type": "development",
+      "priority": "medium",
+      "enforcement": "suggest",
+      "description": "Test writing and coverage improvement",
+      "promptTriggers": {
+        "keywords": ["write tests", "add coverage", "unit test"]
+      }
+    },
+    "janitor": {
+      "type": "development",
+      "priority": "medium",
+      "enforcement": "suggest",
+      "description": "Code cleanup, dead code removal, and tech debt",
+      "promptTriggers": {
+        "keywords": ["clean up code", "refactor", "dead code", "tech debt"]
+      }
+    },
+    "devops": {
+      "type": "process",
+      "priority": "high",
+      "enforcement": "suggest",
+      "description": "Infrastructure, Docker, K8s, and CI/CD operations",
+      "promptTriggers": {
+        "keywords": ["ci/cd", "pipeline", "docker", "deploy", "kubernetes"]
+      }
+    },
+    "frontend-dev": {
+      "type": "development",
+      "priority": "medium",
+      "enforcement": "suggest",
+      "description": "UI, components, and client-side logic",
+      "promptTriggers": {
+        "keywords": ["frontend", "ui component", "react code", "vue component"]
+      }
+    },
+    "backend-dev": {
+      "type": "development",
+      "priority": "medium",
+      "enforcement": "suggest",
+      "description": "API endpoints, database queries, and server logic",
+      "promptTriggers": {
+        "keywords": ["backend api", "database query", "server side"]
+      }
+    },
+    "doc-updater": {
+      "type": "process",
+      "priority": "low",
+      "enforcement": "suggest",
+      "description": "Documentation generation and updates",
+      "promptTriggers": {
+        "keywords": ["update docs", "generate documentation", "readme"]
+      }
+    },
+    "maestro": {
+      "type": "process",
+      "priority": "high",
+      "enforcement": "suggest",
+      "description": "Multi-agent coordination and swarm orchestration",
+      "promptTriggers": {
+        "keywords": ["swarm", "orchestrate", "coordinate agents", "complex task"]
+      }
+    }
+  }
+}

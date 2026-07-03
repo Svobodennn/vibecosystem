@@ -20,7 +20,7 @@ Structured release preparation to ship with confidence.
 
 ```
 ┌─────────┐    ┌─────────┐    ┌──────────────┐    ┌──────────┐    ┌─────────┐
-│  aegis  │───▶│  atlas  │───▶│ review-agent │───▶│  herald  │───▶│  scribe │
+│  aegis  │───▶│  atlas  │───▶│ review-agent │───▶│  shipper │───▶│  scribe │
 │         │    │         │    │              │    │          │    │         │
 └─────────┘    └─────────┘    └──────────────┘    └──────────┘    └─────────┘
   Security       E2E            Final              Version         Release
@@ -34,7 +34,7 @@ Structured release preparation to ship with confidence.
 | 1 | **aegis** | Security vulnerability scan | Security report |
 | 2 | **atlas** | Run full E2E test suite | Test report |
 | 3 | **review-agent** | Final release review | Release approval |
-| 4 | **herald** | Version bump, changelog generation | Updated version files |
+| 4 | **shipper** | Version bump, changelog generation | Updated version files |
 | 5 | **scribe** | Release notes, documentation | RELEASE.md, docs |
 
 ## Why This Order?
@@ -110,7 +110,7 @@ Task(
 
 ```
 Task(
-  subagent_type="herald",
+  subagent_type="shipper",
   prompt="""
   Prepare release: [VERSION]
 
@@ -169,7 +169,7 @@ Task(
 ### Hotfix
 ```
 /release --hotfix
-→ Expedited: aegis → atlas → herald
+→ Expedited: aegis → atlas → shipper
 ```
 
 ## Example
@@ -197,7 +197,7 @@ Phase 3: Final review...
 - No breaking changes
 
 Phase 4: Version bump...
-[Spawns herald]
+[Spawns shipper]
 ✅ Version bumped to 2.0.0
 ✅ CHANGELOG.md updated
 ✅ Git tag created

@@ -3,8 +3,6 @@ name: experiment-engine
 description: Otonom deney dongusu. Kod degisikligi yap, olc, karsilastir, kabul et veya geri al. Metrik bazli karar verme ile performans, boyut veya kalite optimizasyonu. Tek basina veya agent ile kullan.
 ---
 
-> **Not / Overlap:** Bu skill `experiment-loop` ile ayni otonom deney dongusu kavramini kapsar (bu dosya TR, experiment-loop EN). Yeni isler icin `experiment-loop` tercih edilir; v4.0 da birlestirilecek.
-
 # Experiment Engine
 
 Bir hedef belirle, sistematik olarak deneyler yap, sadece iyilestirenleri tut.
@@ -240,7 +238,7 @@ done
 ## vibecosystem Entegrasyonu
 
 - **profiler agent**: Performans deneylerinde metrik toplama
-- **nitro agent**: Optimization deneylerini yonetme
+- **profiler agent**: Optimization deneylerini yonetme
 - **tdd-guide agent**: Coverage deneylerinde test yazma
 - **verifier agent**: Her deney sonrasi build/test dogrulama
 - **self-learner agent**: Basarili deneyleri pattern olarak kaydet

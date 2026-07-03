@@ -38,16 +38,13 @@ Kullaniciya sor: "Bu dizinde CLAUDE.md yok. Olusturayim mi? (template: ~/.claude
 
 ## Adim 3: Memory'ye Kaydet
 
-Genel bir ogrenim ise (sadece bu projeye ozel degilse), memory sistemine de kaydet:
+Genel bir ogrenim ise (sadece bu projeye ozel degilse), dosya-bazli persistent memory'ye kaydet:
 
-```bash
-cd ~/.claude && PYTHONPATH=scripts python3 scripts/core/store_learning.py \
-  --session-id "learn-command" \
-  --content "<ogrenim>" \
-  --context "<baglam>" \
-  --tags "learn,<kategori>" \
-  --confidence high
-```
+1. `~/.claude/projects/<project-slug>/memory/<slug>.md` olustur (frontmatter: name, description, metadata.type: feedback)
+2. `~/.claude/projects/<project-slug>/memory/MEMORY.md` index'ine tek satirlik pointer ekle
+3. Duplicate kontrolu yap — ayni konuda dosya varsa onu guncelle
+
+(Eski `scripts/core/store_learning.py` script'i kaldirildi, kullanma.)
 
 ## Adim 4: Onay Ver
 

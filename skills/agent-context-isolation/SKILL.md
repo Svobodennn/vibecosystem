@@ -62,7 +62,7 @@ Research agent → .claude/cache/agents/oracle/output.md
                           ↓
 Plan agent → .claude/cache/agents/plan-agent/output.md (reads research)
                           ↓
-Validate agent → .claude/cache/agents/validate-agent/output.md (reads plan)
+Validate agent → .claude/cache/agents/plan-reviewer/output.md (reads plan)
                           ↓
 Implement agent → src/module.ts (reads validated plan)
 ```

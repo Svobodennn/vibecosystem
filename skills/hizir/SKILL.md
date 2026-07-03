@@ -135,7 +135,7 @@ Hangi iş hangi agent'a gider:
 | Büyük feature | kraken (TDD) | backend-dev |
 | Küçük fix | spark | frontend-dev |
 | Bug investigate | sleuth | scout |
-| Refactoring | phoenix + refactor-cleaner | kraken |
+| Refactoring | phoenix + janitor | kraken |
 | DB schema | backend-dev | database-reviewer |
 | CI/CD | devops | backend-dev |
 | Test yazımı | tdd-guide | qa-engineer |
