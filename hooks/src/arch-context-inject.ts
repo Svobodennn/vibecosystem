@@ -10,7 +10,7 @@
 
 import { readFileSync, existsSync } from 'fs';
 import { queryDaemonSync, trackHookActivitySync } from './daemon-client.js';
-import { isRelevantForIntent } from './shared/context-budget.js';
+import { budgetContext, isRelevantForIntent } from './shared/context-budget.js';
 
 interface HookInput {
   session_id: string;
@@ -198,7 +198,13 @@ async function main() {
   // Format and inject context
   const archContext = formatArchContext(arch);
 
-  const enhancedPrompt = `${archContext}
+  const boundedArchContext = budgetContext('arch-context-inject', 'PreToolUse:Task', archContext);
+  if (!boundedArchContext) {
+    console.log('{}');
+    return;
+  }
+
+  const enhancedPrompt = `${boundedArchContext}
 
 ---
 
@@ -222,6 +228,9 @@ ${prompt}`;
     arch_injected: 1,
   });
 
+  // The injected architecture block was already reserved above. Do not budget
+  // the complete rewritten prompt again, because the original task text is not
+  // context added by this hook.
   console.log(JSON.stringify(output));
 }
 

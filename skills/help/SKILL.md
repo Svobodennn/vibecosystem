@@ -252,10 +252,13 @@ Agents declare their capabilities:
 ---
 name: my-agent
 description: Specialist for X
-model: sonnet|haiku|claude-opus-4-5-20251101
+model: inherit # Claude adapter example; Codex uses luna_worker
 tools: [Read, Grep, Glob, Bash]
 ---
 ```
+
+The `model` field above is Claude-adapter metadata. Codex does not select a model from
+skill or agent examples; the bounded `luna_worker` contract remains authoritative.
 
 ### MCP Servers
 External tool integrations:

@@ -17,6 +17,7 @@
 import { readFileSync, existsSync, readdirSync, statSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
+import { budgetHookOutput } from './shared/context-budget.js';
 
 interface UserPromptSubmitInput {
   session_id: string;
@@ -253,12 +254,13 @@ ${contents}
 ---
 *Memory recall otomatik. Alakali icerik varsa kullan, yoksa yok say.*`;
 
-  console.log(JSON.stringify({
+  const output = {
     hookSpecificOutput: {
       hookEventName: 'UserPromptSubmit',
       additionalContext: context,
     }
-  }));
+  };
+  console.log(JSON.stringify(budgetHookOutput(output, 'smart-memory-recall', 'UserPromptSubmit')));
 }
 
 main().catch(() => {

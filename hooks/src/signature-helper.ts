@@ -7,7 +7,7 @@
 
 import { readFileSync } from 'fs';
 import { queryDaemonSync, trackHookActivitySync } from './daemon-client.js';
-import { isRelevantForIntent } from './shared/context-budget.js';
+import { budgetHookOutput, isRelevantForIntent } from './shared/context-budget.js';
 
 interface HookInput {
   tool_name: string;
@@ -180,7 +180,7 @@ async function main() {
     signatures_found: signatures.length,
   });
 
-  console.log(JSON.stringify(output));
+  console.log(JSON.stringify(budgetHookOutput(output, 'signature-helper', 'PreToolUse:Edit')));
 }
 
 main().catch(() => console.log('{}'));

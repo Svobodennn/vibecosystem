@@ -38,7 +38,9 @@ vibecosystem turns Claude Code into a full AI software team — 138 specialized 
 
 > **v2.4**: Terminal HUD (real-time statusline), prompt auto-improver (enriches vague prompts with context), persistent planning system (PLAN.md/PROGRESS.md/CONTEXT.md for 96.7% task completion). Competitive gap closure from analysis of 20+ ecosystem repos.
 
-> **v3.0**: `npx vibecosystem init` npm installer, `plugin.json` for official plugin ecosystem, worktree isolation on 60 producer agents, multi-LLM model routing (Haiku/Sonnet/Opus tiers), knowledge graph integration (6-71x token savings), dashboard v2 with token/cost tracking.
+> **v3.0**: `npx vibecosystem init` npm installer, `plugin.json` for official plugin ecosystem, worktree isolation on 60 producer agents, Claude-adapter model routing (Haiku/Sonnet/Opus tiers), knowledge graph integration (6-71x token savings), dashboard v2 with token/cost tracking.
+
+> **v3.4**: Lean `core` runtime is now the default. Codex uses one model authority, `luna_worker` with `gpt-5.6-luna` and `max` reasoning; Claude-only Opus/Sonnet frontmatter remains isolated to the Claude adapter. Context injectors have bounded event/session budgets, and installer ownership manifests make backups and pruning explicit.
 
 ## The Problem
 
@@ -77,7 +79,7 @@ curl -fsSL https://raw.githubusercontent.com/vibeeval/vibecosystem/main/install-
 ```bash
 git clone https://github.com/vibeeval/vibecosystem.git
 cd vibecosystem
-./install.sh
+./install.sh --profile core
 ```
 
 That's it. Use Claude Code normally. The team activates.
@@ -93,6 +95,7 @@ vibeco profile frontend               # switch profile (saves tokens)
 vibeco doctor                         # health check
 vibeco dashboard                      # start monitoring UI
 vibeco update                         # pull latest & reinstall
+vibeco effective-config               # show model, worker, profile and budgets
 ```
 
 ### Profiles
@@ -101,19 +104,25 @@ Save tokens by loading only what you need:
 
 | Profile | Agents | Skills | Use case |
 |---------|--------|--------|----------|
-| `minimal` | ~15 | ~40 | Core only (review, test, verify) |
+| `core` | 12 | 32 | Bounded implementation and verification (default) |
+| `quality` | 12 | 32 | Core + focused edit and verification checks |
+| `context` | 12 | 32 | Core + targeted context retrieval |
+| `memory` | 13 | 36 | Core + opt-in memory and learning hooks |
+| `orchestration` | 14 | 35 | Core + explicit multi-agent workflows |
+| `minimal` | 12 | 32 | Alias for `core` |
 | `frontend` | ~30 | ~60 | React/Next.js/CSS/a11y |
 | `backend` | ~44 | ~74 | API/DB/security |
 | `fullstack` | ~59 | ~96 | Frontend + Backend |
 | `devops` | ~33 | ~61 | CI/CD/K8s/cloud |
-| `smart` | 138 | 296 | Everything enabled + token-optimized plugin injection budgets |
-| `all` | 138 | 296 | Everything (default) |
+| `full` | 138 | 296 | All legacy capabilities; 8k/event and 50k/session context budget |
+| `smart` | 12 | 32 | Alias for `core` |
+| `all` | 138 | 296 | Alias for `full` |
 
-**Honest note on `smart`:** it does not disable any agent or skill — capability is identical to `all`. The difference is session-start token cost: `smart` expects reduced context-injection budgets (via the `env` section of `~/.claude/settings.json`), cutting startup overhead roughly 30-35% against vanilla `all`.
+The lean profiles change the active component set and context budget, not the model. `core` uses 4,000 characters per event and 12,000 per session; `full` preserves the legacy 8,000/50,000 limits. Memory and orchestration are opt-in so a normal task does not trigger recall, swarm, or cross-agent chains.
 
 ```bash
-vibeco profile frontend  # switch to frontend profile
-vibeco profile all       # back to everything
+vibeco profile core       # bounded default
+vibeco profile full       # back to every legacy capability
 ```
 
 ## How It Works
@@ -239,7 +248,7 @@ Agent error → error-ledger.jsonl → skill-matrix.json
 
 ### Adaptive Hook Loading
 
-74 hooks exist but they don't all run at once. Intent determines which hooks fire.
+74 hook sources exist, but profiles register only a bounded subset. `core` registers 6 commands; `full` registers the complete manifest. Intent and profile determine which hooks fire.
 
 ![Hooks](assets/gif4-hooks.gif)
 
@@ -328,8 +337,8 @@ Agent error → error-ledger.jsonl → skill-matrix.json
 
 | Component | Technology |
 |-----------|-----------|
-| Runtime | Claude Code (Claude Max) |
-| Models | Opus 4.6 / Sonnet 4.6 |
+| Runtime | Claude Code adapter + Codex `luna_worker` adapter |
+| Models | Claude: Opus/Sonnet frontmatter; Codex: `gpt-5.6-luna` / `max` |
 | Hook engine | TypeScript → esbuild → .mjs |
 | Memory DB | PostgreSQL + pgvector (Docker) |
 | Agent format | Markdown + YAML frontmatter |
@@ -370,7 +379,7 @@ vibecosystem works with multiple AI coding tools:
 |-----|-----------|-------------------|--------------|
 | **Claude Code** | `./install.sh` | `rules/*.md` | Full support (agents + skills + hooks + rules) |
 | **Cursor IDE** | `./install-cursor.sh` | `AGENTS.md` + `.cursor/rules/` | 6 MDC rules + AGENTS.md + skills |
-| **Codex CLI** (OpenAI) | `./install-codex.sh` | `AGENTS.md` | Skills only (296 skills) |
+| **Codex CLI** (OpenAI) | `./install-codex.sh` | `AGENTS.md` + `.codex/agents/luna-worker.toml` | Core allowlist (32 skills) or full skills; one bounded `luna_worker` model authority |
 | **OpenCode** | Manual | `AGENTS.md` | Skills only |
 
 ```bash
@@ -378,7 +387,7 @@ vibecosystem works with multiple AI coding tools:
 ./install-cursor.sh /path/to/your/project
 
 # For Codex CLI users:
-./install-codex.sh
+./install-codex.sh --profile core --install-luna-worker
 ```
 
 See [docs/codex-setup.md](docs/codex-setup.md) for Codex CLI setup, or copy `.cursor/rules/` into any Cursor project.
@@ -420,14 +429,14 @@ Contributions welcome! Areas where help is needed:
 
 vibecosystem, Claude Code'u tam donanımlı bir yapay zeka yazılım ekibine dönüştürür. Sadece tek bir asistan değil — planlayan, geliştiren, kod incelemesi (review) yapan, test eden ve yaptığı her hatadan öğrenen **138 uzman ajandan (agent) oluşan bir ekip**.
 
-Özel bir model yok. Özel bir API yok. Sadece Claude Code'un hook + agent + rules sistemi sonuna kadar kullanılmış durumda.
+Claude adapter'ı için ayrı bir model zorlaması yok; Codex tarafında tek otorite `luna_worker` ve `gpt-5.6-luna/max`. Sistem, Claude Code'un hook + agent + rules katmanlarını ve Codex'in sınırlı worker sözleşmesini birlikte kullanır.
 
 ### Hızlı Başlangıç
 
 ```bash
 git clone https://github.com/vibeeval/vibecosystem.git
 cd vibecosystem
-./install.sh
+./install.sh --profile core
 ```
 
 ### Nasıl Çalışır?

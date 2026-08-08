@@ -15,6 +15,7 @@
 import { readFileSync, existsSync, readdirSync, statSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
+import { budgetHookOutput } from './shared/context-budget.js';
 
 interface PreToolInput {
   tool_name: string;
@@ -155,7 +156,7 @@ Memory guncelleme zorunlu DEGiL - sadece gercekten yeni ve degerli bilgi varsa k
       additionalContext: context,
     };
 
-    process.stdout.write(JSON.stringify(result));
+    process.stdout.write(JSON.stringify(budgetHookOutput(result, 'agent-memory-loader', 'PreToolUse:Agent')));
   } catch {
     // Hook hatalari sessiz
   }

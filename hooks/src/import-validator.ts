@@ -8,6 +8,7 @@
 import { readFileSync } from 'fs';
 import { basename } from 'path';
 import { queryDaemonSync, trackHookActivitySync } from './daemon-client.js';
+import { budgetHookOutput } from './shared/context-budget.js';
 
 interface HookInput {
   tool_name: string;
@@ -148,7 +149,7 @@ async function main() {
     warnings_found: warnings.length,
   });
 
-  console.log(JSON.stringify(output));
+  console.log(JSON.stringify(budgetHookOutput(output, 'import-validator', 'PostToolUse:Edit|Write')));
 }
 
 main().catch(() => console.log('{}'));

@@ -97,6 +97,17 @@ export function getAgentTier(agentName: string): number {
 }
 
 function runHook(): void {
+  // Model routing is a legacy Claude-only adapter. The core runtime is
+  // single-model luna_worker and must never inject Opus/Sonnet suggestions.
+  try {
+    const runtimePath = join(homedir(), '.claude', 'vibecosystem-runtime.json');
+    if (!existsSync(runtimePath)) return;
+    const runtime = JSON.parse(readFileSync(runtimePath, 'utf-8'));
+    if (runtime.activeProfile !== 'full') return;
+  } catch {
+    return;
+  }
+
   let input: string;
   try {
     input = readFileSync(0, 'utf-8');

@@ -1,6 +1,6 @@
 // src/tldr-context-inject.ts
-import { readFileSync as readFileSync2, existsSync as existsSync2 } from "fs";
-import { join as join2, dirname } from "path";
+import { readFileSync as readFileSync3, existsSync as existsSync3 } from "fs";
+import { join as join3, dirname as dirname2 } from "path";
 
 // src/daemon-client.ts
 import { existsSync, readFileSync, writeFileSync, unlinkSync } from "fs";
@@ -260,6 +260,89 @@ function trackHookActivitySync(hookName, projectDir, success = true, metrics = {
   }
 }
 
+// src/shared/context-budget.ts
+import { readFileSync as readFileSync2, writeFileSync as writeFileSync2, existsSync as existsSync2, mkdirSync, statSync } from "fs";
+import { dirname, join as join2 } from "path";
+import { homedir } from "os";
+var DEFAULT_LIMITS = {
+  perEventChars: 4e3,
+  sessionChars: 12e3
+};
+function budgetPath() {
+  return process.env.VIBECO_CONTEXT_BUDGET_PATH || join2(homedir(), ".claude", "cache", "context-budget.json");
+}
+function runtimePath() {
+  return process.env.VIBECO_RUNTIME_PATH || join2(homedir(), ".claude", "vibecosystem-runtime.json");
+}
+function getBudgetLimits() {
+  try {
+    const path = runtimePath();
+    if (existsSync2(path)) {
+      const runtime = JSON.parse(readFileSync2(path, "utf-8"));
+      const perEventChars = Number(runtime.contextBudget?.perEventChars);
+      const sessionChars = Number(runtime.contextBudget?.sessionChars);
+      if (Number.isFinite(perEventChars) && Number.isFinite(sessionChars)) {
+        return {
+          perEventChars: Math.max(0, perEventChars),
+          sessionChars: Math.max(0, sessionChars)
+        };
+      }
+    }
+  } catch {
+  }
+  return DEFAULT_LIMITS;
+}
+function loadBudget() {
+  try {
+    const path = budgetPath();
+    if (existsSync2(path)) {
+      return JSON.parse(readFileSync2(path, "utf-8"));
+    }
+  } catch {
+  }
+  return {
+    session_id: "unknown",
+    total_chars: 0,
+    per_hook: {},
+    per_event: {},
+    updated_at: (/* @__PURE__ */ new Date()).toISOString()
+  };
+}
+function saveBudget(budget) {
+  try {
+    const path = budgetPath();
+    const cacheDir = dirname(path);
+    if (!existsSync2(cacheDir)) mkdirSync(cacheDir, { recursive: true });
+    writeFileSync2(path, JSON.stringify(budget, null, 2));
+  } catch {
+  }
+}
+function tryInject(hookName, eventKey, charCount) {
+  const budget = loadBudget();
+  const limits = getBudgetLimits();
+  if (budget.total_chars + charCount > limits.sessionChars) return false;
+  const eventChars = budget.per_event[eventKey] || 0;
+  if (eventChars + charCount > limits.perEventChars) return false;
+  budget.total_chars += charCount;
+  budget.per_hook[hookName] = (budget.per_hook[hookName] || 0) + charCount;
+  budget.per_event[eventKey] = (budget.per_event[eventKey] || 0) + charCount;
+  budget.updated_at = (/* @__PURE__ */ new Date()).toISOString();
+  saveBudget(budget);
+  return true;
+}
+function budgetContext(hookName, eventKey, context) {
+  if (!context) return "";
+  const budget = loadBudget();
+  const limits = getBudgetLimits();
+  const eventRemaining = Math.max(0, limits.perEventChars - (budget.per_event[eventKey] || 0));
+  const sessionRemaining = Math.max(0, limits.sessionChars - budget.total_chars);
+  const available = Math.min(eventRemaining, sessionRemaining);
+  if (available <= 0) return "";
+  const bounded = context.length > available ? `${context.slice(0, Math.max(0, available - 18))}
+[truncated]` : context;
+  return tryInject(hookName, eventKey, bounded.length) ? bounded : "";
+}
+
 // src/tldr-context-inject.ts
 var INTENT_PATTERNS = [
   {
@@ -407,7 +490,7 @@ function detectLanguage(projectPath) {
   };
   for (const [lang, files] of Object.entries(indicators)) {
     for (const file of files) {
-      if (existsSync2(join2(projectPath, file))) {
+      if (existsSync3(join3(projectPath, file))) {
         return lang;
       }
     }
@@ -615,16 +698,16 @@ function findProjectRoot(startPath) {
   const markers = [".git", "pyproject.toml", "package.json", "Cargo.toml", "go.mod"];
   while (current !== "/") {
     for (const marker of markers) {
-      if (existsSync2(join2(current, marker))) {
+      if (existsSync3(join3(current, marker))) {
         return current;
       }
     }
-    current = dirname(current);
+    current = dirname2(current);
   }
   return startPath;
 }
 function readStdin() {
-  return readFileSync2(0, "utf-8");
+  return readFileSync3(0, "utf-8");
 }
 async function main() {
   const input = JSON.parse(readStdin());
@@ -665,9 +748,14 @@ async function main() {
     console.log("{}");
     return;
   }
+  const boundedContext = budgetContext("tldr-context-inject", "PreToolUse:Task", tldrContext);
+  if (!boundedContext) {
+    console.log("{}");
+    return;
+  }
   const enhancedPrompt = `## TLDR Context (${intentDesc}: ${layers.join("+")})
 
-${tldrContext}
+${boundedContext}
 
 ---
 ORIGINAL TASK:

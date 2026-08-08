@@ -102,11 +102,14 @@ Parse the conversation context to understand:
 
 ### Step 2: Research the Codebase
 
-Spawn exploration agents in parallel to gather context:
+Inspect the relevant files directly in the assigned repository to gather context. Do not
+spawn exploration agents or background workers unless the user explicitly requests
+delegation. If delegation is explicitly requested, keep it bounded to the named files
+and return the findings to the parent worker.
 
 **Use scout** to find relevant files:
 ```
-Task(
+Task( # Claude adapter example; Codex uses the parent luna_worker
   subagent_type="scout",
   prompt="Find all files related to [feature area]. Look for [specific patterns]."
 )
@@ -325,7 +328,7 @@ The orchestrator will spawn you like this:
 ```
 Task(
   subagent_type="general-purpose",
-  model="claude-opus-4-5-20251101",
+  model="inherit",
   prompt="""
   # Plan Agent
 

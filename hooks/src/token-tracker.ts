@@ -16,6 +16,15 @@ interface ToolEvent {
   tool_input?: Record<string, unknown>;
   tool_output?: string;
   session_id?: string;
+  usage?: TokenUsage;
+  token_usage?: TokenUsage;
+  metadata?: { usage?: TokenUsage };
+}
+
+interface TokenUsage {
+  input_tokens?: number;
+  output_tokens?: number;
+  total_tokens?: number;
 }
 
 interface TokenEntry {
@@ -25,13 +34,28 @@ interface TokenEntry {
   input_chars: number;
   output_chars: number;
   total_chars: number;
+  input_tokens_est: number;
+  output_tokens_est: number;
+  total_tokens_est: number;
+  token_source: 'provider' | 'estimate' | 'mixed';
+  input_token_source: 'provider' | 'estimate';
+  output_token_source: 'provider' | 'estimate';
+  total_token_source: 'provider' | 'estimate' | 'mixed';
   agent?: string;
 }
 
-// Rough char-to-token approximation
+// Conservative fallback. These are estimates unless the hook event supplies usage.
 function charCount(text: string | undefined): number {
   if (!text) return 0;
   return String(text).length;
+}
+
+function estimateTokens(chars: number): number {
+  return Math.ceil(chars / 4);
+}
+
+function getUsage(event: ToolEvent): TokenUsage | undefined {
+  return event.usage || event.token_usage || event.metadata?.usage;
 }
 
 function runHook(): void {
@@ -54,6 +78,21 @@ function runHook(): void {
 
   const inputChars = charCount(JSON.stringify(event.tool_input || {}));
   const outputChars = charCount(event.tool_output);
+  const usage = getUsage(event);
+  const providerInput = Number(usage?.input_tokens);
+  const providerOutput = Number(usage?.output_tokens);
+  const providerTotal = Number(usage?.total_tokens);
+  const hasProviderInput = Number.isFinite(providerInput);
+  const hasProviderOutput = Number.isFinite(providerOutput);
+  const hasProviderTotal = Number.isFinite(providerTotal);
+  const inputTokens = hasProviderInput ? providerInput : estimateTokens(inputChars);
+  const outputTokens = hasProviderOutput ? providerOutput : estimateTokens(outputChars);
+  const totalTokens = hasProviderTotal ? providerTotal : inputTokens + outputTokens;
+  const inputSource = hasProviderInput ? 'provider' : 'estimate';
+  const outputSource = hasProviderOutput ? 'provider' : 'estimate';
+  const totalSource = hasProviderTotal
+    ? 'provider'
+    : inputSource === 'estimate' && outputSource === 'estimate' ? 'estimate' : 'mixed';
 
   const entry: TokenEntry = {
     timestamp: new Date().toISOString(),
@@ -62,6 +101,13 @@ function runHook(): void {
     input_chars: inputChars,
     output_chars: outputChars,
     total_chars: inputChars + outputChars,
+    input_tokens_est: inputTokens,
+    output_tokens_est: outputTokens,
+    total_tokens_est: totalTokens,
+    token_source: totalSource,
+    input_token_source: inputSource,
+    output_token_source: outputSource,
+    total_token_source: totalSource,
   };
 
   if (event.tool_name === 'Agent' && event.tool_input) {

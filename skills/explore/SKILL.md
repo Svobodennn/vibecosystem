@@ -426,7 +426,7 @@ fi
 ## Key Principles
 
 1. **READ-ONLY** - This skill never modifies code
-2. **Uses scout, not Explore** - Per project rules, scout (Sonnet) over Explore (Haiku)
+2. **Uses bounded delegation** - Claude may use `scout`; Codex keeps the parent `luna_worker` model and does not route to Sonnet/Haiku tiers
 3. **Token-efficient** - Uses tldr commands (95% savings over raw reads)
 4. **Outputs to shared locations** - `thoughts/shared/research/` or handoff directory
 5. **Entry point to /build** - Exploration handoffs feed into brownfield builds

@@ -1,7 +1,7 @@
 {
   "name": "vibecosystem",
-  "version": "3.3.0",
-  "description": "AI software team for Claude Code - 138 agents, 296 skills, 74 hooks",
+  "version": "3.4.0",
+  "description": "Lean Claude runtime with 138 agents, 296 skills, 74 hooks and a Codex luna_worker",
   "type": "module",
   "bin": {
     "vibecosystem": "./bin/cli.mjs"
@@ -9,14 +9,20 @@
   "files": [
     "agents/",
     "skills/",
+    ".codex/",
     "hooks/dist/",
     "rules/",
     "profiles/",
     "tools/vibeco/",
+    "tools/install-runtime.mjs",
+    "tools/profile-runtime.mjs",
     "tools/dashboard/",
     "plugin.json",
     "bin/",
     "install.sh",
+    "install-codex.sh",
+    "install-remote.sh",
+    "docs/codex-setup.md",
     "AGENTS.md",
     "hooks/hooks.json",
     "tools/register-hooks.mjs"

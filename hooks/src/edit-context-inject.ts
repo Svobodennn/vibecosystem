@@ -8,7 +8,7 @@
 import { readFileSync } from 'fs';
 import { basename } from 'path';
 import { queryDaemonSync, trackHookActivitySync } from './daemon-client.js';
-import { isRelevantForIntent } from './shared/context-budget.js';
+import { budgetHookOutput, isRelevantForIntent } from './shared/context-budget.js';
 
 interface HookInput {
   tool_name: string;
@@ -173,7 +173,7 @@ async function main() {
     symbols_shown: total,
   });
 
-  console.log(JSON.stringify(output));
+  console.log(JSON.stringify(budgetHookOutput(output, 'edit-context-inject', 'PreToolUse:Edit')));
 }
 
 main().catch(() => console.log('{}'));

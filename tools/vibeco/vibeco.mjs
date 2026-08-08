@@ -5,12 +5,13 @@
 import { readFileSync, readdirSync, existsSync, statSync, writeFileSync } from 'node:fs';
 import { join, basename } from 'node:path';
 import { homedir } from 'node:os';
-import { execSync, spawn } from 'node:child_process';
+import { execFileSync, execSync, spawn } from 'node:child_process';
 import { createConnection } from 'node:net';
 import { get } from 'node:http';
 import { parseFrontmatter } from './lib/frontmatter.mjs';
+import { installClaude } from '../install-runtime.mjs';
 
-const VERSION = '3.3.0';
+const VERSION = '3.4.0';
 const CLAUDE_DIR = join(homedir(), '.claude');
 const PROFILES_DIR = join(CLAUDE_DIR, 'profiles');
 const PLUGIN_CONFIG = join(CLAUDE_DIR, 'plugin-config.json');
@@ -55,6 +56,14 @@ function readPluginConfig() {
   try {
     return JSON.parse(readFileSync(PLUGIN_CONFIG, 'utf-8'));
   } catch { return {}; }
+}
+
+function readJsonFile(path, fallback = {}) {
+  try { return JSON.parse(readFileSync(path, 'utf-8')); } catch { return fallback; }
+}
+
+function readTextFile(path) {
+  try { return readFileSync(path, 'utf-8'); } catch { return ''; }
 }
 
 function writePluginConfig(config) {
@@ -114,6 +123,7 @@ ${bold('COMMANDS')}
   ${green('help')}                          Show this help
   ${green('version')}                       Show version
   ${green('stats')}                         Ecosystem statistics
+  ${green('effective-config')}              Show model, profile, hooks and budgets
   ${green('list')} ${dim('<agents|skills|hooks|rules>')}  Browse components
     ${dim('--search <term>')}              Filter by name/description
   ${green('dashboard')}                     Start monitoring dashboard
@@ -123,8 +133,8 @@ ${bold('COMMANDS')}
     ${dim('--report')}                   Save findings to .vibeco-audit.json
     ${dim('--json')}                     Output as JSON
   ${green('secrets')} ${dim('[path]')}                Scan for API keys & credentials
-  ${green('profile')} ${dim('<name>')}                Set active profile
-    ${dim('minimal | frontend | backend | fullstack | devops | all | smart')}
+  ${green('profile')} ${dim('<name>')}                Install or switch runtime profile
+    ${dim('core | quality | context | memory | orchestration | full')}
   ${green('search')} ${dim('<term> [term2 ...]')}          Search agents and skills by keyword
   ${green('update')}                        Pull latest & reinstall
 
@@ -167,7 +177,8 @@ function stats() {
 
   // Active profile
   const config = readPluginConfig();
-  const profile = config.activeProfile || 'all';
+  const runtime = readJsonFile(join(CLAUDE_DIR, 'vibecosystem-runtime.json'), {});
+  const profile = runtime.activeProfile || config.activeProfile || 'core';
 
   console.log(`
 ${bold('vibecosystem stats')}
@@ -300,11 +311,12 @@ async function dashboard() {
 
 function profile() {
   const name = process.argv[3];
-  const validProfiles = ['minimal', 'frontend', 'backend', 'fullstack', 'devops', 'all', 'smart'];
+  const validProfiles = ['core', 'quality', 'context', 'memory', 'orchestration', 'full', 'minimal', 'frontend', 'backend', 'fullstack', 'devops', 'all', 'smart'];
 
   if (!name || !validProfiles.includes(name)) {
     const config = readPluginConfig();
-    const current = config.activeProfile || 'all';
+    const runtime = readJsonFile(join(CLAUDE_DIR, 'vibecosystem-runtime.json'), {});
+    const current = runtime.activeProfile || config.activeProfile || 'core';
     console.log(`\n${bold('Profiles')}\n`);
     for (const p of validProfiles) {
       const marker = p === current ? green(' (active)') : '';
@@ -312,6 +324,22 @@ function profile() {
     }
     console.log(`\n${dim('Usage:')} vibeco profile <name>\n`);
     return;
+  }
+
+  const repoDir = getRepoDir();
+  if (repoDir) {
+    try {
+      installClaude({
+        repoDir,
+        profile: name,
+        prune: process.argv.includes('--prune'),
+        nonInteractive: true,
+      });
+      return;
+    } catch (error) {
+      console.log(`${red('[ERROR]')} Profile install failed: ${error.message}`);
+      return;
+    }
   }
 
   const profileFile = join(PROFILES_DIR, `${name}.json`);
@@ -383,6 +411,71 @@ function profile() {
   console.log(`  ${dim(`Description: ${profileData.description || name}`)}`);
 }
 
+function effectiveConfig() {
+  const runtimePath = join(CLAUDE_DIR, 'vibecosystem-runtime.json');
+  const runtime = readJsonFile(runtimePath, {});
+  const globalWorkerPath = join(homedir(), '.codex', 'agents', 'luna-worker.toml');
+  const repoDir = getRepoDir();
+  const canonicalWorkerPath = join(repoDir || process.cwd(), '.codex', 'agents', 'luna-worker.toml');
+  const workerPath = existsSync(globalWorkerPath) ? globalWorkerPath : canonicalWorkerPath;
+  const workerSource = existsSync(globalWorkerPath)
+    ? 'global ~/.codex/agents'
+    : existsSync(canonicalWorkerPath) ? 'project .codex/agents' : 'missing';
+  const workerToml = readTextFile(workerPath);
+  const projectConfigPath = join(process.cwd(), '.codex', 'config.toml');
+  const projectToml = readTextFile(projectConfigPath);
+  const workerModel = workerToml.match(/^model\s*=\s*"([^"]+)"/m)?.[1] || null;
+  const workerReasoning = workerToml.match(/^model_reasoning_effort\s*=\s*"([^"]+)"/m)?.[1] || null;
+  const projectModel = projectToml.match(/^model\s*=\s*"([^"]+)"/m)?.[1] || null;
+  const result = {
+    modelAuthority: 'luna_worker',
+    worker: {
+      path: workerPath,
+      source: workerSource,
+      canonicalPath: canonicalWorkerPath,
+      globalPath: globalWorkerPath,
+      exists: existsSync(workerPath),
+      model: workerModel,
+      reasoning: workerReasoning,
+    },
+    projectConfig: {
+      path: projectConfigPath,
+      exists: existsSync(projectConfigPath),
+      model: projectModel,
+      modelNeutral: projectModel === null,
+    },
+    claudeRuntime: {
+      profile: runtime.activeProfile || 'unknown',
+      contextBudget: runtime.contextBudget || null,
+      compiledHookFiles: countFiles(join(CLAUDE_DIR, 'hooks', 'dist'), '.mjs'),
+      registeredHookCommands: runtime.registeredHookCommands || 0,
+      ownedFiles: Array.isArray(runtime.ownedFiles) ? runtime.ownedFiles.length : 0,
+    },
+    skillPaths: {
+      codex: join(homedir(), '.agents', 'skills'),
+      claude: join(CLAUDE_DIR, 'skills'),
+    },
+  };
+  if (process.argv.includes('--json')) console.log(JSON.stringify(result, null, 2));
+  else {
+    console.log(`\n${bold('vibecosystem effective-config')}`);
+    console.log(`  ${cyan('Model authority')}  ${result.modelAuthority}`);
+    console.log(`  ${cyan('Worker model')}     ${workerModel || 'missing'}`);
+    console.log(`  ${cyan('Reasoning')}        ${workerReasoning || 'missing'}`);
+    console.log(`  ${cyan('Worker source')}    ${workerSource}`);
+    console.log(`  ${cyan('Project model')}    ${projectModel || 'none (inherited)'}`);
+    console.log(`  ${cyan('Claude profile')}   ${result.claudeRuntime.profile}`);
+    console.log(`  ${cyan('Hooks')}            ${result.claudeRuntime.registeredHookCommands} registered / ${result.claudeRuntime.compiledHookFiles} compiled`);
+    console.log(`  ${cyan('Codex skills')}     ${result.skillPaths.codex}`);
+    console.log(`  ${cyan('Hook commands')}    ${result.claudeRuntime.registeredHookCommands}`);
+    console.log(`  ${cyan('Owned files')}      ${result.claudeRuntime.ownedFiles}`);
+    if (result.claudeRuntime.contextBudget) {
+      console.log(`  ${cyan('Context budget')}   ${result.claudeRuntime.contextBudget.perEventChars}/event, ${result.claudeRuntime.contextBudget.sessionChars}/session chars`);
+    }
+    console.log('');
+  }
+}
+
 async function doctor() {
   console.log(`\n${bold('vibeco doctor')}`);
   console.log(dim('='.repeat(40)));
@@ -402,19 +495,25 @@ async function doctor() {
 
   // 2. Agent count
   const agents = countFiles(join(CLAUDE_DIR, 'agents'), '.md');
-  check(agents >= 130 ? 'pass' : agents >= 50 ? 'warn' : 'fail', `Agents: ${agents}`, agents < 130 ? 'expected >= 130' : '');
+  const runtimeState = readJsonFile(join(CLAUDE_DIR, 'vibecosystem-runtime.json'), {});
+  check(agents > 0 ? 'pass' : 'fail', `Agents: ${agents}`, agents === 0 ? 'run install with a profile' : '');
 
   // 3. Skill count
   const skills = countFiles(join(CLAUDE_DIR, 'skills'), 'dir');
-  check(skills >= 250 ? 'pass' : skills >= 100 ? 'warn' : 'fail', `Skills: ${skills}`, skills < 250 ? 'expected >= 250' : '');
+  check(skills > 0 ? 'pass' : 'fail', `Skills: ${skills}`, skills === 0 ? 'run install with a profile' : '');
+
+  const config = readPluginConfig();
+  const activeProfile = runtimeState.activeProfile || config.activeProfile || 'unknown';
 
   // 4. Hook count
   const hooks = countFiles(join(CLAUDE_DIR, 'hooks', 'dist'), '.mjs');
-  check(hooks >= 55 ? 'pass' : hooks >= 30 ? 'warn' : 'fail', `Hooks: ${hooks} compiled`, hooks < 55 ? 'expected >= 55' : '');
+  const registeredHookCommands = Number(runtimeState.registeredHookCommands || 0);
+  check(registeredHookCommands > 0 ? 'pass' : 'warn', `Hooks: ${hooks} compiled, ${registeredHookCommands} registered`, registeredHookCommands === 0 ? 'run profile install' : '');
 
   // 5. Rule count
   const rules = countFiles(join(CLAUDE_DIR, 'rules'), '.md');
-  check(rules >= 18 ? 'pass' : rules >= 10 ? 'warn' : 'fail', `Rules: ${rules}`, rules < 18 ? 'expected >= 18' : '');
+  const rulesOptional = activeProfile !== 'full' && activeProfile !== 'all';
+  check(rules > 0 || rulesOptional ? 'pass' : 'warn', `Rules: ${rules}`, rules === 0 && !rulesOptional ? 'full profile rules are missing' : '');
 
   // 6. settings.json hooks
   try {
@@ -442,9 +541,7 @@ async function doctor() {
   }
 
   // 9. Active profile
-  const config = readPluginConfig();
-  const activeProfile = config.activeProfile || 'all';
-  check('pass', `Profile: ${activeProfile}`);
+  check(activeProfile !== 'unknown' ? 'pass' : 'warn', `Profile: ${activeProfile}`, activeProfile === 'unknown' ? 'run profile install' : '');
 
   // 10. PATH
   const pathIncludesLocal = (process.env.PATH || '').includes(join(homedir(), '.local', 'bin'));
@@ -626,15 +723,13 @@ async function update() {
 
   console.log(`\nReinstalling...`);
   try {
-    execSync('bash install.sh --non-interactive', { cwd: repoDir, stdio: 'inherit' });
+    const runtime = readJsonFile(join(CLAUDE_DIR, 'vibecosystem-runtime.json'), {});
+    const allowedProfiles = new Set(['core', 'quality', 'context', 'memory', 'orchestration', 'full']);
+    const activeProfile = allowedProfiles.has(runtime.activeProfile) ? runtime.activeProfile : 'core';
+    execFileSync('bash', ['install.sh', '--profile', activeProfile, '--non-interactive'], { cwd: repoDir, stdio: 'inherit' });
   } catch {
-    // Fallback without --non-interactive for older install.sh
-    try {
-      execSync('echo y | bash install.sh', { cwd: repoDir, stdio: 'inherit' });
-    } catch {
-      console.log(`${red('[ERROR]')} install.sh failed`);
-      return;
-    }
+    console.log(`${red('[ERROR]')} install.sh failed`);
+    return;
   }
 
   console.log(`\n${green('[OK]')} vibecosystem updated`);
@@ -1030,6 +1125,7 @@ const COMMANDS = {
   help,
   version,
   stats,
+  'effective-config': effectiveConfig,
   list,
   search,
   dashboard,

@@ -10,7 +10,6 @@ hooks/vitest.config.ts
 .github/
 .claude/
 .cursor/
-.codex/
 .opencode/
 assets/tapes/
 *.tape

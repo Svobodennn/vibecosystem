@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
+import { budgetHookOutput } from './shared/context-budget.js';
 
 interface SessionStartInput {
   type?: 'startup' | 'resume' | 'clear' | 'compact';  // Legacy field
@@ -511,7 +512,7 @@ async function main() {
     };
   }
 
-  console.log(JSON.stringify(output));
+  console.log(JSON.stringify(budgetHookOutput(output, 'session-start-continuity', 'SessionStart')));
 }
 
 async function readStdin(): Promise<string> {

@@ -78,6 +78,14 @@ function getAgentTier(agentName) {
   return DEFAULT_TIERS[agentName] || 2;
 }
 function runHook() {
+  try {
+    const runtimePath = join2(homedir2(), ".claude", "vibecosystem-runtime.json");
+    if (!existsSync(runtimePath)) return;
+    const runtime = JSON.parse(readFileSync(runtimePath, "utf-8"));
+    if (runtime.activeProfile !== "full") return;
+  } catch {
+    return;
+  }
   let input;
   try {
     input = readFileSync(0, "utf-8");

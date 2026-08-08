@@ -261,9 +261,8 @@ function trackHookActivitySync(hookName, projectDir, success = true, metrics = {
 
 // src/shared/context-budget.ts
 import { readFileSync as readFileSync2, writeFileSync as writeFileSync2, existsSync as existsSync2, mkdirSync, statSync } from "fs";
-import { join as join2 } from "path";
+import { dirname, join as join2 } from "path";
 import { homedir } from "os";
-var BUDGET_PATH = join2(homedir(), ".claude", "cache", "context-budget.json");
 var HOOK_RELEVANCE = {
   "tldr-read-enforcer": ["implementation", "debug", "research"],
   "smart-search-router": ["implementation", "debug", "research"],

@@ -2,8 +2,8 @@
   "$schema": "https://raw.githubusercontent.com/anthropics/claude-code/main/schemas/plugin-marketplace.schema.json",
   "name": "vibecosystem",
   "displayName": "vibecosystem - AI Software Team",
-  "description": "138 specialized agents, 296 skills, 74 hooks with self-learning pipeline. The most comprehensive Claude Code ecosystem.",
-  "version": "3.3.0",
+  "description": "138 specialized agents, 296 skills and 74 hooks. Core is lean by default; memory and orchestration are opt-in.",
+  "version": "3.4.0",
   "author": {
     "name": "vibeeval",
     "url": "https://github.com/vibeeval",
@@ -53,7 +53,8 @@
     "Session compression (ACDE format, 10-30x token reduction)",
     "3-depth progressive recall",
     "Achievement system with XP and levels",
-    "6 preset profiles (minimal to all)",
+    "Core, quality, context, memory, orchestration and full profiles",
+    "Codex luna_worker adapter with gpt-5.6-luna/max",
     "Hook health monitoring"
   ],
   "compatibility": {

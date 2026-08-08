@@ -6,6 +6,12 @@ function charCount(text) {
   if (!text) return 0;
   return String(text).length;
 }
+function estimateTokens(chars) {
+  return Math.ceil(chars / 4);
+}
+function getUsage(event) {
+  return event.usage || event.token_usage || event.metadata?.usage;
+}
 function runHook() {
   let input;
   try {
@@ -26,13 +32,33 @@ function runHook() {
   }
   const inputChars = charCount(JSON.stringify(event.tool_input || {}));
   const outputChars = charCount(event.tool_output);
+  const usage = getUsage(event);
+  const providerInput = Number(usage?.input_tokens);
+  const providerOutput = Number(usage?.output_tokens);
+  const providerTotal = Number(usage?.total_tokens);
+  const hasProviderInput = Number.isFinite(providerInput);
+  const hasProviderOutput = Number.isFinite(providerOutput);
+  const hasProviderTotal = Number.isFinite(providerTotal);
+  const inputTokens = hasProviderInput ? providerInput : estimateTokens(inputChars);
+  const outputTokens = hasProviderOutput ? providerOutput : estimateTokens(outputChars);
+  const totalTokens = hasProviderTotal ? providerTotal : inputTokens + outputTokens;
+  const inputSource = hasProviderInput ? "provider" : "estimate";
+  const outputSource = hasProviderOutput ? "provider" : "estimate";
+  const totalSource = hasProviderTotal ? "provider" : inputSource === "estimate" && outputSource === "estimate" ? "estimate" : "mixed";
   const entry = {
     timestamp: (/* @__PURE__ */ new Date()).toISOString(),
     session_id: event.session_id || "unknown",
     tool: event.tool_name,
     input_chars: inputChars,
     output_chars: outputChars,
-    total_chars: inputChars + outputChars
+    total_chars: inputChars + outputChars,
+    input_tokens_est: inputTokens,
+    output_tokens_est: outputTokens,
+    total_tokens_est: totalTokens,
+    token_source: totalSource,
+    input_token_source: inputSource,
+    output_token_source: outputSource,
+    total_token_source: totalSource
   };
   if (event.tool_name === "Agent" && event.tool_input) {
     entry.agent = String(event.tool_input.subagent_type || "general-purpose");

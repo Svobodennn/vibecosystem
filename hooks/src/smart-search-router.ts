@@ -13,7 +13,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { execSync, spawnSync } from 'child_process';
 import { join } from 'path';
 import { queryDaemonSync, trackHookActivitySync } from './daemon-client.js';
-import { isRelevantForIntent } from './shared/context-budget.js';
+import { budgetHookOutput, isRelevantForIntent } from './shared/context-budget.js';
 import { startTimer, endTimer } from './shared/hook-profiler.js';
 
 interface GrepInput {
@@ -506,7 +506,7 @@ TLDR finds location + provides call graph + docstrings in one call.`;
       }
     };
     endTimer(_perfStart, 'smart-search-router', 'PreToolUse');
-    console.log(JSON.stringify(output));
+    console.log(JSON.stringify(budgetHookOutput(output, 'smart-search-router', 'PreToolUse:Grep')));
     return;
   }
 
@@ -536,7 +536,7 @@ TLDR: finds + call graph + docstrings + complexity`;
       }
     };
     endTimer(_perfStart, 'smart-search-router', 'PreToolUse');
-    console.log(JSON.stringify(output));
+    console.log(JSON.stringify(budgetHookOutput(output, 'smart-search-router', 'PreToolUse:Grep')));
     return;
   }
 
@@ -622,7 +622,7 @@ No code semantically similar to "${pattern}" found in the index.
     }
   };
   endTimer(_perfStart, 'smart-search-router', 'PreToolUse');
-  console.log(JSON.stringify(output));
+  console.log(JSON.stringify(budgetHookOutput(output, 'smart-search-router', 'PreToolUse:Grep')));
 }
 
 main().catch(console.error);

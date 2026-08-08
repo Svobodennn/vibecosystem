@@ -1,16 +1,6 @@
-# vibecosystem - Codex CLI configuration
+# vibecosystem - Codex CLI project configuration
 # https://github.com/vibeeval/vibecosystem
 
-model = "o4-mini"
-
-# Codex will read AGENTS.md as project instructions
-# It can also fall back to CLAUDE.md if present
+# Keep model, history, and skill discovery settings in the user's Codex
+# configuration. This project file only supplies project-document fallbacks.
 project_doc_fallback_filenames = ["AGENTS.md", "CLAUDE.md"]
-
-[history]
-# Persist conversation history
-persistence = "local"
-
-[skills]
-# Skills directory - Codex auto-discovers SKILL.md files here
-path = "skills"

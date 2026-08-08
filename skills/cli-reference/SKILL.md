@@ -70,7 +70,7 @@ claude --agents '{
     "description": "Expert code reviewer. Use proactively after code changes.",
     "prompt": "You are a senior code reviewer. Focus on code quality and security.",
     "tools": ["Read", "Grep", "Glob", "Bash"],
-    "model": "sonnet"
+    "model": "inherit"
   },
   "debugger": {
     "description": "Debugging specialist for errors and test failures.",
@@ -86,7 +86,7 @@ claude --agents '{
 | `description` | Yes | When to invoke this agent |
 | `prompt` | Yes | System prompt for behavior |
 | `tools` | No | Allowed tools (inherits all if omitted) |
-| `model` | No | `sonnet`, `haiku`, or `claude-opus-4-5-20251101` |
+| `model` | No | Claude adapter only; omit it or use `inherit` so the parent model remains authoritative |
 
 ### Key Insight
 When Lead uses Task tool, it auto-spawns from these definitions. No manual spawn needed.
@@ -101,14 +101,14 @@ When Lead uses Task tool, it auto-spawns from these definitions. No manual spawn
 
 **Use `--append-system-prompt`** for most cases - preserves Claude Code capabilities.
 
-## Model Selection
+## Model Selection (Claude adapter only)
 
 | Flag | Description | Example |
 |------|-------------|---------|
 | `--model` | Set model for session | `--model claude-sonnet-4-5` |
 | `--fallback-model` | Fallback if default overloaded | `--fallback-model sonnet` |
 
-Aliases: `sonnet`, `opus`, `haiku`
+Aliases: `sonnet`, `opus`, `haiku`. Codex and `luna_worker` do not read this router guidance.
 
 ## MCP Configuration
 
