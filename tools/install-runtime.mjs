@@ -18,6 +18,8 @@ import { filterHookManifest, resolveProfile } from './profile-runtime.mjs';
 
 const THIS_DIR = dirname(fileURLToPath(import.meta.url));
 const DEFAULT_REPO_DIR = join(THIS_DIR, '..');
+// tools/ also holds repo-only scripts (installer, exporter); only these ship.
+const RUNTIME_TOOLS = ['cdp-browser.mjs'];
 
 function walkFiles(dir) {
   if (!existsSync(dir)) return [];
@@ -223,6 +225,27 @@ export function installClaude({
       source: join(sourceProfiles, file),
       destination: join(claudeDir, 'profiles', file),
       relativePath: join('profiles', file),
+      ownedBefore, desired, force, dryRun, backupRoot, stats,
+    });
+  }
+
+  // Workflow scripts (council etc.) are invoked by name from ~/.claude/workflows.
+  for (const file of listMatchingFiles(join(repoDir, 'workflows'), '.js')) {
+    copyOwnedFile({
+      source: join(repoDir, 'workflows', file),
+      destination: join(claudeDir, 'workflows', file),
+      relativePath: join('workflows', file),
+      ownedBefore, desired, force, dryRun, backupRoot, stats,
+    });
+  }
+
+  // Standalone runtime tools agents shell out to. Repo-only tooling stays out.
+  for (const file of RUNTIME_TOOLS) {
+    if (!existsSync(join(repoDir, 'tools', file))) continue;
+    copyOwnedFile({
+      source: join(repoDir, 'tools', file),
+      destination: join(claudeDir, 'tools', file),
+      relativePath: join('tools', file),
       ownedBefore, desired, force, dryRun, backupRoot, stats,
     });
   }
