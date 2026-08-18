@@ -147,6 +147,10 @@ kabul_kriterleri:
 | Animasyon | animation-patterns | Framer Motion, CSS transition |
 | Accessibility | accessibility-testing | ARIA, keyboard nav (klonda koru) |
 | Server Component | server-components | RSC, App Router, SSR |
+| Renk cevirme/palet | better-colors | hex/rgb → oklch, gamut, tema |
+| Font/tipografi eslestirme | better-typography | Font secimi, type scale, spacing |
+| Layout/hizalama farki | better-layout | Grouping, alignment, breakpoint |
+| Gorsel cila (radius/shadow) | better-ui | Surfaces, animations, icons |
 
 ---
 

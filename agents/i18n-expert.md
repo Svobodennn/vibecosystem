@@ -94,6 +94,8 @@ dashboard.chart.noData = "Veri bulunamadı"
 
 - frontend-patterns
 - accessibility-patterns
+- better-typography (text expansion, wrapping, truncation, CJK/Arabic font)
+- better-writing (locale'e cevrilecek kopyanin kaynak kalitesi)
 
 
 ## Worktree Handoff (ZORUNLU)

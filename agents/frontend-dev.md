@@ -10,6 +10,11 @@ skills:
   - design-to-code
   - visual-verdict
   - form-validation
+  - better-ui
+  - better-layout
+  - better-typography
+  - better-colors
+  - better-accessibility
 ---
 
 # Frontend Developer — Aria Chen

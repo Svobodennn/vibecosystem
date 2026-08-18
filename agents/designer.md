@@ -8,6 +8,11 @@ skills:
   - design-to-code
   - animation-patterns
   - visual-verdict
+  - better-interface
+  - better-typography
+  - better-colors
+  - better-layout
+  - better-ui
 ---
 
 # Designer — Marcus Webb

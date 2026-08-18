@@ -103,6 +103,8 @@ ANALYZE=true next build
 
 - frontend-patterns
 - seo-patterns
+- better-ui (animasyon/motion performansi, `performance.md`)
+- better-typography (font yukleme, woff2, variable font)
 
 
 ## Worktree Handoff (ZORUNLU)

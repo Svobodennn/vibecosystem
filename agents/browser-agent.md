@@ -206,11 +206,43 @@ brew install curl-impersonate  # macOS
 
 ### Escalation Logic
 ```
-Standard fails (403/captcha) → Try Patchright
-Patchright fails → Try Camoufox (Firefox stealth)
-Camoufox fails → curl-impersonate + manual session
+Standard fails (403/captcha, fingerprint) → Patchright → Camoufox → curl-impersonate
+Connection RST / proxy-gated / cleared-session-only (the USER's own browser
+  reaches it but every fresh client can't) → Tier 0: CDP attach (below)
 All fail → Report to user, suggest manual access
 ```
+
+### Tier 0: Attach to the user's real Chrome (CDP) — proxy / cleared-session gates
+
+Some sites are unreachable by ANY fresh browser or CLI on this machine — not from
+fingerprinting, but because the machine reaches them only through a system/WPAD
+proxy or VPN that fresh Playwright/curl bypass, or the site only serves an
+already-cleared, logged-in session. Signature: `ERR_CONNECTION_RESET` / TCP RST at
+the TLS ClientHello, or a 401/403 the user's own browser does NOT get. Stealth tiers
+(Patchright/Camoufox/curl-impersonate) do NOT help — they still connect directly.
+
+Fix: drive the user's ALREADY-RUNNING Chrome over CDP (it has the proxy route +
+session). General tool, no MCP, runs from your Bash:
+
+```bash
+# One-time (user does this): launch Chrome with a dedicated profile + debug port.
+# Chrome 136+ blocks the flag on the default profile, so --user-data-dir is required.
+#   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+#     --remote-debugging-port=9222 --user-data-dir="$HOME/.chrome-cdp" &
+# then open the target site once (log in / clear any challenge). Profile persists.
+
+node ~/.claude/tools/cdp-browser.mjs pages                       # list open tabs
+node ~/.claude/tools/cdp-browser.mjs goto <url> [--match <substr>]
+node ~/.claude/tools/cdp-browser.mjs eval '<js; use return>' [--match <substr>] [--url <goto-first>]
+node ~/.claude/tools/cdp-browser.mjs text [--match <substr>]
+node ~/.claude/tools/cdp-browser.mjs screenshot <path> [--match <substr>] [--full]
+```
+
+`eval` runs JS in the real page context — inherits the proxy + cookies + session, so
+`fetch("/api/...")` behaves exactly like the app (send any headers the app sends).
+`--match <substr>` picks the tab whose URL contains the substring. The tool never
+closes the user's Chrome. If CDP isn't up it prints the exact launch command — relay
+that to the user rather than falling back to a fresh browser (which will just RST again).
 
 ## Rules
 

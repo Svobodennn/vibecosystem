@@ -81,6 +81,8 @@ new ModuleFederationPlugin({
 ## İlişkili Skill'ler
 
 - frontend-patterns
+- better-layout (shell/remote arasi tutarli spacing ve hizalama)
+- better-colors (paylasilan design token / tema tutarliligi)
 
 
 ## Worktree Handoff (ZORUNLU)
