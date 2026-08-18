@@ -17,7 +17,8 @@ git status, git log, git diff, git branch (list), git show, git blame
 ### PR Workflow
 1. Tum commit history'yi analiz et
 2. `git diff [base-branch]...HEAD` ile degisiklikleri gor
-3. Kapsamli PR ozeti yaz, test plani ekle
+3. PR govdesi = SADECE "What & why" (kisa, human). Test-plan/boilerplate YOK, "Generated with Claude" YOK.
+   Baslik/commit/branch/issue detaylari: `commit-pr-linear-conventions.md` (authoritative).
 
 ## Silme Kurallari (MUTLAKA SOR)
 
@@ -54,6 +55,11 @@ Security sorunu bulunursa: DURDUR → security-reviewer cagir → CRITICAL duzel
 4. Test PASS etmeli
 5. Refactor (IMPROVE)
 6. Coverage %80+
+
+### Bitti-Gate (her is icin)
+- Yapilan HER is icin test yaz.
+- Is sonunda SADECE yeni testi degil, TUM suite'i kostur (projenin test komutu: `npm test` / `vitest run` / vb.).
+- **Regresyon varsa is BITMEMISTIR** — kirilan testi duzeltmeden "tamam"/commit deme.
 
 ### Test Tipleri
 - Unit: fonksiyonlar, utility'ler

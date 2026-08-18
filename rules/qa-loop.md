@@ -38,10 +38,15 @@ Her task icin su kontroller yapilir:
 - Tekrar QA'ye gonder
 
 ### Deneme 2 basarisiz:
+- **ONCE: orijinal Assumptions'a don — hangi varsayim yanlisti?**
+  Iki kez ayni sekilde fail etmek genelde plan hatasi degil varsayim hatasidir.
+  Yanlis varsayimi duzeltmeden retry gondermek 3. denemeyi de yakar.
+  Curuyen varsayim bulunursa `@self-learner` ile kaydet
+  (`pre-implementation-contract.md` §5).
 - Birikimli feedback gonder
 - Agent dogru secim mi? Farkli agent daha uygun olabilir
 - Daha fazla context ekle
-- Tekrar QA
+- Tekrar QA (veya `council.md` esigi karsilaniyorsa 3. retry yerine konsey)
 
 ### Deneme 3 basarisiz → ESCALATION:
 - Escalation mesaji gonder (handoff-templates #4)

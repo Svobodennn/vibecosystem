@@ -65,9 +65,16 @@ interface Repository<T> {
 }
 ```
 
+## Yorumlar
+
+AZ yorum. Gerekiyorsa TEK satir, "neden" odakli.
+- "Ne yapiyor" yorumu YAZMA — iyi isimlendirme yeterli.
+- Yorum, kodun anlatamadigi "neden"i aciklar (is kurali, tuzak, workaround sebebi).
+
 ## Kalite Checklist
 
 - [ ] Okunabilir, iyi isimlendirilmis
+- [ ] Yorumlar sade, "neden" odakli (ne-yapiyor yorumu yok)
 - [ ] console.log yok
 - [ ] Hardcoded deger yok
 - [ ] Mutation yok

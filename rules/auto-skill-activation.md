@@ -93,6 +93,11 @@ kullanici buyuk scope'lu bir is istedginde (yeni feature, modul, sistem):
 3. Plan onaylaninca **@kraken** ile implement et
 4. Swarm gerekiyorsa `/swarm` workflow'unu baslat
 
+Plan mode'un ICERIGI serbest degil: `pre-implementation-contract.md` kademesini
+sec (buyuk is genelde **Full**) ve plan cikti olarak Goal + Blocking (0-1) +
+Assumptions (max 5) + Plan uret. Reddedilen alternatifi adlandirmak her kademede
+zorunlu.
+
 ## COMMIT ISTENDIGINDE (Otomatik tetiklenir)
 
 1. Once **@verifier** calistir

@@ -22,6 +22,13 @@ Subagent'larin aldigi tool hatalari artik kaybolmaz. Dort katmanli sistem (2026-
    iddia sayilmaz. Ledger: `unverified_claim`. Kullanicinin "agent GREEN beyanina
    guvenme" disiplini hook katmaninda otomatiklesmis halidir.
 
+2b-2. **Wrong Assumption** (elle, hook YOK): `pre-implementation-contract.md` §3'te
+   yazilan bir varsayim implementasyon sirasinda curuduyse ledger'a `wrong_assumption`
+   olarak dusulur (agent, varsayim metni, gercekte ne cikti). Hook yazilmadi —
+   varsayimlar serbest metin, otomatik tespit edilemez; parent veya agent elle kaydeder.
+   Amac telemetri degil birikim: zamanla "bu codebase'de hangi varsayimlar tutmuyor"
+   verisi cikar. Yeterli kayit birikmeden metrik olarak yorumlama.
+
 2c. **Retry Storm**: Ayni komut ayni task icinde 3+ kez fail ettiyse →
    `retry_storm` kaydi. Sonunda gecse bile kirilganlik sinyalidir; agent
    korlemesine retry yerine yaklasim degistirmeli/parent'a bildirmeli.

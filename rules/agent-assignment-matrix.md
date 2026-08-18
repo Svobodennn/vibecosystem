@@ -27,6 +27,7 @@ Hangi is hangi agent'a gider. Maestro ve /swarm bu tabloyu referans alir.
 | Test data/fixture | mocksmith | tdd-guide | arbiter |
 | Bug reproduction | replay | sleuth | qa-engineer |
 | GraphQL API | graphql-expert | backend-dev | code-reviewer |
+| Bannerlord mod (C#/BUTR) | bannerlord-expert | kraken | code-reviewer + verifier |
 | WebSocket/realtime | websocket-expert | backend-dev | code-reviewer |
 | Redis/caching | redis-expert | backend-dev | code-reviewer |
 | Elasticsearch/search | elasticsearch-expert | backend-dev | code-reviewer |
