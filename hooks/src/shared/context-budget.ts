@@ -4,13 +4,28 @@
  * Her event batch icin MAX_PER_EVENT_CHARS, session genelinde MAX_SESSION_CHARS limiti var.
  */
 import { readFileSync, writeFileSync, existsSync, mkdirSync, statSync } from 'fs';
-import { join } from 'path';
+import { dirname, join } from 'path';
 import { homedir } from 'os';
 
-const MAX_PER_EVENT_CHARS = 8000;   // ~2K token per event batch
-const MAX_SESSION_CHARS = 50000;    // ~12K token per session total
+const DEFAULT_LIMITS = {
+  perEventChars: 4000,
+  sessionChars: 12000,
+};
 
-const BUDGET_PATH = join(homedir(), '.claude', 'cache', 'context-budget.json');
+const FULL_LIMITS = {
+  perEventChars: 8000,
+  sessionChars: 50000,
+};
+
+function budgetPath(): string {
+  return process.env.VIBECO_CONTEXT_BUDGET_PATH
+    || join(homedir(), '.claude', 'cache', 'context-budget.json');
+}
+
+function runtimePath(): string {
+  return process.env.VIBECO_RUNTIME_PATH
+    || join(homedir(), '.claude', 'vibecosystem-runtime.json');
+}
 
 interface BudgetState {
   session_id: string;
@@ -20,10 +35,34 @@ interface BudgetState {
   updated_at: string;
 }
 
+interface BudgetLimits {
+  perEventChars: number;
+  sessionChars: number;
+}
+
+function getBudgetLimits(): BudgetLimits {
+  try {
+    const path = runtimePath();
+    if (existsSync(path)) {
+      const runtime = JSON.parse(readFileSync(path, 'utf-8'));
+      const perEventChars = Number(runtime.contextBudget?.perEventChars);
+      const sessionChars = Number(runtime.contextBudget?.sessionChars);
+      if (Number.isFinite(perEventChars) && Number.isFinite(sessionChars)) {
+        return {
+          perEventChars: Math.max(0, perEventChars),
+          sessionChars: Math.max(0, sessionChars),
+        };
+      }
+    }
+  } catch { /* use core defaults */ }
+  return DEFAULT_LIMITS;
+}
+
 function loadBudget(): BudgetState {
   try {
-    if (existsSync(BUDGET_PATH)) {
-      return JSON.parse(readFileSync(BUDGET_PATH, 'utf-8'));
+    const path = budgetPath();
+    if (existsSync(path)) {
+      return JSON.parse(readFileSync(path, 'utf-8'));
     }
   } catch { /* fresh start */ }
   return {
@@ -37,9 +76,10 @@ function loadBudget(): BudgetState {
 
 function saveBudget(budget: BudgetState): void {
   try {
-    const cacheDir = join(homedir(), '.claude', 'cache');
+    const path = budgetPath();
+    const cacheDir = dirname(path);
     if (!existsSync(cacheDir)) mkdirSync(cacheDir, { recursive: true });
-    writeFileSync(BUDGET_PATH, JSON.stringify(budget, null, 2));
+    writeFileSync(path, JSON.stringify(budget, null, 2));
   } catch { /* skip */ }
 }
 
@@ -48,9 +88,10 @@ function saveBudget(budget: BudgetState): void {
  */
 export function canInject(hookName: string, eventKey: string, charCount: number): boolean {
   const budget = loadBudget();
-  if (budget.total_chars + charCount > MAX_SESSION_CHARS) return false;
+  const limits = getBudgetLimits();
+  if (budget.total_chars + charCount > limits.sessionChars) return false;
   const eventChars = budget.per_event[eventKey] || 0;
-  if (eventChars + charCount > MAX_PER_EVENT_CHARS) return false;
+  if (eventChars + charCount > limits.perEventChars) return false;
   return true;
 }
 
@@ -72,9 +113,10 @@ export function recordInjection(hookName: string, eventKey: string, charCount: n
  */
 export function tryInject(hookName: string, eventKey: string, charCount: number): boolean {
   const budget = loadBudget();
-  if (budget.total_chars + charCount > MAX_SESSION_CHARS) return false;
+  const limits = getBudgetLimits();
+  if (budget.total_chars + charCount > limits.sessionChars) return false;
   const eventChars = budget.per_event[eventKey] || 0;
-  if (eventChars + charCount > MAX_PER_EVENT_CHARS) return false;
+  if (eventChars + charCount > limits.perEventChars) return false;
 
   budget.total_chars += charCount;
   budget.per_hook[hookName] = (budget.per_hook[hookName] || 0) + charCount;
@@ -83,6 +125,71 @@ export function tryInject(hookName: string, eventKey: string, charCount: number)
   saveBudget(budget);
   return true;
 }
+
+/**
+ * Reserve the available budget for a hook output and return a bounded value.
+ * Hooks can use this at their final output boundary, which keeps the budget
+ * enforcement consistent even when the context was assembled in several steps.
+ */
+export function budgetContext(hookName: string, eventKey: string, context: string): string {
+  if (!context) return '';
+  const budget = loadBudget();
+  const limits = getBudgetLimits();
+  const eventRemaining = Math.max(0, limits.perEventChars - (budget.per_event[eventKey] || 0));
+  const sessionRemaining = Math.max(0, limits.sessionChars - budget.total_chars);
+  const available = Math.min(eventRemaining, sessionRemaining);
+  if (available <= 0) return '';
+
+  const bounded = context.length > available
+    ? `${context.slice(0, Math.max(0, available - 18))}\n[truncated]`
+    : context;
+  return tryInject(hookName, eventKey, bounded.length) ? bounded : '';
+}
+
+/** Apply the budget to a Claude hook result without changing its other fields. */
+export function budgetHookOutput<T extends Record<string, any>>(
+  output: T,
+  hookName: string,
+  eventKey: string,
+): T {
+  const root = output as Record<string, any>;
+  if (root.additionalContext) {
+    const context = budgetContext(hookName, eventKey, String(root.additionalContext));
+    if (context) root.additionalContext = context;
+    else delete root.additionalContext;
+  }
+
+  const hookOutput = output.hookSpecificOutput;
+  if (hookOutput?.additionalContext) {
+    const context = budgetContext(hookName, eventKey, String(hookOutput.additionalContext));
+    if (context) {
+      hookOutput.additionalContext = context;
+    } else {
+      delete hookOutput.additionalContext;
+      if (Object.keys(hookOutput).length === 0) delete output.hookSpecificOutput;
+    }
+  }
+  if (hookOutput?.permissionDecisionReason) {
+    const reason = budgetContext(hookName, `${eventKey}:reason`, String(hookOutput.permissionDecisionReason));
+    if (reason) hookOutput.permissionDecisionReason = reason;
+    else delete hookOutput.permissionDecisionReason;
+  }
+  if (hookOutput?.updatedInput?.prompt) {
+    const prompt = budgetContext(hookName, `${eventKey}:prompt`, String(hookOutput.updatedInput.prompt));
+    if (prompt) hookOutput.updatedInput.prompt = prompt;
+    else delete hookOutput.updatedInput.prompt;
+  }
+
+  for (const field of ['message', 'systemMessage']) {
+    if (typeof root[field] !== 'string') continue;
+    const message = budgetContext(hookName, `${eventKey}:${field}`, root[field]);
+    if (message) root[field] = message;
+    else delete root[field];
+  }
+  return output;
+}
+
+export { DEFAULT_LIMITS, FULL_LIMITS, getBudgetLimits };
 
 /**
  * Session baslangicinda budget'i sifirla.

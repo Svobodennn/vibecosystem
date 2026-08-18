@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-vibecosystem extends Claude Code with four component types that work together through implicit coordination: **hooks** observe tool calls and session events, **agents** execute specialized tasks, **skills** provide domain knowledge, and **rules** shape session-wide behavior. There is no RPC, no message bus, no service discovery. The coordination mechanism is context injection -- hooks read the environment, decide what context is relevant, and inject it into Claude Code's prompt window where agents and skills can act on it.
+vibecosystem extends Claude Code with four component types that work together through implicit coordination: **hooks** observe tool calls and session events, **agents** execute specialized tasks, **skills** provide domain knowledge, and **rules** shape session-wide behavior. Codex uses a separate bounded adapter: the repository-scoped `luna_worker` is the single model authority and runs `gpt-5.6-luna` with `max` reasoning. Claude-only agent frontmatter may still name `opus` or `sonnet`; Codex never reads those fields. There is no RPC, no message bus, no service discovery. The coordination mechanism is context injection -- hooks read the environment, decide what context is relevant, and inject it into Claude Code's prompt window where agents and skills can act on it.
 
 ## 2. Component Interaction
 
@@ -100,7 +100,7 @@ writeFileSync('~/.claude/cache/current-intent.json', JSON.stringify(intent));
 ---
 name: scout
 description: Codebase exploration and pattern finding
-model: sonnet
+model: sonnet # Claude adapter only; Codex uses luna_worker
 tools: [Read, Grep, Glob, Bash]
 ---
 
@@ -115,7 +115,7 @@ You are a specialized internal research agent...
 |-------|----------|--------|
 | `name` | Yes | Agent identifier |
 | `description` | Yes | One-line purpose |
-| `model` | No | `sonnet` (default) or `opus` |
+| `model` | No | Claude adapter only: `sonnet` (default) or `opus` |
 | `tools` | No | Subset of `[Read, Write, Edit, Bash, Grep, Glob, Task]` |
 
 ### Agent Routing
@@ -133,7 +133,7 @@ The `agent-assignment-matrix` rule (in `rules/agent-assignment-matrix.md`) maps 
 
 ### Collaboration Chains
 
-Agents do not call each other directly. They are chained by the orchestrator (maestro) or by rules:
+Claude agents do not call each other directly. They are chained by the orchestrator (maestro) or by rules. The Codex `luna_worker` does not spawn subagents or swarm workers unless the user explicitly asks:
 
 ```
 scout (explore) -> architect (design) -> kraken (implement) -> code-reviewer (review) -> verifier (validate)
@@ -230,15 +230,14 @@ Profiles define which agents, skills, and hooks are active. This controls token 
 
 ### Location
 
-7 JSON files in `profiles/`:
+The canonical runtime manifest is `profiles/runtime-manifest.json`; the older JSON profiles remain as compatibility fallbacks:
 
 ```json
-// profiles/minimal.json
+// profiles/runtime-manifest.json
 {
-  "name": "minimal",
-  "description": "Core agents only - review, test, verify. Lowest token usage.",
-  "agents": ["architect", "code-reviewer", "kraken", "planner", "scout", ...],
-  "skills": ["build", "cli-reference", "coding-standards", "commit", ...]
+  "defaultProfile": "core",
+  "aliases": { "minimal": "core", "smart": "core", "all": "full" },
+  "profiles": { "core": { "contextBudget": { "perEventChars": 4000, "sessionChars": 12000 } } }
 }
 ```
 
@@ -246,20 +245,26 @@ Profiles define which agents, skills, and hooks are active. This controls token 
 
 | Profile | Purpose | Token Impact |
 |---------|---------|-------------|
-| `minimal` | Core agents only | Lowest |
+| `core` | Bounded agents, skills and safety hooks (default) | Lowest |
+| `quality` | Core plus focused verification hooks | Low |
+| `context` | Core plus targeted context retrieval | Low-Medium |
+| `memory` | Core plus opt-in recall and learning | Medium |
+| `orchestration` | Core plus explicit swarm/orchestration tools | Medium-High |
+| `minimal` | Alias for `core` | Lowest |
 | `frontend` | React/Next.js/CSS focused | Low-Medium |
 | `backend` | API/DB/Auth focused | Low-Medium |
 | `fullstack` | Frontend + Backend combined | Medium |
 | `devops` | CI/CD, Docker, K8s, Terraform | Medium |
-| `smart` | Everything enabled, reduced plugin injection budgets | Medium-High |
-| `all` | Everything enabled (default) | Highest |
+| `smart` | Alias for `core` | Lowest |
+| `full` | Everything enabled, legacy budgets preserved | Highest |
+| `all` | Alias for `full` | Highest |
 
 ### How It Works
 
-1. `vibeco profile frontend` writes disabled items to `~/.claude/plugin-config.json`
-2. Every hook imports `isHookEnabled()` from `shared/plugin-check.ts`
-3. If the hook is not in the active profile, it exits immediately with `process.exit(0)`
-4. Skills follow the same pattern via `isSkillEnabled()`
+1. `install.sh` or `vibeco profile <name>` resolves `profiles/runtime-manifest.json`.
+2. The installer copies only the selected owned files and writes `~/.claude/vibecosystem-runtime.json`.
+3. `tools/register-hooks.mjs` registers only the selected hook commands in `settings.json`.
+4. `--prune` removes only unchanged paths recorded in the ownership manifest; unowned files are preserved.
 
 ## 8. Directory Structure
 
@@ -333,7 +338,8 @@ vibeco list agents --search security # Filter by name/description
 vibeco search <term>                 # Search agents and skills by keyword
 vibeco dashboard                     # Start monitoring dashboard (port 3848)
 vibeco doctor                        # Health check (hooks built? DB up? profiles valid?)
-vibeco profile <name>                # Set active profile (minimal, frontend, backend, etc.)
+vibeco profile <name>                # Set active profile (core, context, full, etc.)
+vibeco effective-config              # Show model authority, profile and budgets
 vibeco update                        # Pull latest & reinstall
 ```
 
@@ -347,7 +353,7 @@ vibecosystem stats
   Skills     296
   Hooks      74
   Rules      20
-  Profile    all
+  Profile    core
 ```
 
 ## 10. For Contributors
@@ -360,7 +366,7 @@ Create `agents/my-agent.md`:
 ---
 name: my-agent
 description: What this agent does in one line
-model: sonnet
+model: sonnet # Claude adapter only
 tools: [Read, Grep, Glob, Bash]
 ---
 

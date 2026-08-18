@@ -9,8 +9,8 @@ description: OpenAI Codex CLI + Claude Code (Hizir) birlikte kullanim rehberi. I
 
 | Yetenek | Codex CLI | Claude Code (Hizir) | Kazanan |
 |---------|-----------|---------------------|---------|
-| Hiz | Hizli (o4-mini) | Orta (opus) | Codex |
-| Maliyet | Ucuz (~$1.10/1M input) | Pahalı (opus pricing) | Codex |
+| Hiz | `gpt-5.6-luna` / `max` | Claude adapter modeline bagli | Codex |
+| Maliyet | Worker modeline ve kullanimina bagli | Claude pricing | Adapter'a bagli |
 | Context window | Sinirli | 1M token | Claude Code |
 | Multi-agent | YOK (tek agent) | 134+ agent swarm | Claude Code |
 | Hook/self-learning | YOK | Tam destek (66 hook) | Claude Code |
@@ -192,8 +192,8 @@ codex -q "task aciklamasi"
 # Full auto (onay istemeden yapar)
 codex --approval-mode full-auto -q "task"
 
-# Belirli model
-codex --model o4-mini -q "task"
+# Model secimi luna_worker sozlesmesinden gelir; burada ikinci bir router yok
+codex -q "task"
 
 # Quiet mode (CI/CD icin)
 codex --quiet -q "task"

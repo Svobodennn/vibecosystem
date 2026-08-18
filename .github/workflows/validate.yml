@@ -65,10 +65,9 @@ jobs:
           check marketplace.json "\"hooks\": ${hooks}"
           check bin/cli.mjs "${agents} agents"
           check bin/cli.mjs "${skills} skills"
-          check bin/cli.mjs "${hooks} hooks"
-          check install.sh "${skills} skills"
-          check install.sh "${hooks} hooks"
-          check install-remote.sh "${agents} agents, ${skills} skills"
+          check install.sh "core"
+          check install.sh "full"
+          check install-remote.sh "full"
           if [ "$fail" -eq 1 ]; then
             echo ""
             echo "Documented counts drifted from the filesystem."

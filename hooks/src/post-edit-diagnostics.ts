@@ -8,6 +8,7 @@
 
 import { readFileSync } from 'fs';
 import { queryDaemonSync, trackHookActivitySync } from './daemon-client.js';
+import { budgetHookOutput } from './shared/context-budget.js';
 
 interface HookInput {
   tool_name: string;
@@ -137,7 +138,7 @@ async function main() {
         additionalContext: lines.join('\n')
       }
     };
-    console.log(JSON.stringify(output));
+    console.log(JSON.stringify(budgetHookOutput(output, 'post-edit-diagnostics', 'PostToolUse:Edit|Write')));
   } catch {
     // Daemon error - silently ignore (graceful degradation)
     console.log('{}');

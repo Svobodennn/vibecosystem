@@ -2,37 +2,63 @@
 import { appendFileSync, mkdirSync, existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
-function estimateTokens(text) {
+function charCount(text) {
   if (!text) return 0;
-  return Math.ceil(String(text).length / 4);
+  return String(text).length;
 }
-async function main() {
+function estimateTokens(chars) {
+  return Math.ceil(chars / 4);
+}
+function getUsage(event) {
+  return event.usage || event.token_usage || event.metadata?.usage;
+}
+function runHook() {
   let input;
   try {
-    input = readFileSync("/dev/stdin", "utf-8");
+    input = readFileSync(0, "utf-8");
   } catch {
-    process.exit(0);
+    return;
   }
   let event;
   try {
     event = JSON.parse(input);
   } catch {
-    process.exit(0);
+    return;
   }
   const claudeDir = join(homedir(), ".claude");
   const logFile = join(claudeDir, "token-usage.jsonl");
   if (!existsSync(claudeDir)) {
     mkdirSync(claudeDir, { recursive: true });
   }
-  const inputTokens = estimateTokens(JSON.stringify(event.tool_input || {}));
-  const outputTokens = estimateTokens(event.tool_output);
+  const inputChars = charCount(JSON.stringify(event.tool_input || {}));
+  const outputChars = charCount(event.tool_output);
+  const usage = getUsage(event);
+  const providerInput = Number(usage?.input_tokens);
+  const providerOutput = Number(usage?.output_tokens);
+  const providerTotal = Number(usage?.total_tokens);
+  const hasProviderInput = Number.isFinite(providerInput);
+  const hasProviderOutput = Number.isFinite(providerOutput);
+  const hasProviderTotal = Number.isFinite(providerTotal);
+  const inputTokens = hasProviderInput ? providerInput : estimateTokens(inputChars);
+  const outputTokens = hasProviderOutput ? providerOutput : estimateTokens(outputChars);
+  const totalTokens = hasProviderTotal ? providerTotal : inputTokens + outputTokens;
+  const inputSource = hasProviderInput ? "provider" : "estimate";
+  const outputSource = hasProviderOutput ? "provider" : "estimate";
+  const totalSource = hasProviderTotal ? "provider" : inputSource === "estimate" && outputSource === "estimate" ? "estimate" : "mixed";
   const entry = {
     timestamp: (/* @__PURE__ */ new Date()).toISOString(),
     session_id: event.session_id || "unknown",
     tool: event.tool_name,
+    input_chars: inputChars,
+    output_chars: outputChars,
+    total_chars: inputChars + outputChars,
     input_tokens_est: inputTokens,
     output_tokens_est: outputTokens,
-    total_est: inputTokens + outputTokens
+    total_tokens_est: totalTokens,
+    token_source: totalSource,
+    input_token_source: inputSource,
+    output_token_source: outputSource,
+    total_token_source: totalSource
   };
   if (event.tool_name === "Agent" && event.tool_input) {
     entry.agent = String(event.tool_input.subagent_type || "general-purpose");
@@ -41,16 +67,9 @@ async function main() {
     appendFileSync(logFile, JSON.stringify(entry) + "\n");
   } catch {
   }
-  try {
-    const { createConnection } = await import("node:net");
-    const client = createConnection({ port: 3847, host: "127.0.0.1" }, () => {
-      client.write(JSON.stringify({ type: "token_usage", ...entry }));
-      client.end();
-    });
-    client.on("error", () => {
-    });
-  } catch {
-  }
-  console.log(JSON.stringify({ result: "approve" }));
 }
-main().catch(() => process.exit(0));
+try {
+  runHook();
+} catch {
+  process.exit(0);
+}

@@ -1,100 +1,683 @@
 #!/bin/bash
 # vibecosystem installer for Codex CLI
-# Copies skills to ~/.codex/skills/ where Codex auto-discovers them
+# Installs skills into ~/.agents/skills/ and, when requested, the luna worker
+# into ~/.codex/agents/. Existing user files are preserved by default.
 #
-# Usage: ./install-codex.sh [--force]
+# Usage: ./install-codex.sh [options]
 
-set -e
+set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
-CODEX_DIR="$HOME/.codex"
-FORCE=false
-ADDED=0
-SKIPPED=0
 
-for arg in "$@"; do
-  case $arg in
-    --force) FORCE=true ;;
+if [ -z "${HOME:-}" ] || [ "$HOME" = "/" ]; then
+  echo "ERROR: HOME must be set to a non-root directory." >&2
+  exit 2
+fi
+
+HOME_DIR="$HOME"
+CODEX_DIR="$HOME_DIR/.codex"
+CODEX_AGENT_DIR="$CODEX_DIR/agents"
+SKILLS_ROOT="$HOME_DIR/.agents"
+SKILLS_DIR="$SKILLS_ROOT/skills"
+MANIFEST="$SKILLS_ROOT/.vibecosystem-codex-skills"
+BACKUP_ROOT="$SKILLS_ROOT/vibecosystem-backups"
+LUNA_SOURCE="$REPO_DIR/.codex/agents/luna-worker.toml"
+LUNA_TARGET="$CODEX_AGENT_DIR/luna-worker.toml"
+
+FORCE=false
+DRY_RUN=false
+PRUNE=false
+INSTALL_LUNA_WORKER=false
+VALIDATE_LUNA_WORKER=false
+VALIDATION_ONLY=false
+NON_INTERACTIVE=false
+PROFILE="core"
+PROFILE_EXPLICIT=false
+
+ADDED=0
+UPDATED=0
+SKIPPED=0
+PRUNED=0
+PRESERVED=0
+LUNA_INSTALLED=false
+LUNA_SKIPPED=false
+MANIFEST_DIRTY=false
+MANIFEST_BACKED_UP=false
+BACKUP_DIR=""
+
+# This is the Codex core profile. It intentionally stays explicit so a repo
+# expansion cannot silently change the small, predictable install profile.
+CORE_SKILLS=(
+  build
+  cli-reference
+  coding-standards
+  commit
+  completion-check
+  dead-code
+  debug
+  explore
+  factcheck-guard
+  fix
+  git-commits
+  help
+  modular-code
+  notepad-system
+  observe-before-editing
+  plan-agent
+  project-detect
+  refactor
+  review
+  search-router
+  search-tools
+  security
+  security-review
+  strategic-compact
+  system-overview
+  tdd
+  tdd-workflow
+  test
+  test-strategy
+  tour
+  verification-loop
+  wiring
+)
+
+usage() {
+  cat <<'EOF'
+Usage: ./install-codex.sh [options]
+
+Install vibecosystem skills for Codex CLI into ~/.agents/skills/.
+
+Options:
+  --profile core|full       Install the explicit core allowlist or all skills
+  --install-luna-worker     Install .codex/agents/luna-worker.toml globally
+  --validate-luna-worker    Validate the canonical luna worker contract
+  --dry-run                 Show actions without writing user files
+  --prune                   Remove only unchanged skills owned by this installer
+  --force                   Replace existing destinations after making a backup
+  --non-interactive         Skip the confirmation prompt
+  --help, -h                Show this help
+
+The default is a core, merge-style skill installation. Existing skills are
+skipped unless --force is supplied. AGENTS.md is never copied to a global
+location; put project instructions in the project that Codex is running in.
+EOF
+}
+
+die() {
+  echo "ERROR: $*" >&2
+  exit 2
+}
+
+is_valid_skill_name() {
+  case "$1" in
+    ""|*[!A-Za-z0-9._-]*) return 1 ;;
+    *) return 0 ;;
+  esac
+}
+
+assert_not_symlink() {
+  local path="$1"
+  if [ -L "$path" ]; then
+    die "refusing to follow symlink: $path"
+  fi
+}
+
+assert_safe_existing_paths() {
+  assert_not_symlink "$SKILLS_ROOT"
+  assert_not_symlink "$SKILLS_DIR"
+  assert_not_symlink "$CODEX_DIR"
+  assert_not_symlink "$CODEX_AGENT_DIR"
+  assert_not_symlink "$MANIFEST"
+  assert_not_symlink "$BACKUP_ROOT"
+  assert_not_symlink "$LUNA_TARGET"
+}
+
+ensure_directory() {
+  local path="$1"
+  assert_not_symlink "$path"
+  if [ -e "$path" ] && [ ! -d "$path" ]; then
+    die "expected a directory but found another file type: $path"
+  fi
+  if [ "$DRY_RUN" = false ]; then
+    mkdir -p "$path"
+  fi
+}
+
+selected_skill_names() {
+  if [ "$PROFILE" = "core" ]; then
+    printf '%s\n' "${CORE_SKILLS[@]}"
+  else
+    find "$REPO_DIR/skills" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | LC_ALL=C sort
+  fi
+}
+
+selected_contains() {
+  local needle="$1"
+  local skill_name
+  for skill_name in "${SELECTED_SKILLS[@]}"; do
+    [ "$skill_name" = "$needle" ] && return 0
+  done
+  return 1
+}
+
+MANAGED_NAMES=()
+MANAGED_HASHES=()
+
+set_manifest_entry() {
+  local name="$1"
+  local hash="$2"
+  local i=0
+  while [ "$i" -lt "${#MANAGED_NAMES[@]}" ]; do
+    if [ "${MANAGED_NAMES[$i]}" = "$name" ]; then
+      MANAGED_HASHES[i]="$hash"
+      MANIFEST_DIRTY=true
+      return
+    fi
+    i=$((i + 1))
+  done
+  MANAGED_NAMES[${#MANAGED_NAMES[@]}]="$name"
+  MANAGED_HASHES[${#MANAGED_HASHES[@]}]="$hash"
+  MANIFEST_DIRTY=true
+}
+
+remove_manifest_entry() {
+  local name="$1"
+  local i=0
+  local found=false
+  local new_names=()
+  local new_hashes=()
+  while [ "$i" -lt "${#MANAGED_NAMES[@]}" ]; do
+    if [ "${MANAGED_NAMES[$i]}" = "$name" ]; then
+      found=true
+    else
+      new_names[${#new_names[@]}]="${MANAGED_NAMES[$i]}"
+      new_hashes[${#new_hashes[@]}]="${MANAGED_HASHES[$i]}"
+    fi
+    i=$((i + 1))
+  done
+  if [ "$found" = true ]; then
+    MANAGED_NAMES=("${new_names[@]}")
+    MANAGED_HASHES=("${new_hashes[@]}")
+    MANIFEST_DIRTY=true
+  fi
+}
+
+load_manifest() {
+  [ -e "$MANIFEST" ] || return 0
+  [ -f "$MANIFEST" ] || die "ownership manifest is not a regular file: $MANIFEST"
+
+  local name
+  local hash
+  while IFS=$'\t' read -r name hash; do
+    [ -n "$name" ] || continue
+    case "$name" in
+      \#*) continue ;;
+    esac
+    is_valid_skill_name "$name" || die "invalid skill name in ownership manifest: $name"
+    [ -n "$hash" ] || die "missing hash for $name in ownership manifest"
+    set_manifest_entry "$name" "$hash"
+  done < "$MANIFEST"
+  MANIFEST_DIRTY=false
+}
+
+HASH_MODE="none"
+if command -v shasum >/dev/null 2>&1; then
+  HASH_MODE="shasum"
+elif command -v sha256sum >/dev/null 2>&1; then
+  HASH_MODE="sha256sum"
+fi
+
+hash_file() {
+  case "$HASH_MODE" in
+    shasum) shasum -a 256 "$1" ;;
+    sha256sum) sha256sum "$1" ;;
+    *) printf 'unverified  %s\n' "$1" ;;
+  esac
+}
+
+hash_skill() {
+  local directory="$1"
+  if [ "$HASH_MODE" = "none" ]; then
+    printf 'unverified\n'
+    return 0
+  fi
+  if [ "$HASH_MODE" = "shasum" ]; then
+    (
+      cd "$directory"
+      find . -type f -print | LC_ALL=C sort | while IFS= read -r file; do
+        hash_file "$file"
+      done
+    ) | shasum -a 256 | awk '{print $1}'
+  else
+    (
+      cd "$directory"
+      find . -type f -print | LC_ALL=C sort | while IFS= read -r file; do
+        hash_file "$file"
+      done
+    ) | sha256sum | awk '{print $1}'
+  fi
+}
+
+ensure_backup_directory() {
+  [ "$DRY_RUN" = true ] && return 0
+  assert_not_symlink "$SKILLS_ROOT"
+  assert_not_symlink "$BACKUP_ROOT"
+  if [ -e "$BACKUP_ROOT" ] && [ ! -d "$BACKUP_ROOT" ]; then
+    die "backup path is not a directory: $BACKUP_ROOT"
+  fi
+  mkdir -p "$BACKUP_ROOT"
+  if [ -z "$BACKUP_DIR" ]; then
+    local stamp
+    local candidate
+    local suffix=0
+    stamp="$(date +%Y%m%d-%H%M%S)"
+    candidate="$BACKUP_ROOT/$stamp-$$"
+    while [ -e "$candidate" ]; do
+      suffix=$((suffix + 1))
+      candidate="$BACKUP_ROOT/$stamp-$$-$suffix"
+    done
+    mkdir -p "$candidate"
+    BACKUP_DIR="$candidate"
+  fi
+}
+
+backup_existing_path() {
+  local source="$1"
+  local label="$2"
+  local candidate
+  local suffix=0
+
+  [ -e "$source" ] || return 0
+  [ -L "$source" ] && die "refusing to back up symlink: $source"
+  if [ "$DRY_RUN" = true ]; then
+    echo "  [dry-run] would back up $source under $BACKUP_ROOT"
+    return 0
+  fi
+
+  ensure_backup_directory
+  candidate="$BACKUP_DIR/$label"
+  mkdir -p "$(dirname "$candidate")"
+  while [ -e "$candidate" ]; do
+    suffix=$((suffix + 1))
+    candidate="$BACKUP_DIR/$label.$suffix"
+  done
+  if [ -d "$source" ]; then
+    cp -R "$source" "$candidate"
+  else
+    cp -p "$source" "$candidate"
+  fi
+}
+
+backup_manifest_if_needed() {
+  if [ "$MANIFEST_BACKED_UP" = false ] && [ -e "$MANIFEST" ]; then
+    backup_existing_path "$MANIFEST" "manifest"
+    MANIFEST_BACKED_UP=true
+  fi
+}
+
+remove_owned_path() {
+  local path="$1"
+  case "$path" in
+    "$SKILLS_DIR"/*|"$LUNA_TARGET") ;;
+    *) die "refusing to remove path outside installer targets: $path" ;;
+  esac
+  [ -L "$path" ] && die "refusing to remove symlink: $path"
+  [ "$path" != "$SKILLS_DIR" ] || die "refusing to remove skills root"
+  rm -rf "$path"
+}
+
+write_manifest() {
+  [ "$MANIFEST_DIRTY" = true ] || return 0
+  if [ "$DRY_RUN" = true ]; then
+    echo "  [dry-run] would update ownership manifest: $MANIFEST"
+    return 0
+  fi
+
+  ensure_directory "$SKILLS_ROOT"
+  backup_manifest_if_needed
+  local temporary="$MANIFEST.tmp.$$"
+  {
+    printf '# Managed by vibecosystem install-codex.sh; do not edit for ownership tracking.\n'
+    local i=0
+    while [ "$i" -lt "${#MANAGED_NAMES[@]}" ]; do
+      printf '%s\t%s\n' "${MANAGED_NAMES[$i]}" "${MANAGED_HASHES[$i]}"
+      i=$((i + 1))
+    done
+  } > "$temporary"
+  chmod 600 "$temporary"
+  mv "$temporary" "$MANIFEST"
+  MANIFEST_DIRTY=false
+}
+
+validate_luna_worker() {
+  [ -f "$LUNA_SOURCE" ] || die "canonical luna worker file is missing: $LUNA_SOURCE"
+  command -v python3 >/dev/null 2>&1 || die "python3 is required to validate $LUNA_SOURCE"
+
+  PYTHONDONTWRITEBYTECODE=1 python3 - "$LUNA_SOURCE" <<'PY'
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+expected = {
+    "name": "luna_worker",
+    "description": "Bounded repository worker for implementation and verification.",
+    "developer_instructions": (
+        "Work only within the assigned repository and task scope.\n"
+        "Inspect the relevant files before changing anything.\n"
+        "Do not spawn subagents or background workers unless the user explicitly requests it.\n"
+        "Do not run unrelated automation, broad skill scans, or automatic memory recall.\n"
+        "Make the smallest complete change, then run focused verification.\n"
+        "Stop and ask when the task requires destructive action, external authority, credentials, or an unclear product decision.\n"
+        "Return a concise report with result, changed paths, verification performed, and caveats.\n"
+    ),
+    "model": "gpt-5.6-luna",
+    "model_reasoning_effort": "max",
+}
+
+try:
+    import tomllib
+except ModuleNotFoundError:
+    expected_text = (
+        'name = "luna_worker"\n'
+        'description = "Bounded repository worker for implementation and verification."\n'
+        'developer_instructions = """\n'
+        'Work only within the assigned repository and task scope.\n'
+        'Inspect the relevant files before changing anything.\n'
+        'Do not spawn subagents or background workers unless the user explicitly requests it.\n'
+        'Do not run unrelated automation, broad skill scans, or automatic memory recall.\n'
+        'Make the smallest complete change, then run focused verification.\n'
+        'Stop and ask when the task requires destructive action, external authority, credentials, or an unclear product decision.\n'
+        'Return a concise report with result, changed paths, verification performed, and caveats.\n'
+        '"""\n'
+        'model = "gpt-5.6-luna"\n'
+        'model_reasoning_effort = "max"\n'
+    )
+    if path.read_text() != expected_text:
+        raise SystemExit("LUNA_WORKER_VALID=0: canonical text does not match")
+    print("LUNA_WORKER_VALID=1 (canonical text; tomllib unavailable)")
+else:
+    with path.open("rb") as handle:
+        actual = tomllib.load(handle)
+    if actual != expected:
+        raise SystemExit(f"LUNA_WORKER_VALID=0: parsed contract mismatch: {actual!r}")
+    print("LUNA_WORKER_VALID=1")
+PY
+}
+
+prune_stale_skills() {
+  [ "$PRUNE" = true ] || return 0
+  if [ ! -f "$MANIFEST" ]; then
+    echo "Prune: no vibecosystem ownership manifest found; no skills removed."
+    return 0
+  fi
+
+  local i=0
+  local name
+  local expected
+  local destination
+  local current
+  local nested_symlink
+  while [ "$i" -lt "${#MANAGED_NAMES[@]}" ]; do
+    name="${MANAGED_NAMES[$i]}"
+    expected="${MANAGED_HASHES[$i]}"
+    if selected_contains "$name"; then
+      i=$((i + 1))
+      continue
+    fi
+
+    destination="$SKILLS_DIR/$name"
+    if [ ! -e "$destination" ] && [ ! -L "$destination" ]; then
+      remove_manifest_entry "$name"
+      continue
+    fi
+    if [ -L "$destination" ]; then
+      echo "Prune: preserving symlink $destination"
+      PRESERVED=$((PRESERVED + 1))
+      i=$((i + 1))
+      continue
+    fi
+    nested_symlink="$(find "$destination" -type l -print -quit)"
+    if [ -n "$nested_symlink" ]; then
+      echo "Prune: preserving skill containing symlink $destination"
+      PRESERVED=$((PRESERVED + 1))
+      i=$((i + 1))
+      continue
+    fi
+    if [ ! -d "$destination" ] || [ "$HASH_MODE" = "none" ] || [ "$expected" = "unverified" ]; then
+      echo "Prune: preserving unverified or non-directory skill $destination"
+      PRESERVED=$((PRESERVED + 1))
+      i=$((i + 1))
+      continue
+    fi
+
+    current="$(hash_skill "$destination")"
+    if [ "$current" != "$expected" ]; then
+      echo "Prune: preserving changed skill $destination"
+      PRESERVED=$((PRESERVED + 1))
+      i=$((i + 1))
+      continue
+    fi
+
+    if [ "$DRY_RUN" = true ]; then
+      echo "  [dry-run] would prune owned skill: $destination"
+      PRUNED=$((PRUNED + 1))
+      remove_manifest_entry "$name"
+      continue
+    fi
+    backup_existing_path "$destination" "skills/$name"
+    remove_owned_path "$destination"
+    PRUNED=$((PRUNED + 1))
+    remove_manifest_entry "$name"
+  done
+}
+
+install_skill() {
+  local name="$1"
+  local source="$REPO_DIR/skills/$name"
+  local destination="$SKILLS_DIR/$name"
+
+  if [ -e "$destination" ] || [ -L "$destination" ]; then
+    [ -L "$destination" ] && die "refusing to overwrite symlink: $destination"
+    if [ "$FORCE" = true ]; then
+      if [ "$DRY_RUN" = true ]; then
+        echo "  [dry-run] would back up and replace skill: $destination"
+        UPDATED=$((UPDATED + 1))
+      else
+        backup_existing_path "$destination" "skills/$name"
+        remove_owned_path "$destination"
+        cp -R "$source" "$destination"
+        set_manifest_entry "$name" "$(hash_skill "$destination")"
+        UPDATED=$((UPDATED + 1))
+      fi
+    else
+      SKIPPED=$((SKIPPED + 1))
+    fi
+    return 0
+  fi
+
+  if [ "$DRY_RUN" = true ]; then
+    echo "  [dry-run] would install skill: $name"
+    ADDED=$((ADDED + 1))
+  else
+    cp -R "$source" "$destination"
+    set_manifest_entry "$name" "$(hash_skill "$destination")"
+    ADDED=$((ADDED + 1))
+  fi
+}
+
+install_skills() {
+  local name
+  ensure_directory "$SKILLS_DIR"
+  echo "Installing profile '$PROFILE' (${#SELECTED_SKILLS[@]} skills) to $SKILLS_DIR"
+  for name in "${SELECTED_SKILLS[@]}"; do
+    install_skill "$name"
+  done
+}
+
+install_luna_worker() {
+  ensure_directory "$CODEX_AGENT_DIR"
+  if [ -e "$LUNA_TARGET" ] || [ -L "$LUNA_TARGET" ]; then
+    [ -L "$LUNA_TARGET" ] && die "refusing to overwrite symlink: $LUNA_TARGET"
+    if [ "$FORCE" = true ]; then
+      if [ "$DRY_RUN" = true ]; then
+        echo "  [dry-run] would back up and replace luna worker: $LUNA_TARGET"
+      else
+        backup_existing_path "$LUNA_TARGET" "codex/agents/luna-worker.toml"
+        remove_owned_path "$LUNA_TARGET"
+        cp -p "$LUNA_SOURCE" "$LUNA_TARGET"
+      fi
+      LUNA_INSTALLED=true
+    else
+      echo "Luna worker already exists; preserving $LUNA_TARGET"
+      LUNA_SKIPPED=true
+    fi
+    return 0
+  fi
+
+  if [ "$DRY_RUN" = true ]; then
+    echo "  [dry-run] would install luna worker: $LUNA_TARGET"
+  else
+    cp -p "$LUNA_SOURCE" "$LUNA_TARGET"
+  fi
+  LUNA_INSTALLED=true
+}
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --force)
+      FORCE=true
+      ;;
+    --dry-run)
+      DRY_RUN=true
+      ;;
+    --prune)
+      PRUNE=true
+      ;;
+    --install-luna-worker)
+      INSTALL_LUNA_WORKER=true
+      ;;
+    --validate-luna-worker)
+      VALIDATE_LUNA_WORKER=true
+      ;;
+    --non-interactive)
+      NON_INTERACTIVE=true
+      ;;
+    --profile)
+      [ "$#" -ge 2 ] || die "--profile requires core or full"
+      PROFILE="$2"
+      PROFILE_EXPLICIT=true
+      shift
+      ;;
+    --profile=*)
+      PROFILE="${1#*=}"
+      PROFILE_EXPLICIT=true
+      ;;
     --help|-h)
-      echo "Usage: ./install-codex.sh [--force]"
-      echo ""
-      echo "  --force    Overwrite existing skills (default: skip existing)"
-      echo ""
-      echo "Installs vibecosystem skills to ~/.codex/skills/"
-      echo "for use with Codex CLI (OpenAI)."
+      usage
       exit 0
       ;;
+    *)
+      die "unknown option: $1 (use --help for usage)"
+      ;;
   esac
+  shift
 done
+
+case "$PROFILE" in
+  core|full) ;;
+  *) die "unsupported profile '$PROFILE'; choose core or full" ;;
+esac
+
+SELECTED_SKILLS=()
+while IFS= read -r skill_name; do
+  [ -n "$skill_name" ] || continue
+  is_valid_skill_name "$skill_name" || die "invalid skill name in $PROFILE profile: $skill_name"
+  [ -d "$REPO_DIR/skills/$skill_name" ] || die "profile $PROFILE references missing skill: $skill_name"
+  SELECTED_SKILLS[${#SELECTED_SKILLS[@]}]="$skill_name"
+done < <(selected_skill_names)
+
+if [ "$VALIDATE_LUNA_WORKER" = true ] && \
+   [ "$INSTALL_LUNA_WORKER" = false ] && \
+   [ "$PROFILE_EXPLICIT" = false ] && \
+   [ "$FORCE" = false ] && \
+   [ "$PRUNE" = false ]; then
+  VALIDATION_ONLY=true
+fi
+
+if [ "$VALIDATION_ONLY" = true ]; then
+  validate_luna_worker
+  exit 0
+fi
+
+assert_safe_existing_paths
+load_manifest
+
+if [ "$VALIDATE_LUNA_WORKER" = true ] || [ "$INSTALL_LUNA_WORKER" = true ]; then
+  validate_luna_worker
+fi
 
 echo "vibecosystem installer for Codex CLI"
 echo "====================================="
+echo "Profile: $PROFILE"
+echo "Skills target: $SKILLS_DIR"
+if [ "$INSTALL_LUNA_WORKER" = true ]; then
+  echo "Luna worker target: $LUNA_TARGET"
+fi
+if [ "$PRUNE" = true ]; then
+  echo "Prune: owned, unchanged skills only"
+fi
+if [ "$DRY_RUN" = true ]; then
+  echo "Mode: DRY RUN (no user files will be written)"
+elif [ "$FORCE" = true ]; then
+  echo "Mode: OVERWRITE (--force) with backups"
+else
+  echo "Mode: MERGE (existing user files preserved)"
+fi
+echo "Global AGENTS.md copy: disabled"
 echo ""
 
-# Check if codex is installed
-if command -v codex &> /dev/null; then
-  echo "Codex CLI: $(codex --version 2>/dev/null || echo 'found')"
-else
-  echo "Warning: codex command not found. Install it first:"
-  echo "  npm install -g @openai/codex"
-  echo ""
-  echo "Continuing with skill installation anyway..."
+if [ "$DRY_RUN" = false ] && [ "$NON_INTERACTIVE" = false ]; then
+  read -p "Continue? (y/N) " -n 1 -r
+  echo
+  [[ "$REPLY" =~ ^[Yy]$ ]] || exit 0
 fi
 
-echo ""
-
-# Count skills
-SKILL_COUNT=$(find "$REPO_DIR/skills/" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
-echo "This will install $SKILL_COUNT skills to ~/.codex/skills/"
-echo ""
-
-if [ "$FORCE" = true ]; then
-  echo "Mode: OVERWRITE (--force)"
-else
-  echo "Mode: MERGE (default) -- existing skills preserved"
-fi
-echo ""
-
-read -p "Continue? (y/N) " -n 1 -r
-echo
-[[ $REPLY =~ ^[Yy]$ ]] || exit 0
-
-# Create directories
-mkdir -p "$CODEX_DIR/skills"
-
-# Copy skills
-echo ""
-echo "Installing skills..."
-for d in "$REPO_DIR/skills/"*/; do
-  name=$(basename "$d")
-  [ "$name" = "*" ] && continue
-
-  if [ "$FORCE" = true ] || [ ! -e "$CODEX_DIR/skills/$name" ]; then
-    cp -r "$d" "$CODEX_DIR/skills/$name"
-    ADDED=$((ADDED + 1))
-  else
-    SKIPPED=$((SKIPPED + 1))
+if [ "$DRY_RUN" = false ]; then
+  ensure_directory "$SKILLS_ROOT"
+  if [ "$INSTALL_LUNA_WORKER" = true ]; then
+    ensure_directory "$CODEX_DIR"
   fi
-done
-
-# Copy AGENTS.md as instructions reference
-if [ "$FORCE" = true ] || [ ! -e "$CODEX_DIR/AGENTS.md" ]; then
-  cp "$REPO_DIR/AGENTS.md" "$CODEX_DIR/AGENTS.md"
-  echo "Copied AGENTS.md to ~/.codex/"
 fi
 
+prune_stale_skills
+install_skills
+if [ "$INSTALL_LUNA_WORKER" = true ]; then
+  install_luna_worker
+fi
+write_manifest
+
 echo ""
-echo "Installation complete!"
+if [ "$DRY_RUN" = true ]; then
+  echo "Dry run complete. No user files were changed."
+else
+  echo "Installation complete."
+fi
 echo "  Added:   $ADDED skills"
-echo "  Skipped: $SKIPPED skills (already existed)"
-echo ""
-echo "  Total skills in ~/.codex/skills/: $(find "$CODEX_DIR/skills/" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')"
-echo ""
-echo "Usage:"
-echo "  cd your-project"
-echo "  codex"
-echo '  > "use the coding-standards skill"'
-echo ""
-if [ $SKIPPED -gt 0 ]; then
-  echo "Tip: Use ./install-codex.sh --force to overwrite existing skills."
+echo "  Updated: $UPDATED skills"
+echo "  Skipped: $SKIPPED skills"
+echo "  Pruned:  $PRUNED skills"
+echo "  Preserved during prune: $PRESERVED"
+if [ "$LUNA_INSTALLED" = true ]; then
+  echo "  Luna worker: $LUNA_TARGET"
+elif [ "$LUNA_SKIPPED" = true ]; then
+  echo "  Luna worker: existing file preserved"
+fi
+if [ -n "$BACKUP_DIR" ]; then
+  echo "  Backup: $BACKUP_DIR"
+fi
+echo "  Ownership manifest: $MANIFEST"
+
+if [ "$SKIPPED" -gt 0 ] && [ "$FORCE" = false ]; then
+  echo "Tip: use --force to replace existing skills after a backup."
 fi

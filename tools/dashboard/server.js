@@ -151,28 +151,40 @@ function loadRecentAgentEvents(limit = 100) {
 
 function loadTokenUsage(limit = 200) {
   try {
-    if (!fs.existsSync(TOKEN_LOG)) return { entries: [], summary: { total: 0, byTool: {}, byAgent: {} } };
+    if (!fs.existsSync(TOKEN_LOG)) return { entries: [], summary: { total: 0, byTool: {}, byAgent: {}, sources: {} } };
     const lines = fs.readFileSync(TOKEN_LOG, 'utf-8').split('\n').filter(l => l.trim());
     const entries = [];
     const byTool = {};
     const byAgent = {};
+    const sources = {};
     let total = 0;
 
     for (const line of lines.slice(-limit)) {
       try {
         const entry = JSON.parse(line);
-        entries.push(entry);
-        total += entry.total_est || 0;
-        byTool[entry.tool] = (byTool[entry.tool] || 0) + (entry.total_est || 0);
+        const legacyChars = Number(entry.total_chars);
+        const totalTokens = Number.isFinite(Number(entry.total_tokens_est))
+          ? Number(entry.total_tokens_est)
+          : Number.isFinite(Number(entry.total_est))
+            ? Number(entry.total_est)
+            : Number.isFinite(legacyChars)
+              ? Math.ceil(legacyChars / 4)
+              : 0;
+        const source = entry.token_source || (entry.total_est != null ? 'legacy-estimate' : 'legacy-chars-estimate');
+        const normalized = { ...entry, total_tokens_est: totalTokens, token_source: source };
+        entries.push(normalized);
+        total += totalTokens;
+        byTool[entry.tool] = (byTool[entry.tool] || 0) + totalTokens;
         if (entry.agent) {
-          byAgent[entry.agent] = (byAgent[entry.agent] || 0) + (entry.total_est || 0);
+          byAgent[entry.agent] = (byAgent[entry.agent] || 0) + totalTokens;
         }
+        sources[source] = (sources[source] || 0) + 1;
       } catch { /* skip */ }
     }
 
-    return { entries: entries.slice(-50).reverse(), summary: { total, byTool, byAgent } };
+    return { entries: entries.slice(-50).reverse(), summary: { total, byTool, byAgent, sources } };
   } catch {
-    return { entries: [], summary: { total: 0, byTool: {}, byAgent: {} } };
+    return { entries: [], summary: { total: 0, byTool: {}, byAgent: {}, sources: {} } };
   }
 }
 

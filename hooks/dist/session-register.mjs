@@ -225,14 +225,17 @@ function getProject() {
 
 // src/shared/context-budget.ts
 import { readFileSync as readFileSync2, writeFileSync as writeFileSync2, existsSync as existsSync2, mkdirSync as mkdirSync2, statSync } from "fs";
-import { join as join3 } from "path";
+import { dirname, join as join3 } from "path";
 import { homedir } from "os";
-var BUDGET_PATH = join3(homedir(), ".claude", "cache", "context-budget.json");
+function budgetPath() {
+  return process.env.VIBECO_CONTEXT_BUDGET_PATH || join3(homedir(), ".claude", "cache", "context-budget.json");
+}
 function saveBudget(budget) {
   try {
-    const cacheDir = join3(homedir(), ".claude", "cache");
+    const path = budgetPath();
+    const cacheDir = dirname(path);
     if (!existsSync2(cacheDir)) mkdirSync2(cacheDir, { recursive: true });
-    writeFileSync2(BUDGET_PATH, JSON.stringify(budget, null, 2));
+    writeFileSync2(path, JSON.stringify(budget, null, 2));
   } catch {
   }
 }

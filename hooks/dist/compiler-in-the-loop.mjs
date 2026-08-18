@@ -1,7 +1,7 @@
 // src/compiler-in-the-loop.ts
-import { readFileSync as readFileSync2, writeFileSync as writeFileSync2, existsSync as existsSync2, mkdirSync as mkdirSync2 } from "fs";
+import { readFileSync as readFileSync3, writeFileSync as writeFileSync3, existsSync as existsSync3, mkdirSync as mkdirSync3 } from "fs";
 import { execSync } from "child_process";
-import { join as join2 } from "path";
+import { join as join3 } from "path";
 import { tmpdir } from "os";
 
 // src/shared/hook-profiler.ts
@@ -53,6 +53,124 @@ function endTimer(start, hookName, eventType, sessionId = "unknown") {
   }
 }
 
+// src/shared/context-budget.ts
+import { readFileSync as readFileSync2, writeFileSync as writeFileSync2, existsSync as existsSync2, mkdirSync as mkdirSync2, statSync as statSync2 } from "fs";
+import { dirname, join as join2 } from "path";
+import { homedir as homedir2 } from "os";
+var DEFAULT_LIMITS = {
+  perEventChars: 4e3,
+  sessionChars: 12e3
+};
+function budgetPath() {
+  return process.env.VIBECO_CONTEXT_BUDGET_PATH || join2(homedir2(), ".claude", "cache", "context-budget.json");
+}
+function runtimePath() {
+  return process.env.VIBECO_RUNTIME_PATH || join2(homedir2(), ".claude", "vibecosystem-runtime.json");
+}
+function getBudgetLimits() {
+  try {
+    const path = runtimePath();
+    if (existsSync2(path)) {
+      const runtime = JSON.parse(readFileSync2(path, "utf-8"));
+      const perEventChars = Number(runtime.contextBudget?.perEventChars);
+      const sessionChars = Number(runtime.contextBudget?.sessionChars);
+      if (Number.isFinite(perEventChars) && Number.isFinite(sessionChars)) {
+        return {
+          perEventChars: Math.max(0, perEventChars),
+          sessionChars: Math.max(0, sessionChars)
+        };
+      }
+    }
+  } catch {
+  }
+  return DEFAULT_LIMITS;
+}
+function loadBudget() {
+  try {
+    const path = budgetPath();
+    if (existsSync2(path)) {
+      return JSON.parse(readFileSync2(path, "utf-8"));
+    }
+  } catch {
+  }
+  return {
+    session_id: "unknown",
+    total_chars: 0,
+    per_hook: {},
+    per_event: {},
+    updated_at: (/* @__PURE__ */ new Date()).toISOString()
+  };
+}
+function saveBudget(budget) {
+  try {
+    const path = budgetPath();
+    const cacheDir = dirname(path);
+    if (!existsSync2(cacheDir)) mkdirSync2(cacheDir, { recursive: true });
+    writeFileSync2(path, JSON.stringify(budget, null, 2));
+  } catch {
+  }
+}
+function tryInject(hookName, eventKey, charCount) {
+  const budget = loadBudget();
+  const limits = getBudgetLimits();
+  if (budget.total_chars + charCount > limits.sessionChars) return false;
+  const eventChars = budget.per_event[eventKey] || 0;
+  if (eventChars + charCount > limits.perEventChars) return false;
+  budget.total_chars += charCount;
+  budget.per_hook[hookName] = (budget.per_hook[hookName] || 0) + charCount;
+  budget.per_event[eventKey] = (budget.per_event[eventKey] || 0) + charCount;
+  budget.updated_at = (/* @__PURE__ */ new Date()).toISOString();
+  saveBudget(budget);
+  return true;
+}
+function budgetContext(hookName, eventKey, context) {
+  if (!context) return "";
+  const budget = loadBudget();
+  const limits = getBudgetLimits();
+  const eventRemaining = Math.max(0, limits.perEventChars - (budget.per_event[eventKey] || 0));
+  const sessionRemaining = Math.max(0, limits.sessionChars - budget.total_chars);
+  const available = Math.min(eventRemaining, sessionRemaining);
+  if (available <= 0) return "";
+  const bounded = context.length > available ? `${context.slice(0, Math.max(0, available - 18))}
+[truncated]` : context;
+  return tryInject(hookName, eventKey, bounded.length) ? bounded : "";
+}
+function budgetHookOutput(output, hookName, eventKey) {
+  const root = output;
+  if (root.additionalContext) {
+    const context = budgetContext(hookName, eventKey, String(root.additionalContext));
+    if (context) root.additionalContext = context;
+    else delete root.additionalContext;
+  }
+  const hookOutput = output.hookSpecificOutput;
+  if (hookOutput?.additionalContext) {
+    const context = budgetContext(hookName, eventKey, String(hookOutput.additionalContext));
+    if (context) {
+      hookOutput.additionalContext = context;
+    } else {
+      delete hookOutput.additionalContext;
+      if (Object.keys(hookOutput).length === 0) delete output.hookSpecificOutput;
+    }
+  }
+  if (hookOutput?.permissionDecisionReason) {
+    const reason = budgetContext(hookName, `${eventKey}:reason`, String(hookOutput.permissionDecisionReason));
+    if (reason) hookOutput.permissionDecisionReason = reason;
+    else delete hookOutput.permissionDecisionReason;
+  }
+  if (hookOutput?.updatedInput?.prompt) {
+    const prompt = budgetContext(hookName, `${eventKey}:prompt`, String(hookOutput.updatedInput.prompt));
+    if (prompt) hookOutput.updatedInput.prompt = prompt;
+    else delete hookOutput.updatedInput.prompt;
+  }
+  for (const field of ["message", "systemMessage"]) {
+    if (typeof root[field] !== "string") continue;
+    const message = budgetContext(hookName, `${eventKey}:${field}`, root[field]);
+    if (message) root[field] = message;
+    else delete root[field];
+  }
+  return output;
+}
+
 // src/compiler-in-the-loop.ts
 var LMSTUDIO_BASE_URL = process.env.LMSTUDIO_BASE_URL || "http://127.0.0.1:1234";
 var LMSTUDIO_ENDPOINT = process.env.LMSTUDIO_ENDPOINT || `${LMSTUDIO_BASE_URL}/v1/completions`;
@@ -60,26 +178,26 @@ var GOEDEL_ENABLED = process.env.GOEDEL_ENABLED !== "false";
 var lmStudioAvailable = null;
 var lmStudioCheckedAt = 0;
 var AVAILABILITY_CACHE_MS = 6e4;
-var STATE_DIR = process.env.CLAUDE_PROJECT_DIR ? join2(process.env.CLAUDE_PROJECT_DIR, ".claude", "cache", "lean") : join2(tmpdir(), "claude-lean");
-var STATE_FILE = join2(STATE_DIR, "compiler-state.json");
+var STATE_DIR = process.env.CLAUDE_PROJECT_DIR ? join3(process.env.CLAUDE_PROJECT_DIR, ".claude", "cache", "lean") : join3(tmpdir(), "claude-lean");
+var STATE_FILE = join3(STATE_DIR, "compiler-state.json");
 function readStdin() {
-  return readFileSync2(0, "utf-8");
+  return readFileSync3(0, "utf-8");
 }
 function ensureStateDir() {
-  if (!existsSync2(STATE_DIR)) {
-    mkdirSync2(STATE_DIR, { recursive: true });
+  if (!existsSync3(STATE_DIR)) {
+    mkdirSync3(STATE_DIR, { recursive: true });
   }
 }
 function saveState(state) {
   ensureStateDir();
-  writeFileSync2(STATE_FILE, JSON.stringify(state, null, 2));
+  writeFileSync3(STATE_FILE, JSON.stringify(state, null, 2));
 }
 function runLeanCompiler(filePath, cwd) {
   const home = process.env.HOME || process.env.USERPROFILE || "";
-  const elanBin = join2(home, ".elan", "bin");
+  const elanBin = join3(home, ".elan", "bin");
   const pathWithElan = `${elanBin}:${process.env.PATH}`;
   try {
-    const hasLakefile = existsSync2(join2(cwd, "lakefile.lean")) || existsSync2(join2(cwd, "lakefile.toml"));
+    const hasLakefile = existsSync3(join3(cwd, "lakefile.lean")) || existsSync3(join3(cwd, "lakefile.toml"));
     const cmd = hasLakefile ? `cd "${cwd}" && lake build 2>&1` : `lean "${filePath}" 2>&1`;
     const output = execSync(cmd, {
       encoding: "utf-8",
@@ -88,7 +206,7 @@ function runLeanCompiler(filePath, cwd) {
       env: { ...process.env, PATH: pathWithElan }
     });
     const sorries = [];
-    const fileContent = existsSync2(filePath) ? readFileSync2(filePath, "utf-8") : "";
+    const fileContent = existsSync3(filePath) ? readFileSync3(filePath, "utf-8") : "";
     const sorryMatches = fileContent.match(/sorry/g);
     if (sorryMatches) {
       const lines = fileContent.split("\n");
@@ -105,8 +223,8 @@ function runLeanCompiler(filePath, cwd) {
   }
 }
 function extractSorries(filePath) {
-  if (!existsSync2(filePath)) return [];
-  const content = readFileSync2(filePath, "utf-8");
+  if (!existsSync3(filePath)) return [];
+  const content = readFileSync3(filePath, "utf-8");
   const sorries = [];
   const lines = content.split("\n");
   lines.forEach((line, i) => {
@@ -242,7 +360,7 @@ async function main() {
   saveState(state);
   let goedelResult = { suggestion: null, unavailableMessage: null };
   if (!result.success || sorries.length > 0) {
-    const leanCode = existsSync2(filePath) ? readFileSync2(filePath, "utf-8") : "";
+    const leanCode = existsSync3(filePath) ? readFileSync3(filePath, "utf-8") : "";
     goedelResult = await getGoedelSuggestions(leanCode, result.output, sorries);
   }
   let goedelBlock = "";
@@ -257,7 +375,7 @@ ${goedelResult.suggestion}
   }
   if (!result.success) {
     endTimer(_perfStart, "compiler-in-the-loop", "PostToolUse");
-    console.log(JSON.stringify({
+    console.log(JSON.stringify(budgetHookOutput({
       hookSpecificOutput: {
         hookEventName: "PostToolUse",
         additionalContext: `
@@ -268,10 +386,10 @@ ${goedelBlock}
 APOLLO Pattern: Use 'sorry' to mark failing sub-lemmas, then fix each one.
 `
       }
-    }));
+    }, "compiler-in-the-loop", "PostToolUse:Edit|Write")));
   } else if (sorries.length > 0) {
     endTimer(_perfStart, "compiler-in-the-loop", "PostToolUse");
-    console.log(JSON.stringify({
+    console.log(JSON.stringify(budgetHookOutput({
       hookSpecificOutput: {
         hookEventName: "PostToolUse",
         additionalContext: `
@@ -282,15 +400,15 @@ ${goedelBlock}
 Fix each 'sorry' with a valid proof term or tactic.
 `
       }
-    }));
+    }, "compiler-in-the-loop", "PostToolUse:Edit|Write")));
   } else {
     endTimer(_perfStart, "compiler-in-the-loop", "PostToolUse");
-    console.log(JSON.stringify({
+    console.log(JSON.stringify(budgetHookOutput({
       hookSpecificOutput: {
         hookEventName: "PostToolUse",
         additionalContext: "\u2713 Lean proof compiles successfully with no sorries!"
       }
-    }));
+    }, "compiler-in-the-loop", "PostToolUse:Edit|Write")));
   }
 }
 main().catch((err) => {

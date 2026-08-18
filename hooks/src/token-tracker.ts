@@ -16,80 +16,107 @@ interface ToolEvent {
   tool_input?: Record<string, unknown>;
   tool_output?: string;
   session_id?: string;
+  usage?: TokenUsage;
+  token_usage?: TokenUsage;
+  metadata?: { usage?: TokenUsage };
+}
+
+interface TokenUsage {
+  input_tokens?: number;
+  output_tokens?: number;
+  total_tokens?: number;
 }
 
 interface TokenEntry {
   timestamp: string;
   session_id: string;
   tool: string;
+  input_chars: number;
+  output_chars: number;
+  total_chars: number;
   input_tokens_est: number;
   output_tokens_est: number;
-  total_est: number;
+  total_tokens_est: number;
+  token_source: 'provider' | 'estimate' | 'mixed';
+  input_token_source: 'provider' | 'estimate';
+  output_token_source: 'provider' | 'estimate';
+  total_token_source: 'provider' | 'estimate' | 'mixed';
   agent?: string;
 }
 
-// Rough token estimation: ~4 chars per token
-function estimateTokens(text: string | undefined): number {
+// Conservative fallback. These are estimates unless the hook event supplies usage.
+function charCount(text: string | undefined): number {
   if (!text) return 0;
-  return Math.ceil(String(text).length / 4);
+  return String(text).length;
 }
 
-async function main() {
+function estimateTokens(chars: number): number {
+  return Math.ceil(chars / 4);
+}
+
+function getUsage(event: ToolEvent): TokenUsage | undefined {
+  return event.usage || event.token_usage || event.metadata?.usage;
+}
+
+function runHook(): void {
   let input: string;
   try {
-    input = readFileSync('/dev/stdin', 'utf-8');
-  } catch {
-    process.exit(0);
-  }
+    input = readFileSync(0, 'utf-8');
+  } catch { return; }
 
   let event: ToolEvent;
   try {
     event = JSON.parse(input);
-  } catch {
-    process.exit(0);
-  }
+  } catch { return; }
 
   const claudeDir = join(homedir(), '.claude');
   const logFile = join(claudeDir, 'token-usage.jsonl');
 
-  // Ensure directory exists
   if (!existsSync(claudeDir)) {
     mkdirSync(claudeDir, { recursive: true });
   }
 
-  const inputTokens = estimateTokens(JSON.stringify(event.tool_input || {}));
-  const outputTokens = estimateTokens(event.tool_output);
+  const inputChars = charCount(JSON.stringify(event.tool_input || {}));
+  const outputChars = charCount(event.tool_output);
+  const usage = getUsage(event);
+  const providerInput = Number(usage?.input_tokens);
+  const providerOutput = Number(usage?.output_tokens);
+  const providerTotal = Number(usage?.total_tokens);
+  const hasProviderInput = Number.isFinite(providerInput);
+  const hasProviderOutput = Number.isFinite(providerOutput);
+  const hasProviderTotal = Number.isFinite(providerTotal);
+  const inputTokens = hasProviderInput ? providerInput : estimateTokens(inputChars);
+  const outputTokens = hasProviderOutput ? providerOutput : estimateTokens(outputChars);
+  const totalTokens = hasProviderTotal ? providerTotal : inputTokens + outputTokens;
+  const inputSource = hasProviderInput ? 'provider' : 'estimate';
+  const outputSource = hasProviderOutput ? 'provider' : 'estimate';
+  const totalSource = hasProviderTotal
+    ? 'provider'
+    : inputSource === 'estimate' && outputSource === 'estimate' ? 'estimate' : 'mixed';
 
   const entry: TokenEntry = {
     timestamp: new Date().toISOString(),
     session_id: event.session_id || 'unknown',
     tool: event.tool_name,
+    input_chars: inputChars,
+    output_chars: outputChars,
+    total_chars: inputChars + outputChars,
     input_tokens_est: inputTokens,
     output_tokens_est: outputTokens,
-    total_est: inputTokens + outputTokens,
+    total_tokens_est: totalTokens,
+    token_source: totalSource,
+    input_token_source: inputSource,
+    output_token_source: outputSource,
+    total_token_source: totalSource,
   };
 
-  // Check if this is an agent-related tool call
   if (event.tool_name === 'Agent' && event.tool_input) {
     entry.agent = String(event.tool_input.subagent_type || 'general-purpose');
   }
 
   try {
     appendFileSync(logFile, JSON.stringify(entry) + '\n');
-  } catch {}
-
-  // Try to broadcast to dashboard WebSocket
-  try {
-    const { createConnection } = await import('node:net');
-    const client = createConnection({ port: 3847, host: '127.0.0.1' }, () => {
-      client.write(JSON.stringify({ type: 'token_usage', ...entry }));
-      client.end();
-    });
-    client.on('error', () => {}); // Silently ignore if dashboard not running
-  } catch {}
-
-  // Output approve (PostToolUse hooks should not block)
-  console.log(JSON.stringify({ result: 'approve' }));
+  } catch { /* silent */ }
 }
 
-main().catch(() => process.exit(0));
+try { runHook(); } catch { process.exit(0); }

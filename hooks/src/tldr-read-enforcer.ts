@@ -12,7 +12,7 @@
 import { readFileSync, existsSync, statSync } from 'fs';
 import { basename, extname } from 'path';
 import { queryDaemonSync, DaemonResponse, trackHookActivitySync } from './daemon-client.js';
-import { isRelevantForIntent } from './shared/context-budget.js';
+import { budgetHookOutput, isRelevantForIntent } from './shared/context-budget.js';
 import { startTimer, endTimer } from './shared/hook-profiler.js';
 
 // Search context from smart-search-router
@@ -495,7 +495,7 @@ To read full file anyway, use: Read ${basename(filePath)} (test files bypass thi
   };
 
   endTimer(_perfStart, 'tldr-read-enforcer', 'PreToolUse');
-  console.log(JSON.stringify(output));
+  console.log(JSON.stringify(budgetHookOutput(output, 'tldr-read-enforcer', 'PreToolUse:Read')));
 }
 
 main().catch((err) => {

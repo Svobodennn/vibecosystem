@@ -23,6 +23,17 @@ interface HookInput {
     prompt: string;
 }
 
+function orchestrationEnabled(): boolean {
+    try {
+        const runtimePath = join(process.env.HOME || '', '.claude', 'vibecosystem-runtime.json');
+        if (!existsSync(runtimePath)) return false;
+        const runtime = JSON.parse(readFileSync(runtimePath, 'utf-8'));
+        return ['full', 'orchestration'].includes(runtime.activeProfile);
+    } catch {
+        return false;
+    }
+}
+
 // Pattern inference result from Python module
 interface PatternInference {
     pattern: string;
@@ -214,6 +225,9 @@ Or use the /explore skill for guided exploration.
 async function main() {
     const _perfStart = startTimer();
     try {
+        // This hook scans every skill rule on every prompt. It is opt-in only.
+        if (!orchestrationEnabled()) return;
+
         // Read input from stdin
         const input = readFileSync(0, 'utf-8');
         let data: HookInput;

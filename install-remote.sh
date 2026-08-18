@@ -47,41 +47,39 @@ fi
 
 echo ""
 
-# Run main installer
-cd "$INSTALL_DIR"
-bash install.sh --non-interactive
-
-# Profile selection
+# Profile selection happens before installation so the installer never copies
+# the full runtime and then tries to disable it after the fact.
 echo ""
 echo "Choose a profile (saves tokens by loading only what you need):"
 echo ""
-echo "  1) minimal    - Core only (~15 agents, ~40 skills)"
-echo "  2) frontend   - React/Next.js focused (~30 agents)"
-echo "  3) backend    - API/DB/infra focused (~40 agents)"
-echo "  4) fullstack  - Frontend + Backend (~60 agents)"
-echo "  5) devops     - CI/CD/Cloud focused (~33 agents)"
-echo "  6) smart      - Everything enabled, token-optimized (138 agents, 296 skills)"
-echo "  7) all        - Everything (138 agents, 296 skills)"
+echo "  1) core        - Low-noise default runtime"
+echo "  2) frontend    - React/Next.js focused"
+echo "  3) backend     - API/DB/infra focused"
+echo "  4) fullstack   - Frontend + backend"
+echo "  5) devops      - CI/CD/cloud focused"
+echo "  6) orchestration - Explicit multi-agent workflows"
+echo "  7) full        - Every legacy capability"
 echo ""
-read -p "Select [1-7, default 7]: " CHOICE
+if [ -t 0 ]; then
+  read -p "Select [1-7, default 1]: " CHOICE
+else
+  CHOICE="1"
+fi
 
 case "$CHOICE" in
-  1) PROFILE="minimal" ;;
+  1) PROFILE="core" ;;
   2) PROFILE="frontend" ;;
   3) PROFILE="backend" ;;
   4) PROFILE="fullstack" ;;
   5) PROFILE="devops" ;;
-  6) PROFILE="smart" ;;
-  *) PROFILE="all" ;;
+  6) PROFILE="orchestration" ;;
+  7) PROFILE="full" ;;
+  *) PROFILE="core" ;;
 esac
 
-# Apply profile
-VIBECO="$HOME/.local/bin/vibeco"
-if [ -x "$VIBECO" ] || command -v vibeco >/dev/null 2>&1; then
-  vibeco profile "$PROFILE" 2>/dev/null || node "$INSTALL_DIR/tools/vibeco/vibeco.mjs" profile "$PROFILE"
-else
-  node "$INSTALL_DIR/tools/vibeco/vibeco.mjs" profile "$PROFILE"
-fi
+# Run the selected profile directly. Prune only removes previously owned files.
+cd "$INSTALL_DIR"
+bash install.sh --profile "$PROFILE" --prune --non-interactive
 
 echo ""
 echo "Done! vibecosystem is ready."

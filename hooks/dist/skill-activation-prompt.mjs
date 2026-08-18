@@ -184,6 +184,16 @@ function shouldValidateWithLLM(match) {
 }
 
 // src/skill-activation-prompt.ts
+function orchestrationEnabled() {
+  try {
+    const runtimePath = join3(process.env.HOME || "", ".claude", "vibecosystem-runtime.json");
+    if (!existsSync3(runtimePath)) return false;
+    const runtime = JSON.parse(readFileSync3(runtimePath, "utf-8"));
+    return ["full", "orchestration"].includes(runtime.activeProfile);
+  } catch {
+    return false;
+  }
+}
 var PATTERN_AGENT_MAP = {
   "swarm": "research-agent",
   "hierarchical": "kraken",
@@ -308,6 +318,7 @@ Or use the /explore skill for guided exploration.
 async function main() {
   const _perfStart = startTimer();
   try {
+    if (!orchestrationEnabled()) return;
     const input = readFileSync3(0, "utf-8");
     let data;
     try {

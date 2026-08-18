@@ -13,6 +13,7 @@ import { execSync } from 'child_process';
 import { dirname, join } from 'path';
 import { tmpdir } from 'os';
 import { startTimer, endTimer } from './shared/hook-profiler.js';
+import { budgetHookOutput } from './shared/context-budget.js';
 
 // LMStudio endpoint for Goedel-Prover-V2-8B
 const LMSTUDIO_BASE_URL = process.env.LMSTUDIO_BASE_URL || 'http://127.0.0.1:1234';
@@ -318,7 +319,7 @@ async function main() {
   // Provide feedback to Claude
   if (!result.success) {
     endTimer(_perfStart, 'compiler-in-the-loop', 'PostToolUse');
-    console.log(JSON.stringify({
+    console.log(JSON.stringify(budgetHookOutput({
       hookSpecificOutput: {
         hookEventName: 'PostToolUse',
         additionalContext: `
@@ -329,10 +330,10 @@ ${goedelBlock}
 APOLLO Pattern: Use 'sorry' to mark failing sub-lemmas, then fix each one.
 `
       }
-    }));
+    }, 'compiler-in-the-loop', 'PostToolUse:Edit|Write')));
   } else if (sorries.length > 0) {
     endTimer(_perfStart, 'compiler-in-the-loop', 'PostToolUse');
-    console.log(JSON.stringify({
+    console.log(JSON.stringify(budgetHookOutput({
       hookSpecificOutput: {
         hookEventName: 'PostToolUse',
         additionalContext: `
@@ -343,15 +344,15 @@ ${goedelBlock}
 Fix each 'sorry' with a valid proof term or tactic.
 `
       }
-    }));
+    }, 'compiler-in-the-loop', 'PostToolUse:Edit|Write')));
   } else {
     endTimer(_perfStart, 'compiler-in-the-loop', 'PostToolUse');
-    console.log(JSON.stringify({
+    console.log(JSON.stringify(budgetHookOutput({
       hookSpecificOutput: {
         hookEventName: 'PostToolUse',
         additionalContext: '✓ Lean proof compiles successfully with no sorries!'
       }
-    }));
+    }, 'compiler-in-the-loop', 'PostToolUse:Edit|Write')));
   }
 }
 

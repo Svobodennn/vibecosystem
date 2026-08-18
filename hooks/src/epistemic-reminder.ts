@@ -5,6 +5,7 @@
  * Read sonuçlarını VERIFIED olarak işaretlemeyi teşvik eder.
  */
 import { readFileSync } from 'fs';
+import { budgetHookOutput } from './shared/context-budget.js';
 
 interface HookInput {
   tool_name: string;
@@ -79,7 +80,7 @@ Grep results are evidence, not proof. Verify with Read before claiming.
     result: 'continue',
     additionalContext: reminder,
   };
-  console.log(JSON.stringify(output));
+  console.log(JSON.stringify(budgetHookOutput(output, 'epistemic-reminder', `PostToolUse:${input.tool_name}`)));
 }
 
 main();

@@ -6,11 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+- **Single Codex model authority**: Added the canonical bounded `.codex/agents/luna-worker.toml` using `gpt-5.6-luna` with `max` reasoning. Removed the project-level `o4-mini` pin, invalid local history persistence, and stale skill path override.
+- **Lean runtime profiles**: `core` is now the default; `minimal`/`smart` alias to `core`, and `all` aliases to `full`. Claude-only Opus/Sonnet frontmatter remains available without entering the Codex worker path. Core relies on bounded project instructions and selected safety hooks; full keeps the original 20 rules.
+- **Bounded context and ownership**: Core injectors enforce 4k/event and 12k/session budgets, full retains 8k/50k, token telemetry uses explicit estimated/provider fields, and installers back up before overwrite or prune only owned files.
+
 ### Added
+- **Codex luna worker installer**: `install-codex.sh` now supports `--install-luna-worker`, `--validate-luna-worker`, `--dry-run`, and `--prune` without copying global `AGENTS.md` or the full skill tree by default.
+- **`vibeco effective-config`**: Reports the worker model, project model neutrality, active runtime profile, registered hooks, and context budgets.
 - **vibeco audit**: security + quality scanner for the local installation (SAST-style checks)
 - **vibeco secrets**: API key and credential scanner
-- **smart profile**: full capability (identical to `all`, nothing disabled) with token-optimized plugin injection budgets via `settings.json` env vars; supported by both `vibeco profile smart` and `npx vibecosystem init --profile smart`
-- **Hook registration on install**: new `hooks/hooks.json` manifest (52 hook commands across 7 events) + `tools/register-hooks.mjs`; `install.sh` and `npx vibecosystem init` now merge hook registrations into `~/.claude/settings.json` (previously hooks were copied but never registered, so they never fired on fresh installs)
+- **legacy profile aliases**: `smart` now aliases the lean `core` runtime and `all` aliases `full`; use `full` explicitly for every capability.
+- **Hook registration on install**: `hooks/hooks.json` manifest (53 hook commands across 7 events) + `tools/register-hooks.mjs`; `install.sh` and `npx vibecosystem init` now merge only the selected profile's registrations into `~/.claude/settings.json`.
 - **session-banner hook source**: ported orphan `dist/session-banner.mjs` to `hooks/src/session-banner.ts` so it rebuilds from source (hook count 73 -> 74)
 
 ### Fixed - Security

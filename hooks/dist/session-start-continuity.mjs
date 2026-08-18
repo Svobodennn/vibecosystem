@@ -2,6 +2,126 @@
 import * as fs from "fs";
 import * as path from "path";
 import { execSync } from "child_process";
+
+// src/shared/context-budget.ts
+import { readFileSync, writeFileSync, existsSync, mkdirSync, statSync } from "fs";
+import { dirname, join } from "path";
+import { homedir } from "os";
+var DEFAULT_LIMITS = {
+  perEventChars: 4e3,
+  sessionChars: 12e3
+};
+function budgetPath() {
+  return process.env.VIBECO_CONTEXT_BUDGET_PATH || join(homedir(), ".claude", "cache", "context-budget.json");
+}
+function runtimePath() {
+  return process.env.VIBECO_RUNTIME_PATH || join(homedir(), ".claude", "vibecosystem-runtime.json");
+}
+function getBudgetLimits() {
+  try {
+    const path2 = runtimePath();
+    if (existsSync(path2)) {
+      const runtime = JSON.parse(readFileSync(path2, "utf-8"));
+      const perEventChars = Number(runtime.contextBudget?.perEventChars);
+      const sessionChars = Number(runtime.contextBudget?.sessionChars);
+      if (Number.isFinite(perEventChars) && Number.isFinite(sessionChars)) {
+        return {
+          perEventChars: Math.max(0, perEventChars),
+          sessionChars: Math.max(0, sessionChars)
+        };
+      }
+    }
+  } catch {
+  }
+  return DEFAULT_LIMITS;
+}
+function loadBudget() {
+  try {
+    const path2 = budgetPath();
+    if (existsSync(path2)) {
+      return JSON.parse(readFileSync(path2, "utf-8"));
+    }
+  } catch {
+  }
+  return {
+    session_id: "unknown",
+    total_chars: 0,
+    per_hook: {},
+    per_event: {},
+    updated_at: (/* @__PURE__ */ new Date()).toISOString()
+  };
+}
+function saveBudget(budget) {
+  try {
+    const path2 = budgetPath();
+    const cacheDir = dirname(path2);
+    if (!existsSync(cacheDir)) mkdirSync(cacheDir, { recursive: true });
+    writeFileSync(path2, JSON.stringify(budget, null, 2));
+  } catch {
+  }
+}
+function tryInject(hookName, eventKey, charCount) {
+  const budget = loadBudget();
+  const limits = getBudgetLimits();
+  if (budget.total_chars + charCount > limits.sessionChars) return false;
+  const eventChars = budget.per_event[eventKey] || 0;
+  if (eventChars + charCount > limits.perEventChars) return false;
+  budget.total_chars += charCount;
+  budget.per_hook[hookName] = (budget.per_hook[hookName] || 0) + charCount;
+  budget.per_event[eventKey] = (budget.per_event[eventKey] || 0) + charCount;
+  budget.updated_at = (/* @__PURE__ */ new Date()).toISOString();
+  saveBudget(budget);
+  return true;
+}
+function budgetContext(hookName, eventKey, context) {
+  if (!context) return "";
+  const budget = loadBudget();
+  const limits = getBudgetLimits();
+  const eventRemaining = Math.max(0, limits.perEventChars - (budget.per_event[eventKey] || 0));
+  const sessionRemaining = Math.max(0, limits.sessionChars - budget.total_chars);
+  const available = Math.min(eventRemaining, sessionRemaining);
+  if (available <= 0) return "";
+  const bounded = context.length > available ? `${context.slice(0, Math.max(0, available - 18))}
+[truncated]` : context;
+  return tryInject(hookName, eventKey, bounded.length) ? bounded : "";
+}
+function budgetHookOutput(output, hookName, eventKey) {
+  const root = output;
+  if (root.additionalContext) {
+    const context = budgetContext(hookName, eventKey, String(root.additionalContext));
+    if (context) root.additionalContext = context;
+    else delete root.additionalContext;
+  }
+  const hookOutput = output.hookSpecificOutput;
+  if (hookOutput?.additionalContext) {
+    const context = budgetContext(hookName, eventKey, String(hookOutput.additionalContext));
+    if (context) {
+      hookOutput.additionalContext = context;
+    } else {
+      delete hookOutput.additionalContext;
+      if (Object.keys(hookOutput).length === 0) delete output.hookSpecificOutput;
+    }
+  }
+  if (hookOutput?.permissionDecisionReason) {
+    const reason = budgetContext(hookName, `${eventKey}:reason`, String(hookOutput.permissionDecisionReason));
+    if (reason) hookOutput.permissionDecisionReason = reason;
+    else delete hookOutput.permissionDecisionReason;
+  }
+  if (hookOutput?.updatedInput?.prompt) {
+    const prompt = budgetContext(hookName, `${eventKey}:prompt`, String(hookOutput.updatedInput.prompt));
+    if (prompt) hookOutput.updatedInput.prompt = prompt;
+    else delete hookOutput.updatedInput.prompt;
+  }
+  for (const field of ["message", "systemMessage"]) {
+    if (typeof root[field] !== "string") continue;
+    const message = budgetContext(hookName, `${eventKey}:${field}`, root[field]);
+    if (message) root[field] = message;
+    else delete root[field];
+  }
+  return output;
+}
+
+// src/session-start-continuity.ts
 function buildHandoffDirName(sessionName, sessionId) {
   const uuidShort = sessionId.replace(/-/g, "").slice(0, 8);
   return `${sessionName}-${uuidShort}`;
@@ -385,7 +505,7 @@ All handoffs in ${handoffDir}:
       additionalContext
     };
   }
-  console.log(JSON.stringify(output));
+  console.log(JSON.stringify(budgetHookOutput(output, "session-start-continuity", "SessionStart")));
 }
 async function readStdin() {
   return new Promise((resolve) => {

@@ -23,6 +23,7 @@ import {
   DaemonResponse,
   trackHookActivitySync,
 } from './daemon-client.js';
+import { budgetContext } from './shared/context-budget.js';
 
 interface HookInput {
   session_id: string;
@@ -472,9 +473,15 @@ async function main() {
   }
 
   // Inject context
+  const boundedContext = budgetContext('tldr-context-inject', 'PreToolUse:Task', tldrContext);
+  if (!boundedContext) {
+    console.log('{}');
+    return;
+  }
+
   const enhancedPrompt = `## TLDR Context (${intentDesc}: ${layers.join('+')})
 
-${tldrContext}
+${boundedContext}
 
 ---
 ORIGINAL TASK:
@@ -498,6 +505,8 @@ ${prompt}`;
     layers_used: layers.length,
   });
 
+  // Only the TLDR block is newly injected and was reserved above. Budgeting
+  // the full rewritten prompt would count the user's original task twice.
   console.log(JSON.stringify(output));
 }
 

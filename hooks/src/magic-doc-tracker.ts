@@ -11,6 +11,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
+import { budgetHookOutput } from './shared/context-budget.js';
 
 interface PostToolInput {
   tool_name: string;
@@ -100,7 +101,7 @@ function main() {
     const result = {
       additionalContext: `[Magic Doc detected: "${title}" at ${filePath}. Will be auto-updated at session end.]`,
     };
-    process.stdout.write(JSON.stringify(result));
+    process.stdout.write(JSON.stringify(budgetHookOutput(result, 'magic-doc-tracker', 'PostToolUse:Read')));
   } catch {
     // Hook hatalari sessiz
   }
