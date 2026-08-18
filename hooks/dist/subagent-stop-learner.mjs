@@ -233,10 +233,10 @@ function buildErrorReportInstruction(errors) {
   const list = errors.slice(0, 10).map((e, i) => `${i + 1}. [${e.tool}] ${e.command.slice(0, 120) || "(no input)"} \u2192 ${e.classification}${e.exit_code !== null ? ` (exit ${e.exit_code})` : ""}`).join("\n");
   const more = errors.length > 10 ? `
 ...and ${errors.length - 10} more.` : "";
-  return `You encountered ${errors.length} tool error(s) during this task but your final message does not report them:
+  return `You encountered ${errors.length} tool error(s) during this task that materially failed (benign no-match/probe errors are already excluded) and your final message does not report them:
 ${list}${more}
 
-Append a section titled "## HATA RAPORU" to your final message. For EACH error state:
+Within that re-sent message, include a section titled "## HATA RAPORU". For EACH error state:
 - the command/tool that failed and the error
 - what you did about it (fixed / workaround / skipped)
 - whether this leaves the task INCOMPLETE or affects correctness
@@ -445,6 +445,33 @@ function detectRetryStorms(errors, threshold = 3) {
   }
   return [...counts.entries()].filter(([, v]) => v.count >= threshold).map(([command_head, v]) => ({ command_head, count: v.count, classification: v.classification }));
 }
+var PROBE_HEADS = /* @__PURE__ */ new Set([
+  "grep",
+  "find",
+  "ls",
+  "cat",
+  "sed",
+  "rg",
+  "head",
+  "tail",
+  "awk",
+  "which",
+  "test",
+  "stat",
+  "fgrep",
+  "egrep",
+  "diff"
+]);
+var BENIGN_ERROR_TEXT_RE = /file has not been read yet|string to replace not found|file (?:does not exist|not found)|no such tool available|no matches found|0 items(?:\s+collected)?|does not support (?:compound|--?\w)/i;
+function isBenignError(e) {
+  if (BENIGN_ERROR_TEXT_RE.test(e.error_text)) return true;
+  if (e.exit_code === 1 && PROBE_HEADS.has(e.command_head.split(" ")[0])) return true;
+  return false;
+}
+function computeSeriousErrors(errors) {
+  return errors.filter((e) => !isBenignError(e));
+}
+var RESEND_PREAMBLE = "CRITICAL: Only your NEXT message is returned to the parent agent \u2014 the report/answer you already wrote will NOT be delivered on its own. You MUST re-send your COMPLETE final report and findings verbatim in your next message, and then address the item(s) below INSIDE that same message. Do NOT reply with only the section(s) below; that would discard all your findings.\n\n";
 function buildClaimInstruction(claims) {
   const list = claims.map((c, i) => `${i + 1}. "${c.claim}" (${c.type})`).join("\n");
   return `Your final message makes ${claims.length} verification claim(s) with NO supporting evidence in your transcript (no successful test/build command was run):
@@ -459,7 +486,8 @@ function evaluateStopPolicy(input) {
   const { errors, lastMessage, stopHookActive, successfulCommands } = input;
   const unverifiedClaims = detectUnverifiedClaims(lastMessage, successfulCommands);
   const retryStorms = detectRetryStorms(errors);
-  const errorsUnreported = errors.length > 0 && !hasErrorReport(lastMessage);
+  const seriousErrors = computeSeriousErrors(errors);
+  const errorsUnreported = seriousErrors.length > 0 && !hasErrorReport(lastMessage);
   if (stopHookActive) {
     return {
       shouldBlock: false,
@@ -470,11 +498,12 @@ function evaluateStopPolicy(input) {
     };
   }
   const parts = [];
-  if (errorsUnreported) parts.push(buildErrorReportInstruction(errors));
+  if (errorsUnreported) parts.push(buildErrorReportInstruction(seriousErrors));
   if (unverifiedClaims.length > 0) parts.push(buildClaimInstruction(unverifiedClaims));
   return {
     shouldBlock: parts.length > 0,
-    blockReason: parts.join("\n\n---\n\n"),
+    // Fix B: her block reason'ın başına "önce tam raporu yeniden gönder" uyarısı
+    blockReason: parts.length > 0 ? RESEND_PREAMBLE + parts.join("\n\n---\n\n") : "",
     unverifiedClaims,
     retryStorms,
     evaded: false

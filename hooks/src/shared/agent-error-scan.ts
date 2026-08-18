@@ -445,9 +445,9 @@ export function buildErrorReportInstruction(errors: ToolErrorRecord[]): string {
   const more = errors.length > 10 ? `\n...and ${errors.length - 10} more.` : '';
 
   return (
-    `You encountered ${errors.length} tool error(s) during this task but your final message does not report them:\n` +
+    `You encountered ${errors.length} tool error(s) during this task that materially failed (benign no-match/probe errors are already excluded) and your final message does not report them:\n` +
     `${list}${more}\n\n` +
-    `Append a section titled "## HATA RAPORU" to your final message. For EACH error state:\n` +
+    `Within that re-sent message, include a section titled "## HATA RAPORU". For EACH error state:\n` +
     `- the command/tool that failed and the error\n` +
     `- what you did about it (fixed / workaround / skipped)\n` +
     `- whether this leaves the task INCOMPLETE or affects correctness\n` +

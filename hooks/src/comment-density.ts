@@ -77,14 +77,16 @@ function main() {
     reasons.push(`${commentLines} comment lines for ${codeLines} code lines`);
 
   const file = fp.split("/").pop() ?? fp;
-  console.log(`<system-reminder>
+  const reminder = `<system-reminder>
 ⚠️ COMMENT STYLE (WORKING_AGREEMENT madde 6 + comment-style memory) — ${file}
 This edit added ${reasons.join(" + ")}. Comments must be SPARSE, human, why-focused:
 - No multi-line /** JSDoc */ — collapse to one or two // lines, or delete.
 - Delete "what it does" comments; good names + types already say it.
 - Keep a single-line "why" only when it's non-obvious. When in doubt, delete.
 Re-read the comments you just wrote and trim them now.
-</system-reminder>`);
+</system-reminder>`;
+  // additionalContext is what actually reaches the model (raw stdout does not).
+  console.log(JSON.stringify({ result: "continue", additionalContext: reminder }));
 }
 
 main();

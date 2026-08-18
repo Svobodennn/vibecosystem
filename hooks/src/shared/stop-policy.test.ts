@@ -170,6 +170,81 @@ describe('evaluateStopPolicy', () => {
     });
     expect(r.evaded).toBe(false);
   });
+
+  // --- Fix A (2026-07-13): benign/recovered hatalar bloklamaz ---
+
+  it('Fix A: benign no-match (grep exit 1) tek başına → block YOK, evaded YOK', () => {
+    const grepErr: ToolErrorRecord = {
+      tool: 'Bash', command: "grep -rn 'foo' src/", command_head: 'grep',
+      error_text: 'Exit code 1', classification: 'command_fail', exit_code: 1, tool_use_id: 't',
+    };
+    const first = evaluateStopPolicy({
+      errors: [grepErr], lastMessage: 'Investigation complete. Findings: ...',
+      stopHookActive: false, successfulCommands: [],
+    });
+    expect(first.shouldBlock).toBe(false);
+    const second = evaluateStopPolicy({
+      errors: [grepErr], lastMessage: 'Findings...', stopHookActive: true, successfulCommands: [],
+    });
+    expect(second.evaded).toBe(false); // benign hata evasion sayılmaz
+  });
+
+  it('Fix A (niyet): gerçek hata sonradan düzeltilse bile BLOKLAR (fark edilmemiş hatayı yakala)', () => {
+    // Erken başarı sonraki gerçek fail'i maskelememeli — recovered suppression YOK
+    const r = evaluateStopPolicy({
+      errors: [mkError('git push')],
+      lastMessage: 'Pushed after fixing the remote.',
+      stopHookActive: false,
+      successfulCommands: ['git push origin main'],
+    });
+    expect(r.shouldBlock).toBe(true);
+  });
+
+  it('Fix A: benign tool_error ("File has not been read yet") → block YOK', () => {
+    const editErr: ToolErrorRecord = {
+      tool: 'Edit', command: '/x/y.ts', command_head: 'edit',
+      error_text: 'File has not been read yet. Read it first before writing to it.',
+      classification: 'tool_error', exit_code: null, tool_use_id: 't',
+    };
+    const r = evaluateStopPolicy({
+      errors: [editErr], lastMessage: 'Done.', stopHookActive: false, successfulCommands: [],
+    });
+    expect(r.shouldBlock).toBe(false);
+  });
+
+  it('Fix A: benign + gerçek hata karışık → yalnızca gerçek olan raporlanır', () => {
+    const grepErr: ToolErrorRecord = {
+      tool: 'Bash', command: 'grep x', command_head: 'grep',
+      error_text: 'Exit code 1', classification: 'command_fail', exit_code: 1, tool_use_id: 't',
+    };
+    const r = evaluateStopPolicy({
+      errors: [grepErr, mkError('git push')],
+      lastMessage: 'All done.', stopHookActive: false, successfulCommands: [],
+    });
+    expect(r.shouldBlock).toBe(true);
+    expect(r.blockReason).toContain('git push'); // gerçek hata listelenir
+    expect(r.blockReason).not.toContain('grep x'); // benign hata listelenmez
+  });
+
+  // --- Fix B (2026-07-13): block reason "önce tam raporu yeniden gönder" der ---
+
+  it('Fix B: hata bloğu re-send uyarısı içerir', () => {
+    const r = evaluateStopPolicy({
+      errors: [mkError('git push')],
+      lastMessage: 'Done.', stopHookActive: false, successfulCommands: [],
+    });
+    expect(r.blockReason).toMatch(/re-send your complete final report/i);
+    expect(r.blockReason).toMatch(/NOT be delivered/i);
+  });
+
+  it('Fix B: claim-only bloğu da re-send uyarısı içerir', () => {
+    const r = evaluateStopPolicy({
+      errors: [], lastMessage: 'All tests pass.', stopHookActive: false, successfulCommands: ['echo hi'],
+    });
+    expect(r.shouldBlock).toBe(true);
+    expect(r.blockReason).toMatch(/re-send your complete final report/i);
+    expect(r.blockReason).toContain('UNVERIFIED');
+  });
 });
 
 describe('ledger entry builder\'ları', () => {

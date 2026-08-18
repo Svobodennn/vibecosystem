@@ -1,44 +1,37 @@
 // src/model-router.ts
 import { readFileSync, existsSync } from "node:fs";
-import { join as join2 } from "node:path";
-import { homedir as homedir2 } from "node:os";
-
-// src/shared/hook-health.ts
-import { appendFileSync, mkdirSync } from "fs";
-import { join } from "path";
-import { homedir } from "os";
-var HEALTH_FILE = join(homedir(), ".claude", "hook-health.jsonl");
-function reportHealth(hookName, success, durationMs, error) {
-  try {
-    const entry = {
-      ts: (/* @__PURE__ */ new Date()).toISOString(),
-      hook: hookName,
-      success,
-      duration_ms: Math.round(durationMs)
-    };
-    if (error) entry.error = error.slice(0, 200);
-    mkdirSync(join(homedir(), ".claude"), { recursive: true });
-    appendFileSync(HEALTH_FILE, JSON.stringify(entry) + "\n", { mode: 384 });
-  } catch {
-  }
-}
-
-// src/model-router.ts
-var VALID_AGENT_NAME = /^[a-zA-Z0-9_-]+$/;
+import { join } from "node:path";
+import { homedir } from "node:os";
 var TIER_MODELS = {
+  1: "haiku",
   2: "sonnet",
   3: "opus"
 };
 var TIER_LABELS = {
+  1: "lightweight (docs, scaffold, i18n)",
   2: "standard (dev, review, test)",
   3: "complex (architecture, investigation, large refactor)"
 };
 var DEFAULT_TIERS = {
-  architect: 3,
-  planner: 3,
+  // Tier 1 - Lightweight
+  "doc-updater": 1,
+  "technical-writer": 1,
+  "scribe": 1,
+  "catalyst": 1,
+  "template-engine": 1,
+  "code-generator": 1,
+  "babel": 1,
+  "i18n-expert": 1,
+  "copywriter": 1,
+  "schema-validator": 1,
+  "config-validator": 1,
+  "community-manager": 1,
+  // Tier 3 - Complex
+  "architect": 3,
+  "planner": 3,
   "tech-lead": 3,
-  kraken: 3,
-  sleuth: 3,
+  "kraken": 3,
+  "sleuth": 3,
   "ai-engineer": 3,
   "ddd-expert": 3,
   "clean-arch-expert": 3,
@@ -60,69 +53,59 @@ function parseFrontmatter(content) {
   return result;
 }
 function getAgentTier(agentName) {
-  if (!VALID_AGENT_NAME.test(agentName)) return 2;
   const agentPaths = [
-    join2(homedir2(), ".claude", "agents", `${agentName}.md`),
-    join2(process.cwd(), "agents", `${agentName}.md`)
+    join(homedir(), ".claude", "agents", `${agentName}.md`),
+    join(process.cwd(), "agents", `${agentName}.md`)
   ];
   for (const agentPath of agentPaths) {
     if (existsSync(agentPath)) {
       try {
         const content = readFileSync(agentPath, "utf-8");
         const fm = parseFrontmatter(content);
-        if (fm.tier && (fm.tier === 2 || fm.tier === 3)) return fm.tier;
+        if (fm.tier) return fm.tier;
       } catch {
       }
     }
   }
   return DEFAULT_TIERS[agentName] || 2;
 }
-function runHook() {
-  try {
-    const runtimePath = join2(homedir2(), ".claude", "vibecosystem-runtime.json");
-    if (!existsSync(runtimePath)) return;
-    const runtime = JSON.parse(readFileSync(runtimePath, "utf-8"));
-    if (runtime.activeProfile !== "full") return;
-  } catch {
-    return;
-  }
+async function main() {
   let input;
   try {
-    input = readFileSync(0, "utf-8");
+    input = readFileSync("/dev/stdin", "utf-8");
   } catch {
-    return;
+    process.exit(0);
   }
   let data;
   try {
     data = JSON.parse(input);
   } catch {
+    process.exit(0);
+  }
+  if (data.tool_name !== "Agent") {
+    console.log(JSON.stringify({ result: "approve" }));
     return;
   }
-  if (data.tool_name !== "Agent") return;
   const agentType = data.tool_input?.subagent_type;
-  if (!agentType || typeof agentType !== "string") return;
-  if (data.tool_input?.model) return;
+  if (!agentType) {
+    console.log(JSON.stringify({ result: "approve" }));
+    return;
+  }
+  if (data.tool_input?.model) {
+    console.log(JSON.stringify({ result: "approve" }));
+    return;
+  }
   const tier = getAgentTier(agentType);
-  if (tier === 2) return;
   const recommendedModel = TIER_MODELS[tier];
   const tierLabel = TIER_LABELS[tier];
-  const context = `[Model Router] Agent "${agentType}" is tier ${tier} (${tierLabel}). Recommended model: ${recommendedModel}.`;
+  if (tier === 2) {
+    console.log(JSON.stringify({ result: "approve" }));
+    return;
+  }
+  const context = `[Model Router] Agent "${agentType}" is tier ${tier} (${tierLabel}). Recommended model: ${recommendedModel}. Set model: "${recommendedModel}" for optimal cost/quality balance.`;
   console.log(JSON.stringify({
-    hookSpecificOutput: {
-      hookEventName: "PreToolUse",
-      additionalContext: context
-    }
+    result: "approve",
+    additionalContext: context
   }));
 }
-var _start = Date.now();
-try {
-  runHook();
-  reportHealth("model-router", true, Date.now() - _start);
-} catch (e) {
-  reportHealth("model-router", false, Date.now() - _start, e instanceof Error ? e.message : String(e));
-  process.exit(0);
-}
-export {
-  getAgentTier,
-  parseFrontmatter
-};
+main().catch(() => process.exit(0));

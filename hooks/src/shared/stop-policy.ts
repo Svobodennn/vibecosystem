@@ -126,6 +126,64 @@ export function detectRetryStorms(errors: ToolErrorRecord[], threshold: number =
 }
 
 // ---------------------------------------------------------------------------
+// Fix A (2026-07-13): SERIOUS-ERROR filtresi — blok SADECE gerçek hatada
+//
+// Kök neden: enforcement bloğu ekstra bir asistan turu ürettirir; Agent/Task
+// tool parent'a yalnızca agent'ın SON mesajını döndürdüğü için o hata-raporu
+// turu asıl bulgu raporunun YERİNE geçer. Blok işi bozmayan zararsız hatalarda
+// (grep no-match, okunmamış-dosya, "Grep tool yok", rtk wrapper reddi) tetiklenince
+// uzun araştırma agent'larının 9K+ karakterlik raporu 400 karakterlik önemsiz
+// bir hata raporuna dönüşüyordu.
+//
+// Kullanıcı niyeti: agent'ın FARK ETMEDEN hata alıp false-positive sonuç
+// dönmesini yakalamak. Bu yüzden filtre YALNIZCA benign gürültüyü eler; gerçek
+// bir hata sonradan düzeltilmiş ("recovered") olsa bile bloklar — çünkü asıl
+// hedeflenen "fark edilmemiş hata" vakasını, erken bir başarı maskeleyebilir.
+// Fix B (re-send) bulguları koruduğu için blok artık yıkıcı değil: en fazla kısa
+// dürüst bir not ("X fail etti, düzelttim") ekletir. Benign hatalar ledger'a
+// YİNE yazılır (attribution/analytics korunur) — sadece bloklamaz.
+// ---------------------------------------------------------------------------
+
+/** exit 1'i "sonuç yok / dosya yok" demek olan salt-okunur keşif/list komutları */
+const PROBE_HEADS = new Set([
+  'grep', 'find', 'ls', 'cat', 'sed', 'rg', 'head', 'tail', 'awk',
+  'which', 'test', 'stat', 'fgrep', 'egrep', 'diff',
+]);
+
+/** Zararsız hata metinleri (probe, protokol dürtmesi, tool yok, wrapper reddi) */
+const BENIGN_ERROR_TEXT_RE =
+  /file has not been read yet|string to replace not found|file (?:does not exist|not found)|no such tool available|no matches found|0 items(?:\s+collected)?|does not support (?:compound|--?\w)/i;
+
+export function isBenignError(e: ToolErrorRecord): boolean {
+  if (BENIGN_ERROR_TEXT_RE.test(e.error_text)) return true;
+  // exit 1 + salt-okunur arama/list/probe komutu = eşleşme yok / dosya yok, hata değil
+  if (e.exit_code === 1 && PROBE_HEADS.has(e.command_head.split(' ')[0])) return true;
+  return false;
+}
+
+/**
+ * Blok kararına giren "ciddi" hatalar = zararsız OLMAYAN her tool hatası.
+ * "recovered ise atla" sezgisi bilinçli olarak YOK: erken başarı sonraki gerçek
+ * fail'i maskeleyip "fark edilmemiş hata" niyetini deldiği için kaldırıldı.
+ * Gerçek ama düzeltilmiş hata da bloklar → agent kısa bir not ekler, bulgu (Fix B)
+ * korunur. Benign gürültü ledger'a yine yazılır, sadece bloklamaz.
+ */
+export function computeSeriousErrors(errors: ToolErrorRecord[]): ToolErrorRecord[] {
+  return errors.filter((e) => !isBenignError(e));
+}
+
+/**
+ * Fix B (2026-07-13): Agent/Task parent'a yalnızca agent'ın SON mesajını
+ * döndürür. Blok ekstra bir tur ürettiğinden, agent'a önceki raporunun teslim
+ * EDİLMEYECEĞİNİ ve tam raporu YENİDEN göndermesi gerektiğini açıkça söylemezsek
+ * bulgular kaybolur (kök neden buydu). Bu uyarı tüm block reason'larının başına eklenir.
+ */
+const RESEND_PREAMBLE =
+  'CRITICAL: Only your NEXT message is returned to the parent agent — the report/answer you already wrote will NOT be delivered on its own. ' +
+  'You MUST re-send your COMPLETE final report and findings verbatim in your next message, and then address the item(s) below INSIDE that same message. ' +
+  'Do NOT reply with only the section(s) below; that would discard all your findings.\n\n';
+
+// ---------------------------------------------------------------------------
 // Policy kararı
 // ---------------------------------------------------------------------------
 
@@ -167,7 +225,10 @@ export function evaluateStopPolicy(input: StopPolicyInput): StopPolicyResult {
 
   const unverifiedClaims = detectUnverifiedClaims(lastMessage, successfulCommands);
   const retryStorms = detectRetryStorms(errors);
-  const errorsUnreported = errors.length > 0 && !hasErrorReport(lastMessage);
+  // Fix A: blok yalnızca CİDDİ (benign olmayan) hatalarda. Ledger'a tüm hatalar
+  // yine yazılır — filtre sadece "durdurup rapor yazdır" kararını daraltır.
+  const seriousErrors = computeSeriousErrors(errors);
+  const errorsUnreported = seriousErrors.length > 0 && !hasErrorReport(lastMessage);
 
   if (stopHookActive) {
     return {
@@ -180,12 +241,13 @@ export function evaluateStopPolicy(input: StopPolicyInput): StopPolicyResult {
   }
 
   const parts: string[] = [];
-  if (errorsUnreported) parts.push(buildErrorReportInstruction(errors));
+  if (errorsUnreported) parts.push(buildErrorReportInstruction(seriousErrors));
   if (unverifiedClaims.length > 0) parts.push(buildClaimInstruction(unverifiedClaims));
 
   return {
     shouldBlock: parts.length > 0,
-    blockReason: parts.join('\n\n---\n\n'),
+    // Fix B: her block reason'ın başına "önce tam raporu yeniden gönder" uyarısı
+    blockReason: parts.length > 0 ? RESEND_PREAMBLE + parts.join('\n\n---\n\n') : '',
     unverifiedClaims,
     retryStorms,
     evaded: false,
