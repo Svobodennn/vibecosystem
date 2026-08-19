@@ -82,6 +82,349 @@ CORE_SKILLS=(
   wiring
 )
 
+# Codex-safe full profile. This is intentionally explicit: adding a directory
+# under skills/ never expands the Codex install surface without review.
+CODEX_SKILLS=(
+  accessibility-patterns
+  accessibility-testing
+  achievements
+  agentica-claude-proxy
+  agentica-infrastructure
+  agentica-prompts
+  agentica-sdk
+  agentica-server
+  agentica-spawn
+  ai-slop-cleaner
+  animation-patterns
+  api-patterns
+  api-versioning-patterns
+  art-director
+  ast-grep-find
+  async-repl-protocol
+  autonomous-pr
+  aws-patterns
+  azure-patterns
+  backend-patterns
+  bannerlord-modding
+  better-accessibility
+  better-colors
+  better-interface
+  better-layout
+  better-typography
+  better-ui
+  better-writing
+  brand-identity
+  browser-automation
+  browser-debugging
+  build
+  caching-patterns
+  canary-deploy-patterns
+  changelog-automation
+  chaos-engineering
+  ci-cd-pipeline
+  ci-pipeline-patterns
+  circuit-breaker
+  cli-reference
+  clickhouse-io
+  clone-website
+  code-knowledge-graph
+  codex-orchestration
+  coding-standards
+  cognitive-modes
+  commit
+  commit-trailers
+  competitive-analysis
+  complete-skill
+  completion-check
+  compliance-patterns
+  component-library-patterns
+  compound-learnings
+  concurrency-security
+  config-security-scan
+  content-marketing
+  content-strategy
+  continuity-ledger
+  continuity_ledger
+  continuous-learning
+  continuous-learning-v2
+  contract-testing-patterns
+  cost-optimization-patterns
+  create-handoff
+  create_handoff
+  cto-advisor
+  data-pipeline-patterns
+  dead-code
+  debug
+  deep-interview
+  dependency-analysis-patterns
+  describe-pr
+  describe_pr
+  design-system-generator
+  design-to-code
+  developer-relations
+  diff-review-strategy
+  differential-review
+  django-patterns
+  django-security
+  django-tdd
+  django-verification
+  docker-ops
+  elasticsearch-patterns
+  email-infrastructure
+  environment-triage
+  error-boundary
+  eval-harness
+  event-driven-patterns
+  experiment-engine
+  experiment-loop
+  explicit-identity
+  explore
+  external-skills-catalog
+  factcheck-guard
+  feature-flag-patterns
+  firecrawl-scrape
+  fix
+  form-validation
+  fp-check
+  frontend-dev
+  frontend-patterns
+  fullstack-dev
+  gate-check
+  gcp-patterns
+  gdpr-compliance
+  git-commits
+  github-actions-integration
+  github-mcp
+  github-search
+  golang-patterns
+  golang-testing
+  graceful-degradation
+  graphql-patterns
+  growth-engineering
+  grpc-patterns
+  handoff-templates
+  harvest-adaptive
+  harvest-competitive
+  harvest-deep-crawl
+  harvest-monitor
+  harvest-single
+  harvest-structured
+  help
+  hipaa-compliance
+  hizir
+  idempotent-redundancy
+  implement-plan
+  implement-plan-micro
+  implement-task
+  implement_plan
+  implement_plan_micro
+  implement_task
+  incident-response-patterns
+  index-at-creation
+  insecure-defaults
+  iterative-retrieval
+  java-coding-standards
+  jpa-patterns
+  kafka-patterns
+  knowledge-graph
+  knowledge-management
+  kotlin-patterns
+  kubernetes-patterns
+  kvkk-compliance
+  layered-recall
+  learn
+  llm-tuning-patterns
+  load-testing-patterns
+  loogle-search
+  marketing-analytics
+  math
+  math-help
+  math-router
+  math-unified
+  mcp-chaining
+  mcp-registry
+  mcp-scripts
+  memory-palace
+  migrate
+  minimax-docx
+  minimax-pdf
+  minimax-xlsx
+  modular-code
+  mongodb-patterns
+  morph-apply
+  morph-search
+  mot
+  mutation-testing
+  n8n-workflows
+  nia-docs
+  notepad-system
+  oauth-patterns
+  observability
+  observe-before-editing
+  onboard
+  opc-architecture
+  paywall-optimizer
+  paywall-strategy
+  pentest-methodology
+  performance-testing
+  perplexity-search
+  persistent-planning
+  phase-gated-commits
+  pint-compute
+  plan-agent
+  plan-documentation
+  postgres-patterns
+  pptx-generator
+  prd-writer
+  premortem
+  product-analytics
+  project-audit
+  project-detect
+  project-guidelines-example
+  project-pipeline
+  prometheus-patterns
+  prompt-engineering
+  property-based-testing
+  prove
+  python-patterns
+  python-testing
+  pyxel-patterns
+  qlty-check
+  qlty-during-development
+  rag-patterns
+  recall
+  recall-reasoning
+  redis-patterns
+  refactor
+  reference-sdk
+  release
+  remember
+  repo-research-analyst
+  repoprompt
+  reputation-patterns
+  research
+  research-agent
+  research-external
+  resilience-patterns
+  resume-handoff
+  resume_handoff
+  revenuecat-patterns
+  reverse-document
+  review
+  router-first-architecture
+  saas-analytics-patterns
+  saas-auth-patterns
+  saas-launch-checklist
+  saas-payment-patterns
+  sast-patterns
+  search-router
+  search-tools
+  secret-management-patterns
+  secret-patterns
+  secret-scanner
+  security
+  security-review
+  self-healing
+  seo-patterns
+  server-components
+  session-analysis-patterns
+  session-compression
+  shapely-compute
+  sharp-edges
+  skill-curator
+  skill-developer
+  skill-development
+  skill-evolution
+  skill-upgrader
+  soc2-compliance
+  springboot-patterns
+  springboot-security
+  springboot-tdd
+  springboot-verification
+  strategic-compact
+  subscription-pricing
+  supply-chain-security
+  swift-patterns
+  system-overview
+  system_overview
+  tdd
+  tdd-migrate
+  tdd-migration-pipeline
+  tdd-workflow
+  tech-radar-patterns
+  terraform-patterns
+  test
+  test-strategy
+  tldr-cli
+  tldr-code
+  tldr-deep
+  tldr-overview
+  tldr-router
+  tldr-stats
+  token-budget
+  topic-resolver
+  tour
+  tracing-patterns
+  ui-ux-patterns
+  understand-codebase
+  user-story-generator
+  variant-analysis
+  vector-db-patterns
+  verification-loop
+  visual-verdict
+  vp-engineering
+  websocket-patterns
+  wiring
+)
+
+# Generic skills whose source prose names Claude runtime surfaces. Canonical
+# sources stay untouched; these are transformed only in the Codex destination.
+CODEX_ADAPTED_SKILLS=(
+  build
+  completion-check
+  compound-learnings
+  config-security-scan
+  continuity-ledger
+  continuity_ledger
+  create-handoff
+  create_handoff
+  explore
+  fix
+  help
+  hizir
+  implement-plan
+  implement-plan-micro
+  implement-task
+  implement_plan
+  implement_plan_micro
+  implement_task
+  math
+  migrate
+  mot
+  onboard
+  opc-architecture
+  plan-agent
+  premortem
+  prove
+  refactor
+  release
+  repo-research-analyst
+  reputation-patterns
+  research-external
+  resume-handoff
+  resume_handoff
+  review
+  security
+  skill-evolution
+  skill-upgrader
+  system-overview
+  system_overview
+  tdd
+  tdd-migration-pipeline
+  test
+  wiring
+)
+
 usage() {
   cat <<'EOF'
 Usage: ./install-codex.sh [options]
@@ -89,7 +432,7 @@ Usage: ./install-codex.sh [options]
 Install vibecosystem skills for Codex CLI into ~/.agents/skills/.
 
 Options:
-  --profile core|full       Install the explicit core allowlist or all skills
+  --profile core|codex|full Install core, the Codex-safe allowlist, or all skills
   --install-luna-worker     Install .codex/agents/luna-worker.toml globally
   --validate-luna-worker    Validate the canonical luna worker contract
   --dry-run                 Show actions without writing user files
@@ -99,8 +442,8 @@ Options:
   --help, -h                Show this help
 
 The default is a core, merge-style skill installation. Existing skills are
-skipped unless --force is supplied. AGENTS.md is never copied to a global
-location; put project instructions in the project that Codex is running in.
+skipped unless --force is supplied. This installer never writes global
+AGENTS.md; tools/codex-extras.mjs --rules owns that separate operation.
 EOF
 }
 
@@ -145,11 +488,20 @@ ensure_directory() {
 }
 
 selected_skill_names() {
-  if [ "$PROFILE" = "core" ]; then
-    printf '%s\n' "${CORE_SKILLS[@]}"
-  else
-    find "$REPO_DIR/skills" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | LC_ALL=C sort
-  fi
+  case "$PROFILE" in
+    core) printf '%s\n' "${CORE_SKILLS[@]}" ;;
+    codex) printf '%s\n' "${CODEX_SKILLS[@]}" ;;
+    full) find "$REPO_DIR/skills" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | LC_ALL=C sort ;;
+  esac
+}
+
+is_codex_adapted_skill() {
+  local needle="$1"
+  local name
+  for name in "${CODEX_ADAPTED_SKILLS[@]}"; do
+    [ "$name" = "$needle" ] && return 0
+  done
+  return 1
 }
 
 selected_contains() {
@@ -201,6 +553,19 @@ remove_manifest_entry() {
     MANAGED_HASHES=("${new_hashes[@]}")
     MANIFEST_DIRTY=true
   fi
+}
+
+managed_hash_for() {
+  local needle="$1"
+  local i=0
+  while [ "$i" -lt "${#MANAGED_NAMES[@]}" ]; do
+    if [ "${MANAGED_NAMES[$i]}" = "$needle" ]; then
+      printf '%s\n' "${MANAGED_HASHES[$i]}"
+      return 0
+    fi
+    i=$((i + 1))
+  done
+  return 1
 }
 
 load_manifest() {
@@ -472,10 +837,322 @@ prune_stale_skills() {
   done
 }
 
+adapt_codex_skill() {
+  local directory="$1"
+  command -v node >/dev/null 2>&1 || die "node is required to adapt Codex profile skills"
+  node --input-type=module - "$directory" <<'NODE'
+import { createHash } from 'node:crypto';
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { basename, join } from 'node:path';
+
+const root = process.argv[2];
+const marker = '<!-- codex-adapted-skill -->';
+const skillSlug = basename(root);
+const agentAliases = Object.freeze({
+  aegis: 'security-reviewer',
+  atlas: 'qa-engineer',
+  critic: 'code-reviewer',
+  'discovery-interview': 'business-analyst',
+  'general-purpose': 'default',
+  implement_task: 'default',
+  onboard: 'scout',
+  'plan-agent': 'planner',
+  premortem: 'plan-reviewer',
+  'research-codebase': 'scout',
+  scribe: 'technical-writer',
+});
+const specialHashes = Object.freeze({
+  help: '991eecf4d91b8d10c3e7a1928e8d29b20de31c1eaee62c446ef9750542f8a23a',
+  hizir: '420781cba38858317b58ebc10ec8b761441a4573d27300ee6f17327963d4b90c',
+  'system-overview': '4d40c390527fa429b3f827ebda1ee1d9d3b1f2c501417577347287f5c17e89b4',
+  system_overview: '7d69e0e910deff8eb649868a9852b674cd79954e8970f3b859ef8db5c1e86ea6',
+});
+
+function systemOverview(name) {
+  return [
+    '---',
+    `name: ${name}`,
+    'description: Inspect and explain the installed Codex vibecosystem layers without inventing inventory or activation state.',
+    '---',
+    '',
+    '# Codex vibecosystem overview',
+    '',
+    'Build the overview from runtime evidence, never from fixed counts:',
+    '',
+    '1. Count discoverable skills under `~/.agents/skills/*/SKILL.md`.',
+    '2. Read `~/.codex/agents/*.toml` and the managed `[agents]` block in `~/.codex/config.toml`.',
+    '3. Read global `~/.codex/AGENTS.md` and installed `rule-*` skills.',
+    '4. If `~/.codex/hooks.json` exists, use `/hooks` to distinguish trusted/active handlers from pending ones.',
+    '5. Describe only tools exposed in the current session.',
+    '',
+    'Memory is Codex-native. Use the supported memory surface when exposed; do not edit or query `memories_1.sqlite` directly.',
+    '',
+    'Report each layer as `present`, `missing`, or `pending`, cite the path inspected, and avoid claims about automatic learning, background agents, hook enforcement, or fixed inventory unless the current runtime proves them.',
+  ].join('\n');
+}
+
+const specialSkills = Object.freeze({
+  help: [
+    '---',
+    'name: help',
+    'description: Discover the skills, custom agents, rules, hooks, and tools actually available in the current Codex environment.',
+    '---',
+    '',
+    '# Codex workspace discovery',
+    '',
+    'Use `request_user_input` when the user wants guided discovery. Start from their goal, then inspect runtime inventory before recommending anything.',
+    '',
+    '## Evidence sources',
+    '',
+    '- Skills: `~/.agents/skills/*/SKILL.md`',
+    '- Custom agents: `~/.codex/agents/*.toml` and `[agents]` in `~/.codex/config.toml`',
+    '- Global guardrails: `~/.codex/AGENTS.md` and `rule-*` skills',
+    '- Hooks: `~/.codex/hooks.json`; use `/hooks` to verify trust and activation',
+    '- Session tools: the tool surface exposed to the current request',
+    '',
+    '## Response contract',
+    '',
+    '1. Show only installed/discoverable capabilities.',
+    '2. Recommend a matching `$skill-name` or installed agent role.',
+    '3. Mark missing and pending capabilities explicitly.',
+    '4. Never infer model tiers, hook trust, memory contents, or agent availability from canonical repo files alone.',
+    '',
+    'Useful starting points, only when installed: `$explore`, `$fix`, `$build`, `$tdd`, `$review`, `$security`, `$test`, and `$refactor`.',
+  ].join('\n'),
+  hizir: [
+    '---',
+    'name: hizir',
+    'description: Hızır için Codex-native kullanım kılavuzu; yalnız kurulu runtime envanterini anlatır.',
+    '---',
+    '',
+    '# Hızır — Codex çalışma yüzeyi',
+    '',
+    'Türkçe, kısa ve kanıta dayalı çalış. Sabit agent/skill/hook sayısı verme; önce runtime envanterini oku.',
+    '',
+    '## Envanter kapısı',
+    '',
+    '1. Skill için `~/.agents/skills/<ad>/SKILL.md` dosyasını doğrula ve `$skill-name` sözdizimini kullan.',
+    '2. Agent için `~/.codex/agents/*.toml` ile `[agents]` config rosterını oku; yalnız kurulu rolü öner veya parent context içinde çalış.',
+    '3. Hook için `~/.codex/hooks.json` varlığını ve `/hooks` trust durumunu kontrol et. Trusted değilse enforcement aktif değildir.',
+    '4. Memory için yalnız desteklenen Codex memory yüzeyini kullan; SQLite storeuna doğrudan yazma.',
+    '',
+    '## İş akışları',
+    '',
+    'Kuruluysa `$build`, `$fix`, `$explore`, `$plan-agent`, `$review`, `$security`, `$tdd`, `$test`, `$refactor`, `$release` ve `$commit` kullanılabilir. Kullanıcı açıkça çoklu çalışma isterse parent context `spawn_agent` ile yalnız bağımsız işleri dağıtır; leaf agentlar başka agent başlatmaz.',
+    '',
+    'Her sonuçta yapılan işi, gerçek doğrulamayı, kalan belirsizliği ve gerekiyorsa kullanıcı aksiyonunu açıkça bildir. Kurulu olmayan komut, otomatik öğrenme, arka plan daemonu veya ekip davranışı uydurma.',
+  ].join('\n'),
+  'system-overview': systemOverview('system-overview'),
+  system_overview: systemOverview('system_overview'),
+});
+
+function markdownFiles(directory) {
+  const out = [];
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) out.push(...markdownFiles(path));
+    else if (entry.isFile() && entry.name.endsWith('.md')) out.push(path);
+  }
+  return out;
+}
+
+function stripFrontmatterKeys(text) {
+  if (!text.startsWith('---\n')) return text;
+  const end = text.indexOf('\n---\n', 4);
+  if (end === -1) return text;
+  const header = text.slice(4, end).split('\n');
+  const kept = [];
+  let skipContinuation = false;
+  for (const line of header) {
+    if (/^(?:allowed-tools|tools):\s*/.test(line)) {
+      skipContinuation = !/:\s*\S/.test(line);
+      continue;
+    }
+    if (skipContinuation && /^\s+(?:-|\S)/.test(line)) continue;
+    skipContinuation = false;
+    kept.push(line);
+  }
+  return `---\n${kept.join('\n')}\n---\n${text.slice(end + 5)}`;
+}
+
+function adaptRequiredFrontmatter(text) {
+  if (!text.startsWith('---\n')) return text;
+  const end = text.indexOf('\n---\n', 4);
+  if (end === -1) return text;
+  const header = text.slice(4, end).split('\n').map((line) =>
+    line.startsWith('description: ')
+      ? line.replace('.claude/ directory', 'Codex configuration')
+      : line);
+  return `---\n${header.join('\n')}\n---\n${text.slice(end + 5)}`;
+}
+
+function validateRequiredSkillFrontmatter(text, path) {
+  if (basename(path) !== 'SKILL.md') return;
+  if (!text.startsWith('---\n')) throw new Error(`missing frontmatter in ${path}`);
+  const end = text.indexOf('\n---\n', 4);
+  if (end === -1) throw new Error(`unterminated frontmatter in ${path}`);
+  const header = text.slice(4, end).split('\n');
+  if (!header.some((line) => /^description:\s*\S/.test(line))) {
+    throw new Error(`missing required frontmatter description in ${path}`);
+  }
+}
+
+function insertMarker(text, note) {
+  if (text.includes(marker)) return text;
+  const insertion = `${marker}\n${note ? `${note}\n` : ''}`;
+  if (!text.startsWith('---\n')) return `${insertion}\n${text}`;
+  const end = text.indexOf('\n---\n', 4);
+  if (end === -1) return `${insertion}\n${text}`;
+  return `${text.slice(0, end + 5)}\n${insertion}${text.slice(end + 5)}`;
+}
+
+function removeClaudePathContent(text) {
+  const lines = text.split('\n');
+  const output = [];
+  let block = null;
+  let removed = false;
+  for (const line of lines) {
+    if (block) {
+      block.push(line);
+      if (/^\s*```/.test(line)) {
+        if (block.some((item) => /\.claude\//.test(item))) {
+          output.push('> Codex adapter: Claude-only artifact/hook example omitted; inspect the current Codex runtime and use a manual fallback.');
+          removed = true;
+        } else {
+          output.push(...block);
+        }
+        block = null;
+      }
+      continue;
+    }
+    if (/^\s*```/.test(line)) {
+      block = [line];
+      continue;
+    }
+    if (/\.claude\//.test(line)) {
+      removed = true;
+      continue;
+    }
+    output.push(line);
+  }
+  if (block) {
+    if (block.some((item) => /\.claude\//.test(item))) removed = true;
+    else output.push(...block);
+  }
+  return { text: output.join('\n'), removed };
+}
+
+function adaptSlashSkills(text) {
+  const aliases = {
+    build: 'build', explore: 'explore', fix: 'fix', review: 'review',
+    security: 'security', tdd: 'tdd', test: 'test', refactor: 'refactor',
+    release: 'release', mot: 'mot', onboard: 'onboard', prove: 'prove',
+    migrate: 'migrate', commit: 'commit', 'plan-agent': 'plan-agent',
+    plan: 'plan-agent', 'project-detect': 'project-detect', learn: 'learn',
+    debug: 'debug', e2e: 'test', 'test-driven-development': 'tdd',
+  };
+  let adapted = text;
+  for (const [from, to] of Object.entries(aliases)) {
+    for (const suffix of [' ', '\n', '`', '"', "'", ')', '>']) {
+      adapted = adapted.replaceAll('/' + from + suffix, '$' + to + suffix);
+    }
+  }
+  return adapted;
+}
+
+function adaptAgentAliases(text) {
+  return text.replace(/(agent_type\s*[=:]\s*["'])([\w-]+)(["'])/g, (_match, before, role, after) => {
+    const mapped = agentAliases[role] || role;
+    return `${before}${mapped === 'default' ? mapped : mapped.replaceAll('-', '_')}${after}`;
+  });
+}
+
+function adaptProseAgentAliases(text) {
+  const bySkill = {
+    build: { 'discovery-interview': 'business-analyst', 'research-codebase': 'scout' },
+    release: { aegis: 'security-reviewer', atlas: 'qa-engineer', scribe: 'technical-writer' },
+    review: { aegis: 'security-reviewer', critic: 'code-reviewer', judge: 'code-reviewer' },
+    security: { aegis: 'security-reviewer' },
+    test: { atlas: 'qa-engineer' },
+    'tdd-migration-pipeline': { atlas: 'qa-engineer', critic: 'code-reviewer', judge: 'code-reviewer', validator: 'qa-engineer' },
+  };
+  let adapted = text;
+  for (const [from, to] of Object.entries(bySkill[skillSlug] || {})) {
+    adapted = adapted.replace(new RegExp(`\\b${from}\\b`, 'g'), to);
+  }
+  return adapted
+    .replace('[Contents of business-analyst SKILL.md]', '[Interview task, user answers, and current feature context]')
+    .replace('[Contents of scout SKILL.md]', '[Bounded codebase research task and current project context]');
+}
+
+for (const path of markdownFiles(root)) {
+  const raw = readFileSync(path, 'utf8');
+  let text = raw.replace(/\r\n/g, '\n');
+  if (basename(path) === 'SKILL.md' && specialSkills[skillSlug]) {
+    const actual = createHash('sha256').update(raw).digest('hex');
+    if (actual !== specialHashes[skillSlug]) {
+      throw new Error(`canonical ${skillSlug}/SKILL.md changed; review its Codex-native adaptation before installing`);
+    }
+    text = specialSkills[skillSlug];
+  }
+  text = text.replace(/\bTask\(\s*([\w-]+)\s*\):\s*"([\s\S]*?)"/g, (_match, role, message) => {
+    const mapped = agentAliases[role] || role;
+    const codexRole = mapped === 'default' ? mapped : mapped.replaceAll('-', '_');
+    return `spawn_agent(task_name="${codexRole}_task", agent_type="${codexRole}", message="${message}")`;
+  });
+  text = adaptRequiredFrontmatter(stripFrontmatterKeys(text))
+    .replaceAll('AskUserQuestion', 'request_user_input')
+    .replace(/\bTask\((?!s\))/g, 'spawn_agent(')
+    .replace(/\bTask tool\b/g, 'spawn_agent tool')
+    .replaceAll('subagent_type', 'agent_type')
+    .replaceAll('TaskOutput', 'wait_agent')
+    .replaceAll('TodoWrite', 'update_plan')
+    .replaceAll('ExitPlanMode', 'explicit user approval')
+    .replace(/,?\s*run_in_background\s*=\s*(?:true|false)/g, '')
+    .replace(/,?\s*model\s*=\s*["']claude[^"']*["']/gi, '')
+    .replace(/\bprompt\s*=/g, 'message=')
+    .replace(/\bSkill\(\s*["']?([\w-]+)["']?\s*\)/g, (_match, name) => `$${name}`)
+    .replace(/(?:~\/)?\.claude\/rules\/([\w-]+)\.md/g, '~/.agents/skills/rule-$1/SKILL.md')
+    .replace(/(?:~\/)?\.claude\/skills\/([\w-]+)\/SKILL\.md/g, '~/.agents/skills/$1/SKILL.md')
+    .replace(/(?:~\/)?\.claude\/agents\//g, '~/.codex/agents/')
+    .replaceAll('Claude Code', 'Codex')
+    .replace(/\bClaude:/g, 'Codex:')
+    .replaceAll('Claude routes', 'Codex routes')
+    .replaceAll('$CLAUDE_PROJECT_DIR', '$PWD');
+  text = adaptProseAgentAliases(adaptAgentAliases(adaptSlashSkills(text)));
+  text = text.replace(/\bspawn_agent\((\s*)(?=agent_type\s*=)/g, (_match, whitespace) =>
+    `spawn_agent(${whitespace}task_name="delegated_task",${whitespace}`);
+  text = text.replace(/\bspawn_agent\(\s*\)/g, 'spawn_agent(task_name="delegated_task", message="<bounded task>")');
+  const filtered = removeClaudePathContent(text);
+  text = filtered.text;
+  const removedClaudePath = filtered.removed;
+  const note = removedClaudePath
+    ? '> Codex adapter: Claude-only path/hook steps were removed. A hook-dependent step is active only when a matching handler exists in `~/.codex/hooks.json` and is trusted; otherwise use a manual fallback.'
+    : '> Codex adapter: use `spawn_agent`, `wait_agent`, `request_user_input`, and `$skill-name` only through surfaces exposed in the current Codex session.';
+  text = insertMarker(text.replace(/\n{3,}/g, '\n\n'), note);
+  validateRequiredSkillFrontmatter(text, path);
+  writeFileSync(path, text);
+}
+NODE
+}
+
+copy_skill_source() {
+  local name="$1"
+  local source="$2"
+  local destination="$3"
+  cp -R "$source" "$destination"
+  if [ "$PROFILE" = "codex" ] && is_codex_adapted_skill "$name"; then
+    adapt_codex_skill "$destination"
+  fi
+}
+
 install_skill() {
   local name="$1"
   local source="$REPO_DIR/skills/$name"
   local destination="$SKILLS_DIR/$name"
+  local expected=""
+  local current=""
+  local nested_symlink=""
 
   if [ -e "$destination" ] || [ -L "$destination" ]; then
     [ -L "$destination" ] && die "refusing to overwrite symlink: $destination"
@@ -486,12 +1163,32 @@ install_skill() {
       else
         backup_existing_path "$destination" "skills/$name"
         remove_owned_path "$destination"
-        cp -R "$source" "$destination"
+        copy_skill_source "$name" "$source" "$destination"
         set_manifest_entry "$name" "$(hash_skill "$destination")"
         UPDATED=$((UPDATED + 1))
       fi
     else
-      SKIPPED=$((SKIPPED + 1))
+      expected="$(managed_hash_for "$name" || true)"
+      if [ -d "$destination" ] && [ "$HASH_MODE" != "none" ] && \
+         [ -n "$expected" ] && [ "$expected" != "unverified" ]; then
+        nested_symlink="$(find "$destination" -type l -print -quit)"
+        if [ -z "$nested_symlink" ]; then
+          current="$(hash_skill "$destination")"
+        fi
+      fi
+      if [ -n "$current" ] && [ "$current" = "$expected" ]; then
+        if [ "$DRY_RUN" = true ]; then
+          echo "  [dry-run] would back up and refresh owned skill: $destination"
+        else
+          backup_existing_path "$destination" "skills/$name"
+          remove_owned_path "$destination"
+          copy_skill_source "$name" "$source" "$destination"
+          set_manifest_entry "$name" "$(hash_skill "$destination")"
+        fi
+        UPDATED=$((UPDATED + 1))
+      else
+        SKIPPED=$((SKIPPED + 1))
+      fi
     fi
     return 0
   fi
@@ -500,7 +1197,7 @@ install_skill() {
     echo "  [dry-run] would install skill: $name"
     ADDED=$((ADDED + 1))
   else
-    cp -R "$source" "$destination"
+    copy_skill_source "$name" "$source" "$destination"
     set_manifest_entry "$name" "$(hash_skill "$destination")"
     ADDED=$((ADDED + 1))
   fi
@@ -564,7 +1261,7 @@ while [ "$#" -gt 0 ]; do
       NON_INTERACTIVE=true
       ;;
     --profile)
-      [ "$#" -ge 2 ] || die "--profile requires core or full"
+      [ "$#" -ge 2 ] || die "--profile requires core, codex, or full"
       PROFILE="$2"
       PROFILE_EXPLICIT=true
       shift
@@ -585,8 +1282,8 @@ while [ "$#" -gt 0 ]; do
 done
 
 case "$PROFILE" in
-  core|full) ;;
-  *) die "unsupported profile '$PROFILE'; choose core or full" ;;
+  core|codex|full) ;;
+  *) die "unsupported profile '$PROFILE'; choose core, codex, or full" ;;
 esac
 
 SELECTED_SKILLS=()
