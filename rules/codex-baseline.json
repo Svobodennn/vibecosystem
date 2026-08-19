@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "algorithm": "sha256",
+  "overrides": {
+    "agent-assignment-matrix": "974de601a949925c17f34f68a49a9e9103b8bd9beadebe7cf3153797d76108ce",
+    "agent-error-reporting": "488fe4643f8566befdbf9e2de4b40b0848cc75a125b69e05431e76ef421c1626",
+    "agents": "d89b4110a4970acb66e0b4d090eb55de71fadcb4c3c6b151ff1debb977a5b0d4",
+    "architecture-principles": "65ba0b2e5687d8570add498286aaccda26695a14414a5db89f62df02a197a6d0",
+    "auto-skill-activation": "d50eacf93984bb9eb75ebc5cf36cdf9f54e2d6f7b9e42d990cfa0e87f7e64a0e",
+    "canavar": "63a48a1a20a0215b35b5c861a00c9c0b357207cd78b0a793a949e7883e67f60f",
+    "claim-verification": "6c01cd5c6f77f839e7a30cd663e9613949f4828464e7afb44e6166c2fabb9032",
+    "collaborative-decisions": "51f0002a230ef9c333f94925c053be8215d9feac681164b31f28f3784f76d223",
+    "commit-pr-linear-conventions": "8531f499929689dfb4066c953bece72fd7e9c181c922327f67dc93cca9ccd1b9",
+    "cross-project-learning": "4db40c61e51e1983638d63a8cd4dda700658e8c5e9df3eb5d7c3966adb4eb5c2",
+    "hizir-identity": "0112085ba595b11db6b49f332c485fe3b687fdfe76a6447705c578679f22b671",
+    "hooks": "f0c39dc5b6f0086904aa52efc073d8ffb10bcd1d963ed3790d40958a4172ebe0",
+    "incremental-writing": "4bd315f2896060743c29f1f2487ebf700ab3f7f84ad0cd6b913e5fdd47792949",
+    "memory-system": "75b78ae4d746130287f04beb5a598f63d4c78d89c6f1525c922c5a073429c876",
+    "performance": "a678cf7558e7d4a4286753291b1d237e919e1c00313385300829a6e5f0bc07c5",
+    "phantom-mindset": "d1b17cf2b2e3de11b80a1d32a74c5e19af70c54e949a4406356700fde2912386",
+    "pre-compact-state": "94b60e96471ff0cf749e9a181cd48934e63cff9111c9275f6dbe5a598ebb4291",
+    "pre-implementation-contract": "085d946034b9a8f03153ab50a0955ff62919c2f06991bb99af7a058d4a81f482",
+    "proactive-delegation": "a07db4efac420b18d2dc47308fe1dba3e6c8589d3ad517187e176a24f34ca85e",
+    "qa-loop": "6bdca28102d77b5574347ce98759cb54bbd4271604a5eef3d7931463723232e7",
+    "safety-and-quality": "bf0b4545675484b4c41fa2c694e9294acd2d3616f8825a38a4e2c3427160fadc",
+    "vibecosystem-welcome": "598a4b52a4aa54a47cfcec4ef2068f4ce38175fea700b76b759c48e4f03522ad",
+    "worktree-handoff": "7a522d2d71369214ba840f8a0456cac654001387dd8afd9a9f801e4d1e6a86c1"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "algorithm": "sha256",
+  "overrides": {
+    "browser-agent": "50b3c6ec934ec29c22dab630ce1a68b7367cb1a8565a67ffbc37ae2d26bc9e67",
+    "mcp-manager": "c86e8d1e180d7ac900f199a53c9bcebf602ac90056510142691c1f23534aaa8b",
+    "review-agent": "9fc9c3ed11ed675c6628b91a72af3be43e628b98f474ba9f7e060cb53a2ee4ca",
+    "strategist": "d30cffc2b3ff41ee81883dca988c95dae32417e7adb69aab0a752ca9206e5d43",
+    "website-cloner": "fe983c3c33dcdc0b8674073f8f46e4adddba6131f14bf60ae5ce46698c438ac3"
+  }
+}
