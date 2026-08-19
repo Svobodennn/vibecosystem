@@ -1,5 +1,6 @@
 ---
 name: minimax-docx
+description: Create, edit, fill, and format DOCX Word documents with the OpenXML SDK (.NET), including new documents, content updates, and template-based formatting.
 license: MIT
 metadata:
   version: "1.0.0"
@@ -10,15 +11,6 @@ metadata:
     - "GB/T 9704-2012 Layout Standard for Official Documents"
     - "IEEE / ACM / APA / MLA / Chicago / Turabian Style Guides"
     - "Springer LNCS / Nature / HBR Document Templates"
-description: >
-  Professional DOCX document creation, editing, and formatting using OpenXML SDK (.NET).
-  Three pipelines: (A) create new documents from scratch, (B) fill/edit content in existing
-  documents, (C) apply template formatting with XSD validation gate-check.
-  MUST use this skill whenever the user wants to produce, modify, or format a Word document —
-  including when they say "write a report", "draft a proposal", "make a contract",
-  "fill in this form", "reformat to match this template", or any task whose final output
-  is a .docx file. Even if the user doesn't mention "docx" explicitly, if the task
-  implies a printable/formal document, use this skill.
 triggers:
   - Word
   - docx
