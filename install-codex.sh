@@ -231,10 +231,6 @@ CODEX_SKILLS=(
   load-testing-patterns
   loogle-search
   marketing-analytics
-  math
-  math-help
-  math-router
-  math-unified
   mcp-chaining
   mcp-registry
   mcp-scripts
@@ -385,7 +381,6 @@ CODEX_ADAPTED_SKILLS=(
   implement-plan
   implement-plan-micro
   implement-task
-  math
   migrate
   mot
   onboard

@@ -120,7 +120,7 @@ test ! -e "$TEST_HOME_DIR/.agents"
 test ! -e "$TEST_HOME_DIR/.codex"
 
 codex_dry_run_output="$(run_installer --profile codex --dry-run --non-interactive)"
-assert_contains "$codex_dry_run_output" "Installing profile 'codex' (282 skills)"
+assert_contains "$codex_dry_run_output" "Installing profile 'codex' (278 skills)"
 test ! -e "$TEST_HOME_DIR/.agents"
 test ! -e "$TEST_HOME_DIR/.codex"
 
@@ -148,8 +148,8 @@ backup_skill_count="$(find "$TEST_HOME_DIR/.agents/vibecosystem-backups" -type d
 run_installer --profile codex --non-interactive >/dev/null
 codex_count="$(find "$TEST_HOME_DIR/.agents/skills" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')"
 manifest_count="$(awk -F '\t' '!/^#/ && NF {count++} END {print count+0}' "$TEST_HOME_DIR/.agents/.vibecosystem-codex-skills")"
-[ "$codex_count" = "283" ]
-[ "$manifest_count" = "282" ]
+[ "$codex_count" = "279" ]
+[ "$manifest_count" = "278" ]
 test -d "$TEST_HOME_DIR/.agents/skills/user-owned-skill"
 excluded_codex_skills=(
   sub-agents parallel-agents parallel-agent-contracts swarm
@@ -158,7 +158,7 @@ excluded_codex_skills=(
   slash-commands smart-model-routing braintrust-analyze braintrust-tracing
   agent-benchmark agent-context-isolation agent-linter agent-orchestration
   agent-qa-testing agent-tamagotchi agentic-workflow validate-agent
-  workflow-router
+  workflow-router math math-help math-router math-unified
 )
 for skill_name in "${excluded_codex_skills[@]}"; do
   test ! -e "$TEST_HOME_DIR/.agents/skills/$skill_name"
@@ -185,7 +185,7 @@ for directory in "$TEST_HOME_DIR"/.agents/skills/*; do
     fi
   fi
 done
-[ "$adapted_count" = "36" ]
+[ "$adapted_count" = "35" ]
 
 while IFS=$'\t' read -r skill_name _skill_hash; do
   [ -n "$skill_name" ] || continue

@@ -36,7 +36,7 @@ cd vibecosystem
 
 Skills are installed into `~/.agents/skills/`, the current Codex skill discovery target. The default is ownership-aware merge: unmanaged or user-modified destinations are preserved, while unchanged destinations recorded in the installer manifest are backed up and refreshed. `install-codex.sh` never writes global `AGENTS.md`; global rules are a separate, explicit `tools/codex-extras.mjs --rules` operation.
 
-The `core` profile is a small explicit allowlist. The `codex` profile is the explicit Codex-safe allowlist: Claude-runtime-only skills are excluded and generic Class B skills are adapted only in the destination. The `full` profile is the unadapted canonical inventory and exists for compatibility, not as the recommended Codex profile.
+The `core` profile is a small explicit allowlist. The `codex` profile is the explicit Codex-safe allowlist: Claude-runtime-only skills are excluded and generic Class B skills are adapted only in the destination. It also excludes the 50-entry recursive math family (`math`, `math-help`, `math-router`, and `math-unified`) because that domain tree is outside the software-development profile and would consume most of the model-visible skill budget. The `full` profile is the unadapted canonical inventory and exists for compatibility, not as the recommended Codex profile.
 
 ### Installer options
 
