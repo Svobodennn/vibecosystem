@@ -217,8 +217,6 @@ CODEX_SKILLS=(
   implement-plan-micro
   implement-task
   implement_plan
-  implement_plan_micro
-  implement_task
   incident-response-patterns
   index-at-creation
   insecure-defaults
@@ -396,8 +394,6 @@ CODEX_ADAPTED_SKILLS=(
   implement-plan-micro
   implement-task
   implement_plan
-  implement_plan_micro
-  implement_task
   math
   migrate
   mot

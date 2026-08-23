@@ -102,7 +102,7 @@ test ! -e "$TEST_HOME_DIR/.agents"
 test ! -e "$TEST_HOME_DIR/.codex"
 
 codex_dry_run_output="$(run_installer --profile codex --dry-run --non-interactive)"
-assert_contains "$codex_dry_run_output" "Installing profile 'codex' (290 skills)"
+assert_contains "$codex_dry_run_output" "Installing profile 'codex' (288 skills)"
 test ! -e "$TEST_HOME_DIR/.agents"
 test ! -e "$TEST_HOME_DIR/.codex"
 
@@ -118,7 +118,7 @@ mkdir -p "$TEST_HOME_DIR/.agents/skills/user-owned-skill"
 printf 'user-owned\n' > "$TEST_HOME_DIR/.agents/skills/user-owned-skill/SKILL.md"
 run_installer --profile full --non-interactive >/dev/null
 full_count="$(find "$TEST_HOME_DIR/.agents/skills" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')"
-[ "$full_count" = "316" ]
+[ "$full_count" = "314" ]
 run_installer --profile core --prune --non-interactive >/dev/null
 skill_count="$(find "$TEST_HOME_DIR/.agents/skills" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')"
 [ "$skill_count" = "33" ]
@@ -130,8 +130,8 @@ backup_skill_count="$(find "$TEST_HOME_DIR/.agents/vibecosystem-backups" -type d
 run_installer --profile codex --non-interactive >/dev/null
 codex_count="$(find "$TEST_HOME_DIR/.agents/skills" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')"
 manifest_count="$(awk -F '\t' '!/^#/ && NF {count++} END {print count+0}' "$TEST_HOME_DIR/.agents/.vibecosystem-codex-skills")"
-[ "$codex_count" = "291" ]
-[ "$manifest_count" = "290" ]
+[ "$codex_count" = "289" ]
+[ "$manifest_count" = "288" ]
 test -d "$TEST_HOME_DIR/.agents/skills/user-owned-skill"
 excluded_codex_skills=(
   sub-agents parallel-agents parallel-agent-contracts swarm
@@ -167,7 +167,7 @@ for directory in "$TEST_HOME_DIR"/.agents/skills/*; do
     fi
   fi
 done
-[ "$adapted_count" = "43" ]
+[ "$adapted_count" = "41" ]
 
 while IFS=$'\t' read -r skill_name _skill_hash; do
   [ -n "$skill_name" ] || continue
