@@ -1,5 +1,5 @@
 ---
-name: implement_plan
+name: implement-plan
 description: Implement technical plans from thoughts/shared/plans with verification
 user-invocable: false
 ---
@@ -185,7 +185,7 @@ Handoffs persist on disk. If compaction happens, you re-read handoffs and contin
 
 ### Pre-Requisite: Plan Validation
 
-Before implementing, ensure the plan has been validated using the `validate-agent`. The validation step is separate and should have created a handoff with status VALIDATED.
+Before implementing, ensure the plan has been validated using the `plan-reviewer`. The validation step is separate and should have created a handoff with status VALIDATED.
 
 **Check for validation handoff:**
 ```bash
@@ -194,7 +194,7 @@ ls thoughts/handoffs/<session>/validation-*.md
 
 If no validation exists, suggest running validation first:
 ```
-"This plan hasn't been validated yet. Would you like me to spawn validate-agent first?"
+"This plan hasn't been validated yet. Would you like me to spawn plan-reviewer first?"
 ```
 
 If validation exists but status is NEEDS REVIEW, present the issues before proceeding.

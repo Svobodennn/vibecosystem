@@ -47,6 +47,24 @@ if [ "${#source_description_failures[@]}" -ne 0 ]; then
   exit 1
 fi
 
+hyphenated_consolidated_skills=(
+  continuity-ledger create-handoff implement-plan resume-handoff
+  system-overview describe-pr implement-plan-micro implement-task
+)
+removed_underscore_duplicates=(
+  continuity_ledger create_handoff implement_plan resume_handoff
+  system_overview describe_pr implement_plan_micro implement_task
+)
+for skill_name in "${hyphenated_consolidated_skills[@]}"; do
+  skill_file="$REPO_DIR/skills/$skill_name/SKILL.md"
+  test -f "$skill_file"
+  sed -n '2,/^---$/p' "$skill_file" \
+    | grep -qE "^name:[[:space:]]*$skill_name[[:space:]]*$"
+done
+for skill_name in "${removed_underscore_duplicates[@]}"; do
+  test ! -e "$REPO_DIR/skills/$skill_name"
+done
+
 toml_python=""
 for candidate in python3.13 python3.12 python3.11 python3; do
   if command -v "$candidate" >/dev/null 2>&1 && \
@@ -102,7 +120,7 @@ test ! -e "$TEST_HOME_DIR/.agents"
 test ! -e "$TEST_HOME_DIR/.codex"
 
 codex_dry_run_output="$(run_installer --profile codex --dry-run --non-interactive)"
-assert_contains "$codex_dry_run_output" "Installing profile 'codex' (288 skills)"
+assert_contains "$codex_dry_run_output" "Installing profile 'codex' (282 skills)"
 test ! -e "$TEST_HOME_DIR/.agents"
 test ! -e "$TEST_HOME_DIR/.codex"
 
@@ -118,7 +136,7 @@ mkdir -p "$TEST_HOME_DIR/.agents/skills/user-owned-skill"
 printf 'user-owned\n' > "$TEST_HOME_DIR/.agents/skills/user-owned-skill/SKILL.md"
 run_installer --profile full --non-interactive >/dev/null
 full_count="$(find "$TEST_HOME_DIR/.agents/skills" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')"
-[ "$full_count" = "314" ]
+[ "$full_count" = "308" ]
 run_installer --profile core --prune --non-interactive >/dev/null
 skill_count="$(find "$TEST_HOME_DIR/.agents/skills" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')"
 [ "$skill_count" = "33" ]
@@ -130,8 +148,8 @@ backup_skill_count="$(find "$TEST_HOME_DIR/.agents/vibecosystem-backups" -type d
 run_installer --profile codex --non-interactive >/dev/null
 codex_count="$(find "$TEST_HOME_DIR/.agents/skills" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')"
 manifest_count="$(awk -F '\t' '!/^#/ && NF {count++} END {print count+0}' "$TEST_HOME_DIR/.agents/.vibecosystem-codex-skills")"
-[ "$codex_count" = "289" ]
-[ "$manifest_count" = "288" ]
+[ "$codex_count" = "283" ]
+[ "$manifest_count" = "282" ]
 test -d "$TEST_HOME_DIR/.agents/skills/user-owned-skill"
 excluded_codex_skills=(
   sub-agents parallel-agents parallel-agent-contracts swarm
@@ -167,7 +185,7 @@ for directory in "$TEST_HOME_DIR"/.agents/skills/*; do
     fi
   fi
 done
-[ "$adapted_count" = "41" ]
+[ "$adapted_count" = "36" ]
 
 while IFS=$'\t' read -r skill_name _skill_hash; do
   [ -n "$skill_name" ] || continue
@@ -189,8 +207,7 @@ grep -q 'Build the overview from runtime evidence' "$TEST_HOME_DIR/.agents/skill
 if grep -rnE 'CONTINUOUS CLAUDE|51 agent|/swarm|~/.claude|\.claude/' \
   "$TEST_HOME_DIR/.agents/skills/help" \
   "$TEST_HOME_DIR/.agents/skills/hizir" \
-  "$TEST_HOME_DIR/.agents/skills/system-overview" \
-  "$TEST_HOME_DIR/.agents/skills/system_overview"; then
+  "$TEST_HOME_DIR/.agents/skills/system-overview"; then
   echo "stale Claude inventory survived a Codex-native discovery skill" >&2
   exit 1
 fi

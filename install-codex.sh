@@ -144,13 +144,11 @@ CODEX_SKILLS=(
   content-marketing
   content-strategy
   continuity-ledger
-  continuity_ledger
   continuous-learning
   continuous-learning-v2
   contract-testing-patterns
   cost-optimization-patterns
   create-handoff
-  create_handoff
   cto-advisor
   data-pipeline-patterns
   dead-code
@@ -158,7 +156,6 @@ CODEX_SKILLS=(
   deep-interview
   dependency-analysis-patterns
   describe-pr
-  describe_pr
   design-system-generator
   design-to-code
   developer-relations
@@ -216,7 +213,6 @@ CODEX_SKILLS=(
   implement-plan
   implement-plan-micro
   implement-task
-  implement_plan
   incident-response-patterns
   index-at-creation
   insecure-defaults
@@ -305,7 +301,6 @@ CODEX_SKILLS=(
   research-external
   resilience-patterns
   resume-handoff
-  resume_handoff
   revenuecat-patterns
   reverse-document
   review
@@ -344,7 +339,6 @@ CODEX_SKILLS=(
   supply-chain-security
   swift-patterns
   system-overview
-  system_overview
   tdd
   tdd-migrate
   tdd-migration-pipeline
@@ -383,9 +377,7 @@ CODEX_ADAPTED_SKILLS=(
   compound-learnings
   config-security-scan
   continuity-ledger
-  continuity_ledger
   create-handoff
-  create_handoff
   explore
   fix
   help
@@ -393,7 +385,6 @@ CODEX_ADAPTED_SKILLS=(
   implement-plan
   implement-plan-micro
   implement-task
-  implement_plan
   math
   migrate
   mot
@@ -408,13 +399,11 @@ CODEX_ADAPTED_SKILLS=(
   reputation-patterns
   research-external
   resume-handoff
-  resume_handoff
   review
   security
   skill-evolution
   skill-upgrader
   system-overview
-  system_overview
   tdd
   tdd-migration-pipeline
   test
@@ -860,8 +849,7 @@ const agentAliases = Object.freeze({
 const specialHashes = Object.freeze({
   help: '991eecf4d91b8d10c3e7a1928e8d29b20de31c1eaee62c446ef9750542f8a23a',
   hizir: '420781cba38858317b58ebc10ec8b761441a4573d27300ee6f17327963d4b90c',
-  'system-overview': '4d40c390527fa429b3f827ebda1ee1d9d3b1f2c501417577347287f5c17e89b4',
-  system_overview: '7d69e0e910deff8eb649868a9852b674cd79954e8970f3b859ef8db5c1e86ea6',
+  'system-overview': 'dd47341552196ce58422d77f9a36020d5d62944d80a722f81f7aca3d44998715',
 });
 
 function systemOverview(name) {
@@ -939,7 +927,6 @@ const specialSkills = Object.freeze({
     'Her sonuçta yapılan işi, gerçek doğrulamayı, kalan belirsizliği ve gerekiyorsa kullanıcı aksiyonunu açıkça bildir. Kurulu olmayan komut, otomatik öğrenme, arka plan daemonu veya ekip davranışı uydurma.',
   ].join('\n'),
   'system-overview': systemOverview('system-overview'),
-  system_overview: systemOverview('system_overview'),
 });
 
 function markdownFiles(directory) {

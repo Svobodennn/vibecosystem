@@ -142,7 +142,7 @@ Then wait for the user's input.
    | `kraken` | implement | Large features, new systems, major components |
    | `architect` | plan | Feature design, system architecture, implementation planning |
    | `phoenix` | plan | Refactoring plans, migrations, codebase restructuring |
-   | `herald` | deploy | Releases, deployments, publishing |
+   | `shipper` | deploy | Releases, deployments, publishing |
    | `maestro` | orchestrate | Complex multi-agent workflows |
 
    **Workers (focused specialists):**
@@ -157,7 +157,7 @@ Then wait for the user's input.
    | `atlas` | validate | E2E/integration tests |
    | `oracle` | research | External docs, best practices, how-to |
    | `scout` | research | Codebase exploration, finding existing code |
-   | `pathfinder` | research | Repository structure analysis |
+   | `harvest` | research | Repository structure analysis |
    | `plan-reviewer` | review | Feature plan review, design validation |
    | `plan-reviewer` | review | Migration review, refactoring validation |
    | `chronicler` | session | Session analysis, history summaries |

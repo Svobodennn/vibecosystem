@@ -76,7 +76,7 @@ Options:
 | Skills | `.claude/skills/*/SKILL.md` |
 | Setup wizard | `opc/scripts/setup/wizard.py` |
 | Recall script | `opc/scripts/recall_temporal_facts.py` |
-| Store learning | `opc/scripts/core/store_learning.py` |
+| Store learning | `opc/scripts/core/store_learning.py` (sadece opc repo icinde gecerli; global'de dosya-bazli memory kullan) |
 | Symbol index builder | `opc/scripts/build_symbol_index.py` |
 
 ## Environment Variables
