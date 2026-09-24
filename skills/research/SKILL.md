@@ -1,7 +1,7 @@
 ---
 name: research
 description: Document codebase as-is with thoughts directory for historical context
-model: claude-opus-4-5-20251101
+model: opus
 user-invocable: false
 ---
 

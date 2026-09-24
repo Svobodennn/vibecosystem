@@ -3,6 +3,8 @@ name: ai-slop-cleaner
 description: Post-implementation cleanup that removes AI-generated bloat while preserving functionality. Runs pass-by-pass with test verification after each pass. Activate after kraken/spark complete a feature, or when a codebase needs hygiene work.
 ---
 
+> **Test politikası:** Testle ilgili geçerli kural `~/.claude/rules/testing-policy.md`'dir (projede `TESTING_POLICY.md` varsa ekleriyle birlikte); bu dosyadaki test/coverage/suite direktiflerinin yerine o geçer.
+
 # AI Slop Cleaner
 
 AI code generation produces working code. It also produces unnecessary code alongside it. This skill removes the unnecessary parts while keeping everything that matters.

@@ -15,9 +15,9 @@ Analyze a brownfield codebase and create an initial continuity ledger.
 
 ## How to Use
 
-**Spawn the onboard agent:**
+**Spawn the scout agent:**
 
-Use the Task tool with `subagent_type: "onboard"` and this prompt:
+Use the Task tool with `subagent_type: "scout"` and this prompt:
 
 ```
 Onboard me to this project at $CLAUDE_PROJECT_DIR.

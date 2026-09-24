@@ -107,7 +107,7 @@ sources: [nia, perplexity, firecrawl]
 - [Source 2 with link]
 
 ## For Next Agent
-[Summary of what the plan-agent or implement-agent should know]
+[Summary of what the planner or implement-agent should know]
 ```
 
 ## Return to Caller
@@ -125,7 +125,7 @@ Key findings:
 - [Finding 2]
 - [Finding 3]
 
-Ready for plan-agent to continue.
+Ready for planner to continue.
 ```
 
 ## Important Guidelines

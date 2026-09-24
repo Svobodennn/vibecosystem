@@ -1,8 +1,7 @@
 ---
 name: deep-interview
 description: Mathematically rigorous Socratic interview system that drives ambiguity below 20% before any code is written. One question per message, weighted ambiguity scoring, brownfield-aware, outputs a complete PRD. Replaces discovery-interview with a stricter protocol.
-user-invocable: true
-model: claude-opus-4-5-20251101
+model: opus
 ---
 
 # Deep Interview
@@ -103,6 +102,33 @@ My first question: what user problem is this feature solving?"
 **Never ask what the codebase already answers.** If they use JWT, don't ask "what auth approach?". Ask "Should the new endpoint follow the same JWT validation middleware used in /api/orders, or does it need different auth behavior?"
 
 ---
+
+## Frontier ordering
+
+The categories below are the default *sweep* order, not a schedule. What actually decides the next question is the **frontier**.
+
+Model the interview as a **design tree**: every decision branches into the decisions that hang off it. The **frontier** is every decision whose prerequisites are already settled: the questions you can ask *now* without guessing at answers you haven't heard yet.
+
+- A question whose answer depends on another question that is still open belongs **later**, not now. Asking it early forces the user to answer hypothetically, and a hypothetical answer is worse than no answer because it looks settled.
+- Each answer reshapes the tree: settled decisions push the frontier outward and unblock what depended on them. Recompute the frontier after every answer.
+- **Ask one frontier question at a time** (`rules/collaborative-decisions.md`, one-question rule), picking the one that unblocks the most of the tree. Batching questions lets the user skip the hard one, which is why this skill's anti-pattern table forbids it.
+- **Always attach your recommended answer**, so "yes" is a complete reply:
+
+  ```
+  ❓ **<question title>**: <question body, options if there are options>
+
+  ➡️ <your recommended answer, and the one-line reason>
+  ```
+
+- The interview is done when the frontier is **empty**: every branch visited, nothing left silently assumed. That is a second gate alongside the ambiguity score, and both must pass. An ambiguity score under 20% with a non-empty frontier means the score is measuring the wrong thing.
+
+## Facts are your job, decisions are the user's
+
+Never ask the user for anything you could look up. A fact about the filesystem, the dependency manifest, the config, the schema, the git history, or the framework's own docs is **your** research debt, not a question (`rules/research-confidence.md`).
+
+When a frontier question needs a fact from the environment, dispatch for it (`scout` for the codebase, `oracle` for external docs) and **don't block on it**: a running exploration is an unsettled prerequisite, so only the questions downstream of it wait. Ask the next frontier question meanwhile.
+
+The **decisions** are the user's. Put each to them and wait. The split is the whole discipline: doing their research for them earns the right to insist they make their own decisions.
 
 ## Question Categories (in order)
 
@@ -229,7 +255,7 @@ Do not proceed until the conflict is resolved. Log the decision.
 
 ### The Knowledge Gap Handler
 
-When a user is uncertain ("I think maybe...", "I'm not sure how this works"), offer to research before continuing:
+When a user is uncertain ("I think maybe...", "I'm not sure how this works"), the gap is a **fact**, so it is yours to close. Research it, then come back with an informed question rather than asking them to choose blind. Only announce the detour when it will take long enough that silence would be confusing:
 
 ```
 User: "I think we need a message queue, but I'm not sure which one."
@@ -260,6 +286,9 @@ These are failure modes. Do not do these.
 | Asking what the codebase already shows | Wastes rounds, signals you didn't read the code |
 | Proceeding at ambiguity > 30% without explicit override | Produces a spec that will be invalidated mid-implementation |
 | Making assumptions instead of asking | Assumptions accumulate; by round 5 you're building the wrong thing |
+| Asking a question whose answer depends on an open question | Forces a hypothetical answer that then looks settled |
+| Asking a question without your recommended answer | Costs the user a full round to say "what do you think?" |
+| Asking the user for a fact you could look up | Facts are yours, decisions are theirs |
 | Accepting "it should be simple" without probing | "Simple" is meaningless without a reference point |
 | Asking hypothetical questions without anchoring to the actual system | "What if a user does X" without knowing if X is even possible in context |
 | Writing the PRD before confirming your summary | Always confirm understanding before generating the spec |
@@ -439,7 +468,7 @@ The spec includes acceptance criteria that can be used for drift prevention
 
 If they choose "Start planning":
 ```
-Spawn plan-agent or invoke /create_plan with the spec path.
+Spawn planner or invoke /create_plan with the spec path.
 ```
 
 ---

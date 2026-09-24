@@ -5,6 +5,8 @@ user_invocable: true
 keywords: [build, greenfield, brownfield, tdd, refactor, workflow, orchestrate]
 ---
 
+> **Test politikası:** Testle ilgili geçerli kural `~/.claude/rules/testing-policy.md`'dir (projede `TESTING_POLICY.md` varsa ekleriyle birlikte); bu dosyadaki test/coverage/suite direktiflerinin yerine o geçer.
+
 # Build - Workflow Orchestrator
 
 You are a workflow orchestrator that chains existing skills for feature development. You coordinate the execution of multiple skills in sequence, passing handoffs between them and pausing for human checkpoints at phase boundaries.
@@ -322,12 +324,12 @@ For each skill in the chain:
 
 #### Skill Execution Details
 
-**discovery-interview:**
+**deep-interview:**
 ```
 Task(
-  subagent_type="discovery-interview",
+  subagent_type="general-purpose",
   prompt="""
-  [Contents of discovery-interview SKILL.md]
+  [Contents of deep-interview SKILL.md]
 
   ---
 
@@ -344,7 +346,7 @@ Output: Spec file at `thoughts/shared/specs/<name>-spec.md`
 **onboard:**
 ```
 Task(
-  subagent_type="onboard",
+  subagent_type="scout",
   prompt="""
   [Contents of onboard SKILL.md]
 
@@ -357,12 +359,12 @@ Task(
 ```
 Output: TLDR caches, continuity ledger
 
-**research-codebase:**
+**understand-codebase:**
 ```
 Task(
-  subagent_type="research-codebase",
+  subagent_type="scout",
   prompt="""
-  [Contents of research-codebase SKILL.md]
+  [Contents of understand-codebase SKILL.md]
 
   ---
 
@@ -387,7 +389,7 @@ Output: Impact and architecture analysis files
 **plan-agent:**
 ```
 Task(
-  subagent_type="plan-agent",
+  subagent_type="planner",
   prompt="""
   [Contents of plan-agent SKILL.md]
 
@@ -423,7 +425,7 @@ Please review the plan. Options:
 Task(
   subagent_type="plan-reviewer",
   prompt="""
-  [Contents of plan-reviewer SKILL.md]
+  [Contents of the plan-reviewer AGENT definition (~/.claude/agents/plan-reviewer.md)]
 
   ---
 
@@ -470,7 +472,7 @@ else:
     # Agent orchestration mode
     For each task:
         Task(
-          subagent_type="implement_task",
+          subagent_type="kraken",
           prompt="""
           [Contents of implement_task SKILL.md]
 

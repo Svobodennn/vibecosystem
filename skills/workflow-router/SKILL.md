@@ -77,11 +77,11 @@ Route to the appropriate specialist based on goal:
 | Goal | Primary Agent | Alias | Description |
 |------|---------------|-------|-------------|
 | **Research** | oracle | Librarian | Comprehensive research using MCP tools (nia, perplexity, repoprompt, firecrawl) |
-| **Plan** | plan-agent | Oracle | Create implementation plans with phased approach |
+| **Plan** | planner | Oracle | Create implementation plans with phased approach |
 | **Build** | kraken | Kraken | Implementation agent - handles coding tasks via Task tool |
-| **Fix** | debug-agent | Sentinel | Investigate issues using codebase exploration and logs |
+| **Fix** | sleuth | Sentinel | Investigate issues using codebase exploration and logs |
 
-**Fix workflow special case:** For Fix goals, first spawn debug-agent (Sentinel) to investigate. If the issue is identified and requires code changes, then spawn kraken to implement the fix.
+**Fix workflow special case:** For Fix goals, first spawn sleuth (Sentinel) to investigate. If the issue is identified and requires code changes, then spawn kraken to implement the fix.
 
 ### Step 5: Confirmation
 
@@ -135,7 +135,7 @@ Task(
 ### Plan (Oracle)
 ```
 Task(
-  subagent_type="plan-agent",
+  subagent_type="planner",
   prompt="""
   Create implementation plan for: [feature/task]
 
@@ -171,7 +171,7 @@ Task(
 ```
 # Step 1: Investigate
 Task(
-  subagent_type="debug-agent",
+  subagent_type="sleuth",
   prompt="""
   Investigate: [issue description]
 

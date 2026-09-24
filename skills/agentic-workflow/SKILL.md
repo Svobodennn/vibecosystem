@@ -4,6 +4,8 @@ description: Agentic Workflow Pattern
 user-invocable: false
 ---
 
+> **Test politikası:** Testle ilgili geçerli kural `~/.claude/rules/testing-policy.md`'dir (projede `TESTING_POLICY.md` varsa ekleriyle birlikte); bu dosyadaki test/coverage/suite direktiflerinin yerine o geçer.
+
 # Agentic Workflow Pattern
 
 Standard multi-agent pipeline for implementation tasks.
@@ -30,7 +32,7 @@ Output to: .claude/cache/agents/oracle/<task>-research.md
 
 ### 2. Planning Agent
 ```
-Task(subagent_type="plan-agent", run_in_background=true, prompt="""
+Task(subagent_type="planner", run_in_background=true, prompt="""
 Read: .claude/cache/agents/oracle/<task>-research.md
 Use RP-CLI to analyze the target codebase section.
 Generate implementation plan informed by research.

@@ -144,7 +144,7 @@ Proceed? [Yes / Adjust settings]
 | Depth | Time | What it does |
 |-------|------|--------------|
 | `quick` | ~1 min | tldr-explorer only - fast structure overview |
-| `deep` | ~5 min | onboard + tldr-explorer + research-codebase + write doc |
+| `deep` | ~5 min | onboard + tldr-explorer + scout + write doc |
 | `architecture` | ~3 min | tldr arch + call graph + layer mapping + circular dep detection |
 
 ### Options
@@ -209,14 +209,14 @@ Comprehensive exploration with documentation output. Best for:
 **Steps:**
 1. Check if onboarded (look for `.claude/cache/tldr/`), if not run onboard
 2. Run tldr-explorer for structure
-3. Spawn research-codebase agent for patterns
+3. Spawn scout agent for patterns
 4. Write findings to doc or handoff
 
 **Subprocess:**
 ```
 # 1. Onboard check
 if [ ! -f .claude/cache/tldr/arch.json ]; then
-    # Spawn onboard agent
+    # Spawn scout agent (brownfield kesif)
 fi
 
 # 2. Structure analysis
@@ -224,7 +224,7 @@ tldr structure src/ --lang python
 tldr calls src/
 
 # 3. Research patterns (via scout agent)
-Task: research-codebase → "Document existing patterns in ${FOCUS:-codebase}"
+Task: scout → "Document existing patterns in ${FOCUS:-codebase}"
 
 # 4. Write output
 → thoughts/shared/research/YYYY-MM-DD-explore-{focus}.md
@@ -393,7 +393,7 @@ fi
 ```bash
 # 1. Check/run onboard
 if [ ! -f .claude/cache/tldr/meta.json ]; then
-    # Spawn onboard agent via Task tool
+    # Spawn scout agent (brownfield kesif) via Task tool
 fi
 
 # 2. Structure
@@ -426,7 +426,7 @@ fi
 ## Key Principles
 
 1. **READ-ONLY** - This skill never modifies code
-2. **Uses bounded delegation** - Claude may use `scout`; Codex keeps the parent `luna_worker` model and does not route to Sonnet/Haiku tiers
+2. **Uses scout, not Explore** - Per project rules, scout (Sonnet) over Explore (Haiku)
 3. **Token-efficient** - Uses tldr commands (95% savings over raw reads)
 4. **Outputs to shared locations** - `thoughts/shared/research/` or handoff directory
 5. **Entry point to /build** - Exploration handoffs feed into brownfield builds
@@ -438,7 +438,7 @@ fi
 | **tldr-explorer** | Direct tldr commands (used internally by explore) |
 | **tldr-code** | Specific analysis commands (cfg, dfg, slice) |
 | **onboard** | First-time project setup (used by deep depth) |
-| **research-codebase** | Pattern documentation (used by deep depth) |
+| **scout** | Pattern documentation (used by deep depth) |
 | **create_handoff** | Handoff format (used by --output handoff) |
 
 ## Troubleshooting

@@ -1,7 +1,9 @@
 ---
 name: test-strategy
-description: Test pyramid decision matrix, coverage targets, when to write which test type, mock vs real dependency decisions, and test ROI analysis.
+description: Test pyramid decision matrix, when to write which test type, mock vs real dependency decisions, and test ROI analysis.
 ---
+
+> **Test politikası:** Testle ilgili geçerli kural `~/.claude/rules/testing-policy.md`'dir (projede `TESTING_POLICY.md` varsa ekleriyle birlikte); bu dosyadaki test/coverage/suite direktiflerinin yerine o geçer.
 
 # Test Strategy
 

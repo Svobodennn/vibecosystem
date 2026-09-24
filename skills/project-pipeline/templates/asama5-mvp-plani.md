@@ -47,7 +47,7 @@ MVP **<neyi kanıtlar>**. Kapsam içi/dışı: konsept §8.2 / §8.3 (**DEĞİŞ
 
 ## Agent Roster
 
-> Kaynak: `agent-assignment-matrix.md`. <Çekirdek alan> = **<agent>** (TDD zorunlu — anayasa §2);
+> Kaynak: agent'ın kendi `description`'ı. <Çekirdek alan> = **<agent>** (TDD zorunlu — anayasa §2);
 > <sunum alanı> = **<agent>**; içerik/asset = **<agent> + 👤**. Her fazda QA: **code-reviewer** varsayılan;
 > **security-reviewer** (<hangi alanlarda>), **verifier** final gate.
 

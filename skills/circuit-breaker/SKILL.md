@@ -252,6 +252,6 @@ YAP:   Kritik agent'lar (security) icin dusuk esik
 - **auto-skill-activation rule**: Agent fail oldugunda fallback zincirini kullanir
 - **canavar**: Hata sayilarini skill-matrix.json'a kaydeder
 - **reputation-engine**: Circuit breaker durumunu guvenilirlik skoruna yansitir
-- **sentinel agent**: Circuit OPEN alert'lerini yonetir
+- **verifier / code-reviewer**: Circuit OPEN durumunda son kontrol (sentinel arsivlendi -- bu stack'te on-call altyapisi yok)
 - **self-learner agent**: Tekrarlayan hatalardan pattern ogrenir
 - **qa-loop rule**: 3x fail sonrasi escalation zaten mevcut -- circuit breaker bunu destekler

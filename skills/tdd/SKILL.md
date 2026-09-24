@@ -4,6 +4,8 @@ description: Test-driven development workflow with philosophy guide - plan → w
 keywords: [tdd, test-driven, test-first, red-green-refactor]
 ---
 
+> **Test politikası:** Testle ilgili geçerli kural `~/.claude/rules/testing-policy.md`'dir (projede `TESTING_POLICY.md` varsa ekleriyle birlikte); bu dosyadaki test/coverage/suite direktiflerinin yerine o geçer.
+
 # /tdd - Test-Driven Development Workflow
 
 Strict TDD workflow: tests first, then implementation.
@@ -43,6 +45,18 @@ Write code before the test? Delete it. Start over.
 - Delete means delete
 
 Implement fresh from tests. Period.
+
+## Seams: where tests go
+
+A **seam** is the public boundary you test at: the interface where you observe behaviour without reaching inside. Tests live at seams, never against internals.
+
+**Test only at pre-agreed seams.** Before writing any test, write down the seams under test and confirm them with the user. No test is written at an unconfirmed seam. You can't test everything, so agreeing the seams up front is how testing effort lands on critical paths and complex logic instead of on every edge case.
+
+Ask: "what's the public interface, and which seams should we test?"
+
+When the shape of that interface is itself in question (how deep the module is, where the seam belongs, what the interface should expose), call the Skill tool with `codebase-design` for the vocabulary. It is a reference to consult, not a session to run.
+
+Read `CONTEXT.md` if the project has one, so test names and interface vocabulary match the project's domain language.
 
 ## Red-Green-Refactor
 
@@ -163,6 +177,44 @@ After green only:
 
 Keep tests green. Don't add behavior.
 
+## Anti-patterns
+
+Three failure modes that produce tests which pass while the code is wrong.
+
+- **Implementation-coupled**: mocks internal collaborators, tests private methods, or verifies through a side channel (querying the database instead of using the interface). The tell: the test breaks when you refactor but behaviour hasn't changed.
+
+  ```typescript
+  // BAD: bypasses the interface to verify
+  test("createUser saves to database", async () => {
+    await createUser({ name: "Alice" });
+    const row = await db.query("SELECT * FROM users WHERE name = ?", ["Alice"]);
+    expect(row).toBeDefined();
+  });
+
+  // GOOD: verifies through the interface
+  test("createUser makes user retrievable", async () => {
+    const user = await createUser({ name: "Alice" });
+    expect((await getUser(user.id)).name).toBe("Alice");
+  });
+  ```
+
+- **Tautological**: the assertion recomputes the expected value the way the code does, so it passes by construction and can never disagree with the code. Expected values must come from an independent source of truth: a known-good literal, a worked example, the spec.
+
+  ```typescript
+  // BAD: expected value recomputed the way the code computes it
+  const expected = items.reduce((sum, i) => sum + i.price, 0);
+  expect(calculateTotal(items)).toBe(expected);
+
+  // GOOD: expected value is an independent literal
+  expect(calculateTotal([{ price: 10 }, { price: 5 }])).toBe(15);
+  ```
+
+  This is the one the coverage number cannot see: a fully tautological suite reports 100% and asserts nothing.
+
+- **Horizontal slicing**: writing all the tests first, then all the implementation. Bulk tests verify *imagined* behaviour: you test the shape of things rather than user-facing behaviour, the tests go insensitive to real changes, and you commit to test structure before understanding the implementation. Work in **vertical slices** instead: one test, one implementation, repeat. Each test is a **tracer bullet** that responds to what the last cycle taught you.
+
+Mocking rule: mock at **system boundaries** only (external APIs, time, randomness, sometimes the filesystem or DB). Don't mock your own modules or internal collaborators. At real boundaries, prefer an SDK-shaped port (`api.getUser(id)`, `api.createOrder(data)`) over one generic `fetch(endpoint, options)`, so each mock returns one specific shape and no test needs conditional logic inside its mock.
+
 ## Common Rationalizations
 
 | Excuse | Reality |
@@ -236,7 +288,7 @@ Can't check all boxes? You skipped TDD. Start over.
 
 | # | Agent | Role | Output |
 |---|-------|------|--------|
-| 1 | **plan-agent** | Design test cases and implementation approach | Test plan |
+| 1 | **tdd-guide** | Design test cases and implementation approach | Test plan |
 | 2 | **arbiter** | Write failing tests (RED phase) | Test files |
 | 3 | **kraken** | Implement minimal code to pass (GREEN phase) | Implementation |
 | 4 | **arbiter** | Run all tests, verify nothing broken | Test report |
@@ -258,7 +310,7 @@ Each agent follows the TDD contract:
 
 ```
 Task(
-  subagent_type="plan-agent",
+  subagent_type="tdd-guide",
   prompt="""
   Design TDD approach for: [FEATURE_NAME]
 
@@ -346,7 +398,7 @@ User: /tdd Add email validation to the signup form
 Claude: Starting /tdd workflow for email validation...
 
 Phase 1: Planning test cases...
-[Spawns plan-agent]
+[Spawns tdd-guide]
 Test plan:
 - Valid email formats
 - Invalid email formats

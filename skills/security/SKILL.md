@@ -21,7 +21,7 @@ Dedicated security analysis for sensitive code.
 
 ```
 ┌─────────┐    ┌───────────┐
-│  aegis  │───▶│ arbiter  │
+│  security-reviewer  │───▶│ arbiter  │
 │         │    │           │
 └─────────┘    └───────────┘
   Security       Verify
@@ -32,7 +32,7 @@ Dedicated security analysis for sensitive code.
 
 | # | Agent | Role | Output |
 |---|-------|------|--------|
-| 1 | **aegis** | Comprehensive security scan | Vulnerability report |
+| 1 | **security-reviewer** | Comprehensive security scan | Vulnerability report |
 | 2 | **arbiter** | Verify fixes, run security tests | Verification report |
 
 ## Why Dedicated Security?
@@ -50,7 +50,7 @@ The `/review` workflow focuses on code quality. Security needs:
 
 ```
 Task(
-  subagent_type="aegis",
+  subagent_type="security-reviewer",
   prompt="""
   Security audit: [SCOPE]
 
@@ -147,7 +147,7 @@ User: /security the payment processing code
 Claude: Starting /security audit for payment code...
 
 Phase 1: Security audit...
-[Spawns aegis]
+[Spawns security-reviewer]
 
 ┌─────────────────────────────────────────────────────────────┐
 │ Security Audit Report                                       │

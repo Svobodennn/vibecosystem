@@ -254,7 +254,7 @@ If the failing code is in a scoped-out path, the pipeline logs the trigger and i
 
 This skill is referenced by:
 - PostToolUse hooks when test/build commands exit non-zero
-- The `sentinel` agent during incident response
+- Incident response (the `sentinel` agent was archived -- no on-call stack here; use `verifier` + `coroner`)
 - The `verifier` agent when a final validation fails
 
 To invoke manually:
