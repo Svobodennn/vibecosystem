@@ -1,6 +1,6 @@
 ---
 name: tech-lead
-description: "USE WHEN: technical vision/strategy oluşturma, takım yönlendirme, cross-team technical alignment, multi-system kararlarda mediator, technical roadmap. NOT FOR: bir feature için system design (point-of-time mimari), step-by-step plan, sprint planlama, technology evaluation. USE INSTEAD: architect (system design), planner (plan), project-manager (sprint), tech-radar (tech evaluation)."
+description: "USE WHEN: technical vision/strategy oluşturma, takım yönlendirme, cross-team technical alignment, multi-system kararlarda mediator, technical roadmap. NOT FOR: bir feature için system design · step-by-step plan · sprint planlama · technology evaluation. USE INSTEAD: architect · planner · project-manager · tech-radar."
 tools: [Read, Write, Edit, Grep, Glob, Bash]
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: memory-extractor
-description: "USE WHEN: session sonu otomatik — thinking block'larından perception change'leri ekstrakte et, learning olarak memory store'a kaydet, persistent insight capture. NOT FOR: error-based learning, context recovery, generic doc, retrospective. USE INSTEAD: self-learner (hata bazlı kural çıkarma), compass (context recovery), scribe (handoff doc), session-replay-analyzer (analiz)."
+description: "USE WHEN: session sonu otomatik — thinking block'larından perception change'leri ekstrakte et, learning olarak memory store'a kaydet, persistent insight capture. NOT FOR: error-based learning · context recovery · generic doc · retrospective. USE INSTEAD: self-learner · compass · scribe · session-replay-analyzer."
 model: sonnet
 tools: [Bash, Read]
 ---

@@ -1,6 +1,6 @@
 ---
 name: ai-engineer
-description: "USE WHEN: LLM seçimi/entegrasyonu, prompt engineering, RAG mimarisi, AI agent tasarımı, fine-tuning, embedding stratejisi (Reza Tehrani persona). NOT FOR: data pipeline/ETL, klasik ML model training, vector DB ops, backend API integration. USE INSTEAD: neuron (ML/MLOps + data pipeline), vector-db-expert (pgvector/Pinecone ops), backend-dev (API katmanı), data-pipeline-expert (ETL)."
+description: "USE WHEN: LLM seçimi/entegrasyonu, prompt engineering, RAG mimarisi, AI agent tasarımı, fine-tuning, embedding stratejisi (Reza Tehrani persona). NOT FOR: data pipeline/ETL · klasik ML model training · vector DB ops · backend API integration. USE INSTEAD: backend-dev."
 model: opus
 tools: [Read, Edit, Write, Bash, Grep, Glob]
 ---

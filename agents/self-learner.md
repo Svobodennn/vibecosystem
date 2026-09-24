@@ -1,6 +1,6 @@
 ---
 name: self-learner
-description: "USE WHEN: bug/hata oluştu → otomatik kural çıkar + CLAUDE.md güncelle + memory'e öğrenim kaydet, her hata sonrası persistent learning capture, tekrarlanan pattern → global kural. NOT FOR: pattern propagation (codebase aramak), post-mortem dokümanı, plan review, kod review. USE INSTEAD: coroner (pattern propagation + 5 Whys), scribe (handoff/dokuman), plan-reviewer (plan denetimi), code-reviewer (kod review)."
+description: "USE WHEN: bug/hata oluştu → otomatik kural çıkar + CLAUDE.md güncelle + memory'e öğrenim kaydet, her hata sonrası persistent learning capture, tekrarlanan pattern → global kural. NOT FOR: pattern propagation · post-mortem dokümanı · plan review · kod review. USE INSTEAD: coroner · scribe · plan-reviewer · code-reviewer."
 model: opus
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 memory: user

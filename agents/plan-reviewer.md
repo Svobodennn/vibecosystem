@@ -1,9 +1,11 @@
 ---
 name: plan-reviewer
-description: "USE WHEN: yazılmış plan review (architect/planner/phoenix çıktısı), tech-choice validation (best practices), tamamlık/risk/dependency denetimi, plan onay öncesi gate; verdict: APPROVED / APPROVED WITH CHANGES / REJECTED. NOT FOR: plan yazımı, post-implement review, kod review, migration tamamlığı review. USE INSTEAD: planner/architect/phoenix (plan yazımı), review-agent (plan-intent vs reality), code-reviewer (kod review), surveyor (migration review)."
+description: "USE WHEN: yazılmış plan review (architect/planner/phoenix çıktısı), tech-choice validation (best practices), tamamlık/risk/dependency denetimi, plan onay öncesi gate; verdict: APPROVED / APPROVED WITH CHANGES / REJECTED. NOT FOR: plan yazımı · post-implement review · kod review · migration tamamlığı review. USE INSTEAD: planner/architect/phoenix · review-agent · code-reviewer · surveyor."
 model: sonnet
 tools: [Bash, Read, Grep, Glob]
 ---
+
+> **Test politikası:** Testle ilgili geçerli kural `~/.claude/rules/testing-policy.md`'dir (projede `TESTING_POLICY.md` varsa ekleriyle birlikte); bu dosyadaki test/coverage/suite direktiflerinin yerine o geçer.
 
 # Plan Reviewer
 
@@ -54,7 +56,7 @@ Analyze the plan content to determine type:
 - [ ] Interfaces well-defined
 - [ ] Dependencies identified
 - [ ] Phases logical and incremental
-- [ ] **Agent roster present**: every phase names executing + QA agents; names exist in `~/.claude/agents/` (verify with `ls`); assignments match `~/.claude/rules/agent-assignment-matrix.md` or carry a deviation rationale
+- [ ] **Agent roster present**: every phase names executing + QA agents; names exist in `~/.claude/agents/` (verify with `ls`); each assigned agent's own `description` (the routing source of truth) covers the task, or the plan carries a deviation rationale. `rules/agent-assignment-matrix.md` no longer holds task→agent routing -- it holds Yedek Agent, escalation chains, severity→response and the swarm phase map
 - [ ] Risks identified with mitigation
 - [ ] Auth approach secure (if applicable)
 - [ ] Error handling comprehensive

@@ -1,6 +1,6 @@
 ---
 name: doc-updater
-description: "USE WHEN: /update-codemaps veya /update-docs çalıştırma, docs/CODEMAPS/* üretimi, README/guide otomatik güncelleme, code → doc senkronizasyonu, kod değişimi sonrası doküman yenileme. NOT FOR: yeni teknik içerik yazımı (sıfırdan), binary doküman (PDF/DOCX), API spec yazımı, marketing copy. USE INSTEAD: technical-writer (sıfırdan yazım), document-generator (PDF/DOCX), api-designer (OpenAPI spec), copywriter (marketing)."
+description: "USE WHEN: /update-codemaps veya /update-docs çalıştırma, docs/CODEMAPS/* üretimi, README/guide otomatik güncelleme, code → doc senkronizasyonu, kod değişimi sonrası doküman yenileme. NOT FOR: yeni teknik içerik yazımı · binary doküman · API spec yazımı · marketing copy. USE INSTEAD: technical-writer · document-generator · api-designer · copywriter."
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 model: opus
 ---

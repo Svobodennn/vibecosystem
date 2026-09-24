@@ -1,6 +1,6 @@
 ---
 name: dependency-graph-analyzer
-description: "USE WHEN: package/library dependency graph analizi — npm/pip/go.mod graph, circular dependency, update impact (transitivity), license audit, security advisory. NOT FOR: codebase iç bağımlılık (kod modülleri arası), generic dependency upgrade, SBOM üretimi. USE INSTEAD: graph-analyst (codebase iç KG), migrator (upgrade+CVE+SBOM), code-reviewer (kod kalitesi)."
+description: "USE WHEN: package/library dependency graph analizi — npm/pip/go.mod graph, circular dependency, update impact (transitivity), license audit, security advisory. NOT FOR: codebase iç bağımlılık · generic dependency upgrade · SBOM üretimi. USE INSTEAD: graph-analyst · migrator · code-reviewer."
 tools: [Read, Bash, Grep, Glob]
 ---
 

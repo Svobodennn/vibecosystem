@@ -1,6 +1,6 @@
 ---
 name: web-perf-expert
-description: "USE WHEN: frontend performance — Core Web Vitals (LCP/INP/CLS), bundle size, code splitting, image/font optimization, lazy load, prefetch, lighthouse audit, render-blocking resource. NOT FOR: backend profiling, load testing, generic frontend implement, SEO. USE INSTEAD: profiler (backend/CPU/mem), load-tester (k6 yük), frontend-dev (genel impl), seo-specialist (SEO+SSR)."
+description: "USE WHEN: frontend performance — Core Web Vitals (LCP/INP/CLS), bundle size, code splitting, image/font optimization, lazy load, prefetch, lighthouse audit, render-blocking resource. NOT FOR: backend profiling · load testing · generic frontend implement · SEO. USE INSTEAD: profiler · load-tester · frontend-dev · seo-specialist."
 tools: [Read, Write, Edit, Grep, Glob, Bash]
 ---
 

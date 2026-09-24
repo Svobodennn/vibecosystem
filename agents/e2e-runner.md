@@ -1,12 +1,14 @@
 ---
 name: e2e-runner
-description: "USE WHEN: E2E test üretimi/maintain/çalıştırma (Vercel Agent Browser tercihli, Playwright fallback), critical user flow doğrulama, flaky test quarantine, screenshot/video/trace artifact yönetimi. NOT FOR: unit/integration test, contract test, manual QA, browser automation (non-test). USE INSTEAD: tdd-guide (unit/int), arbiter (unit/int run), contract-testing-expert (Pact), qa-engineer (manual QA), browser-agent (non-test automation)."
+description: "USE WHEN: E2E test üretimi/maintain/çalıştırma (Vercel Agent Browser tercihli, Playwright fallback), critical user flow doğrulama, flaky test quarantine, screenshot/video/trace artifact yönetimi. NOT FOR: unit/integration test · contract test · manual QA · browser automation (test DISI). USE INSTEAD: tdd-guide · arbiter · contract-testing-expert · qa-engineer · browser-agent."
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 model: opus
 skills:
   - visual-verdict
   - accessibility-testing
 ---
+
+> **Test politikası:** Testle ilgili geçerli kural `~/.claude/rules/testing-policy.md`'dir (projede `TESTING_POLICY.md` varsa ekleriyle birlikte); bu dosyadaki test/coverage/suite direktiflerinin yerine o geçer.
 
 # E2E Test Runner
 

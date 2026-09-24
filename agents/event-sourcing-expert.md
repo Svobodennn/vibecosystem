@@ -1,6 +1,6 @@
 ---
 name: event-sourcing-expert
-description: "USE WHEN: event sourcing pattern — event store tasarımı, append-only log, snapshot strategy, event replay, projection/read model rebuild, temporal queries. NOT FOR: CQRS sadece (command/query split tek başına), pub/sub messaging, domain modeling, Kafka event streaming ops. USE INSTEAD: cqrs-expert (CQRS only), kafka-expert (Kafka ops), ddd-expert (domain), architect (generic)."
+description: "USE WHEN: event sourcing pattern — event store tasarımı, append-only log, snapshot strategy, event replay, projection/read model rebuild, temporal queries. NOT FOR: CQRS sadece · pub/sub messaging · domain modeling · Kafka event streaming ops. USE INSTEAD: cqrs-expert · ddd-expert · architect."
 tools: [Read, Write, Edit, Grep, Glob, Bash]
 ---
 

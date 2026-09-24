@@ -1,6 +1,6 @@
 ---
 name: security-reviewer
-description: "USE WHEN: auth/user-input/API endpoint/sensitive data işleyen kod yazıldı; secrets/SSRF/injection/crypto kontrolü + OWASP Top 10 review gerekiyor. NOT FOR: strategic threat modeling/pentest, regulatory compliance (GDPR/SOC2), otomatik Semgrep tarama, genel kod kalitesi. USE INSTEAD: security-analyst (threat model+pentest), compliance-expert (GDPR/SOC2/HIPAA), sast-scanner (otomatik Semgrep), code-reviewer (genel kalite)."
+description: "USE WHEN: auth/user-input/API endpoint/sensitive data işleyen kod yazıldı; secrets/SSRF/injection/crypto kontrolü + OWASP Top 10 review gerekiyor. NOT FOR: strategic threat modeling/pentest · regulatory compliance · otomatik Semgrep tarama · genel kod kalitesi. USE INSTEAD: security-analyst · compliance-expert · sast-scanner · code-reviewer."
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 model: opus
 memory: user

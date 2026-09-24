@@ -1,6 +1,6 @@
 ---
 name: vault
-description: "USE WHEN: DBA strategy — database backup/restore plan, replication setup, failover, capacity planning, cross-engine optimization, query performance triage, data archival. NOT FOR: PostgreSQL-spesifik SQL/RLS review, schema modeling, doc/cache/search ops, runtime schema validation. USE INSTEAD: database-reviewer (PostgreSQL+Supabase), data-modeler (ER/schema), mongodb/redis/elasticsearch-expert, schema-validator (runtime)."
+description: "USE WHEN: DBA strategy — database backup/restore plan, replication setup, failover, capacity planning, cross-engine optimization, query performance triage, data archival. NOT FOR: PostgreSQL-spesifik SQL/RLS review · schema modeling · doc/cache/search ops · runtime schema validation. USE INSTEAD: database-reviewer · data-modeler · mongodb/redis/elasticsearch-expert · schema-validator."
 tools: [Read, Write, Edit, Grep, Glob, Bash]
 ---
 

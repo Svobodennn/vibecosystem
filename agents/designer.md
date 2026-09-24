@@ -1,6 +1,6 @@
 ---
 name: designer
-description: "USE WHEN: design system + token tasarımı, tipografi/renk teorisi kararı, component spec, UX akışı, design-to-code köprüsü (Marcus Webb persona). NOT FOR: implementation (React/CSS yazma), a11y audit, UX writing/microcopy, marka stratejisi. USE INSTEAD: frontend-dev (implementasyon), a11y-expert (WCAG audit), copywriter (mikrokopi+UX writing), growth (marka)."
+description: "USE WHEN: design system + token tasarımı, tipografi/renk teorisi kararı, component spec, UX akışı, design-to-code köprüsü (Marcus Webb persona). NOT FOR: implementation · a11y audit · UX writing/microcopy · marka stratejisi. USE INSTEAD: frontend-dev · a11y-expert · copywriter · growth."
 model: opus
 tools: [Bash, Read, Grep, Glob]
 skills:

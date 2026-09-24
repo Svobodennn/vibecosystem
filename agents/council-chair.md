@@ -1,6 +1,6 @@
 ---
 name: council-chair
-description: "USE WHEN: council workflow'un son aşaması — üye çıktılarını sentezle, karar kuralını uygula, azınlık görüşünü ve oy değişimlerini council-votes.jsonl'e yaz. Oy vermez. NOT FOR: bulgu üretme, kod review, fix uygulama, final build/test gate. USE INSTEAD: verifier (build/test gate), code-reviewer (review), coroner (post-mortem)."
+description: "USE WHEN: council workflow'un son aşaması — üye çıktılarını sentezle, karar kuralını uygula, azınlık görüşünü ve oy değişimlerini council-votes.jsonl'e yaz. Oy vermez. NOT FOR: bulgu üretme · kod review · fix uygulama · final build/test gate. USE INSTEAD: verifier · code-reviewer · coroner."
 tools: ["Read", "Bash", "Grep", "Glob"]
 model: opus
 memory: user
@@ -57,28 +57,25 @@ koşumlarında ampirik kanıt üretilmediği için flip ölçümü tanımsızdı
 **YAZMA**, prompt da bunu açıkça söyler. Yanlışlıkla yazmak flip oranını kirletir ve
 metrik zaten konseyin dekoratif olup olmadığını ölçen tek testtir.
 
-Diff modunda ölçüt: **ilk oy ile son oy değişiyor mu?** Değişmiyorsa konsey dekoratiftir.
-
-Her defect iddiası için ledger'a tek satır JSON yaz:
+**Satırı ELLE KURMA.** Workflow prompt'u sana `TELEMETRİ` başlığı altında hazır bir dizi
+verir. Onu olduğu gibi tek komutla yaz:
 
 ```bash
-mkdir -p ~/.claude/canavar
-printf '%s\n' "$LINE" >> ~/.claude/canavar/council-votes.jsonl
+node ~/.claude/canavar/council-ledger.mjs vote-batch '<TELEMETRİ dizisi JSON>'
 ```
 
-Satır şeması:
-`{ts, session, claim_id, lane, first_vote, final_vote, flipped, flip_reason, empirical, gate, blocking_member}`
+- `session` alanı `null` geldiyse **hedefin taban adıyla** doldur (repo/dizin adı:
+  `my-app`, `api-server`, `ios-game`). Süsleme ekleme, uuid yazma.
+- `printf ... >> council-votes.jsonl` **KULLANMA.** Serbest yazım şemayı bozdu:
+  28 satırda `empirical` alanı üç farklı tipte (obje/boolean/string), `session` üç farklı
+  biçimde yazılmıştı ve defter analiz edilemez hale gelmişti. Doğrulama artık CLI'da.
+- CLI hata dönerse **sessiz geçme** — hatayı raporda aynen aktar. Doğrulama hatası
+  telemetriyi kaybetmekten iyidir.
 
-- `ts`: `date -u +%FT%TZ` ile üret (kendin uydurma).
-- `first_vote` = Çürütücü'nün kör turu, `final_vote` = reconsider turu.
-- `flipped` = ikisi farklıysa `true`.
-- `session`: **hedefin taban adı** (repo/dizin adı), ör. `sql-heist`, `arabam-sende`,
-  `BreakLoop`. Süsleme ekleme, her koşumda aynı biçimi kullan. Serbest biçim yazmak
-  koşumları gruplanamaz hale getiriyor — ilk üç koşumda üç farklı format yazıldı ve
-  flip oranı koşum bazında hesaplanamaz oldu.
-- `lane`: her zaman `defect` (bu ledger yalnız diff modunun defect hattını ölçer).
-
-Yazma başarısız olursa sessiz geçme — raporda belirt.
+Ölçüt artık tek boolean değil, `evidence_state`:
+`none` (kanıt gelmedi) · `blocked` (koşulamadı) · `disproved` (koşuldu, çıkmadı) ·
+`confirmed` (kanıt ilk oyu doğruladı) · `flipped` (kanıt oyu çevirdi).
+Bunu sen hesaplama — script veriyor.
 
 ## Çıktı formatı
 

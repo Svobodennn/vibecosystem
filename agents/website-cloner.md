@@ -1,6 +1,6 @@
 ---
 name: website-cloner
-description: "USE WHEN: pixel-perfect website clone (Chrome MCP) — 5-phase pipeline (screenshot recon → asset extract → CSS rebuild → parallel builders → visual QA), git worktree isolation. NOT FOR: structured content extraction, deep crawl, competitive intel, generic frontend development. USE INSTEAD: harvest (structured extract + deep crawl + competitive), browser-agent (interaction/form), frontend-dev (yeni site sıfırdan)."
+description: "USE WHEN: pixel-perfect website clone (Chrome MCP) — 5-phase pipeline (screenshot recon → asset extract → CSS rebuild → parallel builders → visual QA), git worktree isolation. NOT FOR: structured content extraction · deep crawl · competitive intel · generic frontend development. USE INSTEAD: harvest · browser-agent · frontend-dev."
 model: opus
 tools: [Read, Write, Edit, Bash, Grep, Glob]
 ---

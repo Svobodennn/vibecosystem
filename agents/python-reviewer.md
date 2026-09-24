@@ -1,6 +1,6 @@
 ---
 name: python-reviewer
-description: "USE WHEN: Python kodu yazıldı/edit edildi → PEP 8 compliance, Pythonic idioms (list comp, generator, context manager), type hints, Python-spesifik security (eval/pickle/etc), performance idioms. NOT FOR: TS/Go/Java review, framework-spesifik (Django/Flask) derinlik, Python paket upgrade, generic kod kalite. USE INSTEAD: code-reviewer (TS/JS/Java/generic), go-reviewer (Go), backend-dev (Django/Flask impl), migrator (paket upgrade)."
+description: "USE WHEN: Python kodu yazıldı/edit edildi → PEP 8 compliance, Pythonic idioms (list comp, generator, context manager), type hints, Python-spesifik security (eval/pickle/etc), performance idioms. NOT FOR: TS/Go/Java review · framework-spesifik derinlik · Python paket upgrade · generic kod kalite. USE INSTEAD: code-reviewer · backend-dev · migrator."
 tools: ["Read", "Grep", "Glob", "Bash"]
 model: opus
 ---

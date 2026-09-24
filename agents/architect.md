@@ -1,6 +1,6 @@
 ---
 name: architect
-description: "USE WHEN: system-level mimari kararı (component sınırları, data flow, technology choice), scalability tasarımı, yeni büyük feature için high-level design, ADR yazımı. NOT FOR: step-by-step implementation planı, plan review, pattern-spesifik mimari (DDD/CQRS/Clean Arch), technical direction. USE INSTEAD: planner (adım-adım plan), plan-reviewer (review), ddd-expert/cqrs-expert/clean-arch-expert/event-sourcing-expert (spesifik patternler), tech-lead (technical vision)."
+description: "USE WHEN: system-level mimari kararı (component sınırları, data flow, technology choice), scalability tasarımı, yeni büyük feature için high-level design, ADR yazımı. NOT FOR: step-by-step implementation planı · plan review · pattern-spesifik mimari · technical direction. USE INSTEAD: planner · plan-reviewer · ddd-expert/cqrs-expert/clean-arch-expert/event-sourcing-expert · tech-lead."
 tools: ["Bash", "Read", "Grep", "Glob"]
 model: opus
 memory: user
@@ -64,7 +64,7 @@ metadata.type) ve MEMORY.md index'ine tek satir pointer ekle. Duplicate varsa gu
 - Data models
 - API contracts
 - Integration patterns
-- **Implementation agent roster**: which agents will build each component — map components to agents via `~/.claude/rules/agent-assignment-matrix.md` (e.g. API → backend-dev, UI → frontend-dev, infra → devops, auth QA → security-reviewer). Verify names exist in `~/.claude/agents/`. This roster is consumed by planner (step breakdown) and maestro (orchestration directive)
+- **Implementation agent roster**: which agents will build each component — map components to agents using each agent's own `description` (e.g. API → backend-dev, UI → frontend-dev, infra → devops, auth QA → security-reviewer); `~/.claude/rules/agent-assignment-matrix.md` for Yedek/escalation only. Verify names exist in `~/.claude/agents/`. This roster is consumed by planner (step breakdown) and maestro (orchestration directive)
 
 ### 4. Trade-Off Analysis
 For each design decision, document:

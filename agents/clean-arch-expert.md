@@ -1,6 +1,6 @@
 ---
 name: clean-arch-expert
-description: "USE WHEN: Clean Architecture / Hexagonal (Ports & Adapters) / Onion mimari uygulaması — dependency rule, layered boundaries (entities/use cases/adapters), test edilebilirlik için izolasyon. NOT FOR: domain modeling derinliği, CQRS, event sourcing, generic system design. USE INSTEAD: ddd-expert (domain model), cqrs-expert (CQRS), event-sourcing-expert (event store), architect (generic)."
+description: "USE WHEN: Clean Architecture / Hexagonal (Ports & Adapters) / Onion mimari uygulaması — dependency rule, layered boundaries (entities/use cases/adapters), test edilebilirlik için izolasyon. NOT FOR: domain modeling derinliği · CQRS · event sourcing · generic system design. USE INSTEAD: ddd-expert · cqrs-expert · event-sourcing-expert · architect."
 tools: [Read, Write, Edit, Grep, Glob, Bash]
 ---
 

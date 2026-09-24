@@ -1,6 +1,6 @@
 ---
 name: schema-validator
-description: "USE WHEN: runtime schema validation (Zod/Joi/Pydantic/JSON Schema), API request/response validation, DB row validation, env config validation, multi-source data quality. NOT FOR: schema modeling/design, contract testing (provider/consumer), config file validation. USE INSTEAD: data-modeler (schema design), contract-testing-expert (Pact), config-validator (env/config files), api-designer (API spec)."
+description: "USE WHEN: runtime schema validation (Zod/Joi/Pydantic/JSON Schema), API request/response validation, DB row validation, env config validation, multi-source data quality. NOT FOR: schema modeling/design · contract testing · config file validation. USE INSTEAD: data-modeler · contract-testing-expert · config-validator · api-designer."
 tools: [Read, Write, Edit, Grep, Glob, Bash]
 ---
 

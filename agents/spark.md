@@ -1,6 +1,6 @@
 ---
 name: spark
-description: "USE WHEN: tek dosya/birkaç satırlık fix, küçük tweak, typo, basit rename, minimal-risk değişiklik, hızlı bug fix (sonnet). NOT FOR: multi-file feature, TDD-required iş, mimari karar, refactor planı, dependency upgrade. USE INSTEAD: kraken (büyük/TDD), phoenix (refactor planı), architect (mimari), migrator (dep upgrade)."
+description: "USE WHEN: tek dosya/birkaç satırlık fix, küçük tweak, typo, basit rename, minimal-risk değişiklik, hızlı bug fix (sonnet). NOT FOR: multi-file feature · TDD-required iş · mimari karar · refactor planı · dependency upgrade. USE INSTEAD: kraken · phoenix · architect · migrator."
 model: sonnet
 tools: [Read, Edit, Write, Bash, Grep, Glob]
 skills:

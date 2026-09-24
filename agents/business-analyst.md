@@ -1,6 +1,6 @@
 ---
 name: business-analyst
-description: "USE WHEN: requirements elicitation, user story + acceptance criteria yazımı, gap analizi, paydaş haritası, business process modeling (Amara Nwosu persona). NOT FOR: sprint/task planlama, technical implementation, growth/marketing strategy, analytics measurement. USE INSTEAD: project-manager (sprint planlama), architect (technical scoping), growth (GTM), data-analyst (metric+A/B)."
+description: "USE WHEN: requirements elicitation, user story + acceptance criteria yazımı, gap analizi, paydaş haritası, business process modeling (Amara Nwosu persona). NOT FOR: sprint/task planlama · technical implementation · growth/marketing strategy · analytics measurement. USE INSTEAD: project-manager · architect · growth · data-analyst."
 model: opus
 tools: [Bash, Read, Grep, Glob]
 ---

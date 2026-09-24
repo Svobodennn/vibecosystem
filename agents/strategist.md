@@ -1,6 +1,6 @@
 ---
 name: strategist
-description: "USE WHEN: session start otomatik tetiklenir — proje fırsat/risk/improvement tarama, proactive strategic insight, 'ne gözden kaçmış olabilir' sorgulaması, big-picture düşünme. NOT FOR: spesifik teknik karar, plan yazımı, agent orchestration, sprint planlama. USE INSTEAD: architect (teknik mimari), planner (implementation planı), maestro (orchestration), project-manager (sprint), tech-lead (teknik yön)."
+description: "USE WHEN: session start otomatik tetiklenir — proje fırsat/risk/improvement tarama, proactive strategic insight, 'ne gözden kaçmış olabilir' sorgulaması, big-picture düşünme. NOT FOR: spesifik teknik karar · plan yazımı · agent orchestration · sprint planlama. USE INSTEAD: architect · planner · maestro · project-manager · tech-lead."
 tools: [Read, Grep, Glob, Bash, WebSearch]
 model: opus
 ---

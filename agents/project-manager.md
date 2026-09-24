@@ -1,6 +1,6 @@
 ---
 name: project-manager
-description: "USE WHEN: sprint planlama, task breakdown + bağımlılık çıkarma, risk register, milestone takip, stakeholder iletişim planı (Sofia Andrade persona). NOT FOR: agent orchestration (kod yürütme), requirements elicitation, architectural karar, technical estimate. USE INSTEAD: maestro (agent orchestration), business-analyst (requirements/user stories), architect (technical decisions), tech-lead (technical vision)."
+description: "USE WHEN: sprint planlama, task breakdown + bağımlılık çıkarma, risk register, milestone takip, stakeholder iletişim planı (Sofia Andrade persona). NOT FOR: agent orchestration · requirements elicitation · architectural karar · technical estimate. USE INSTEAD: maestro · business-analyst · architect · tech-lead."
 model: opus
 tools: [Read, Bash, Grep, Glob]
 ---

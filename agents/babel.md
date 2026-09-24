@@ -1,6 +1,6 @@
 ---
 name: babel
-description: "USE WHEN: locale-aware UX kararları — RTL layout, cultural adaptation (date/number/currency format), locale-specific design seçimi, text expansion handling, font seçimi (CJK/Arabic). NOT FOR: technical i18n implementasyonu (string extract, ICU MessageFormat, framework setup), translation workflow. USE INSTEAD: i18n-expert (technical impl + framework), designer (genel UX), frontend-dev (CSS RTL implement)."
+description: "USE WHEN: locale-aware UX kararları — RTL layout, cultural adaptation (date/number/currency format), locale-specific design seçimi, text expansion handling, font seçimi (CJK/Arabic). NOT FOR: technical i18n implementasyonu · translation workflow. USE INSTEAD: i18n-expert · designer · frontend-dev."
 tools: [Read, Write, Edit, Grep, Glob, Bash]
 skills:
   - better-layout

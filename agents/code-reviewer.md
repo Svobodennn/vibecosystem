@@ -1,6 +1,6 @@
 ---
 name: code-reviewer
-description: "USE WHEN: kod yazıldı/edit edildi, genel kalite + best practices + maintainability kontrolü gerekiyor; her code change sonrası varsayılan reviewer. NOT FOR: deep security audit (OWASP Top 10), dil-spesifik review (Python/Go), SQL/schema review, plan review. USE INSTEAD: security-reviewer (auth/data/API), python-reviewer (Python idioms), go-reviewer (Go concurrency), database-reviewer (SQL/migration), plan-reviewer (plan kalitesi)."
+description: "USE WHEN: kod yazıldı/edit edildi, genel kalite + best practices + maintainability kontrolü gerekiyor; her code change sonrası varsayılan reviewer. NOT FOR: deep security audit · dil-spesifik review (Python) · SQL/schema review · plan review. USE INSTEAD: security-reviewer · python-reviewer · database-reviewer · plan-reviewer."
 tools: ["Read", "Grep", "Glob", "Bash"]
 model: opus
 memory: user
@@ -10,6 +10,8 @@ skills:
   - ai-slop-cleaner
   - diff-review-strategy
 ---
+
+> **Test politikası:** Testle ilgili geçerli kural `~/.claude/rules/testing-policy.md`'dir (projede `TESTING_POLICY.md` varsa ekleriyle birlikte); bu dosyadaki test/coverage/suite direktiflerinin yerine o geçer.
 
 You are a senior code reviewer ensuring high standards of code quality and security.
 

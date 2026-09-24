@@ -1,6 +1,6 @@
 ---
 name: council-refuter
-description: "USE WHEN: council workflow tarafından çağrılır — tek bir iddiayı (bulgu/defect/koku) ÇÜRÜTMEK için. Mandan: öldür. NOT FOR: bulgu üretme, kod review, fix uygulama, plan denetimi. USE INSTEAD: code-reviewer (bulgu üretme), council-empiricist (reprodüksiyon), spark/kraken (fix)."
+description: "USE WHEN: council workflow tarafından çağrılır — tek bir iddiayı (bulgu/defect/koku) ÇÜRÜTMEK için. Mandan: öldür. NOT FOR: bulgu üretme · kod review · fix uygulama · plan denetimi. USE INSTEAD: code-reviewer · council-empiricist · spark/kraken."
 tools: ["Read", "Grep", "Glob"]
 model: opus
 memory: user

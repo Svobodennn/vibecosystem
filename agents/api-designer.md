@@ -1,6 +1,6 @@
 ---
 name: api-designer
-description: "USE WHEN: yeni API tasarımı (REST/GraphQL/gRPC), OpenAPI spec yazımı, endpoint contract, error envelope standardı, pagination/rate limiting kararı, SDK generation planlama. NOT FOR: API versioning lifecycle yönetimi, API gateway config, GraphQL/gRPC derin implement, API dokümantasyonu yazımı. USE INSTEAD: api-versioning-expert (versioning+deprecation), api-gateway-expert (gateway config), graphql-expert/grpc-expert (impl), technical-writer (docs)."
+description: "USE WHEN: yeni API tasarımı (REST/GraphQL/gRPC), OpenAPI spec yazımı, endpoint contract, error envelope standardı, pagination/rate limiting kararı, SDK generation planlama. NOT FOR: API versioning lifecycle yönetimi · API gateway config · GraphQL/gRPC derin implement · API dokümantasyonu yazımı. USE INSTEAD: api-versioning-expert · technical-writer."
 tools: ["Bash", "Read", "Grep", "Glob", "Write", "Edit"]
 model: opus
 ---
@@ -351,9 +351,7 @@ Recommendations:
 | architect | API mimarisi kararlari |
 | backend-dev | API implementasyonu |
 | security-reviewer | API security review |
-| api-doc-generator | Dokumantasyon olusturma |
-| graphql-expert | GraphQL spesifik tasarim |
-| grpc-expert | gRPC spesifik tasarim |
+| technical-writer | API dokumantasyonu (OpenAPI, README, changelog) |
 | api-versioning-expert | Versioning stratejisi |
 | contract-testing-expert | API contract testleri |
 | code-reviewer | API code review |

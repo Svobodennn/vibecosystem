@@ -1,6 +1,6 @@
 ---
 name: shipper
-description: "USE WHEN: full release lifecycle — release branch strategy, semantic versioning, changelog generation, pre-deploy checklist, smoke test, version tag, rollback planı (Leo Andersen persona). NOT FOR: canary/blue-green deployment mekaniği, feature flag, CI/CD pipeline setup, post-release monitoring. USE INSTEAD: canary-deploy-expert (progressive delivery mekaniği), feature-flag-expert (toggle), devops (CI/CD), sentinel (post-release monitoring)."
+description: "USE WHEN: full release lifecycle — release branch strategy, semantic versioning, changelog generation, pre-deploy checklist, smoke test, version tag, rollback planı (Leo Andersen persona). NOT FOR: canary/blue-green deployment mekaniği · feature flag · CI/CD pipeline setup · post-release monitoring. USE INSTEAD: feature-flag-expert · devops."
 model: opus
 tools: [Read, Bash, Grep, Glob]
 ---

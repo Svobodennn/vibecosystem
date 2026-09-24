@@ -1,6 +1,6 @@
 ---
 name: maestro
-description: "USE WHEN: kompleks multi-agent iş için orchestration directive üretimi — phase + parallel_group + dependencies + accept_criteria içeren YAML directive yazımı; parent Claude bu directive'i okuyup Agent() çağrılarını yapar. NOT FOR: agent'ı kendi spawn etmek (sub-agent runtime izin vermez), tek agent task, plan yazımı, agent reliability scoring. USE INSTEAD: swarm-optimizer (DAG analizi), planner (plan yazımı), reputation-engine (agent trust), cost-tracker (cost analizi)."
+description: "USE WHEN: kompleks multi-agent iş için orchestration directive üretimi — phase + parallel_group + dependencies + accept_criteria içeren YAML directive yazımı; parent Claude bu directive'i okuyup Agent() çağrılarını yapar. NOT FOR: agent'ı kendi spawn etmek · tek agent task · plan yazımı · agent reliability scoring. USE INSTEAD: swarm-optimizer · planner · reputation-engine · cost-tracker."
 model: opus
 tools: [Read, Bash, Grep, Glob]
 skills:
@@ -10,6 +10,8 @@ skills:
   - workflow-router
   - smart-model-routing
 ---
+
+> **Test politikası:** Testle ilgili geçerli kural `~/.claude/rules/testing-policy.md`'dir (projede `TESTING_POLICY.md` varsa ekleriyle birlikte); bu dosyadaki test/coverage/suite direktiflerinin yerine o geçer.
 
 # Maestro — Orchestration Planning Advisor
 
@@ -77,7 +79,7 @@ Maestro
 
 ### Pipeline (Linear Dependency)
 ```
-scout → architect → kraken → arbiter → herald
+scout → architect → kraken → arbiter → shipper
 ```
 
 ### Swarm (Parallel Research)
@@ -91,14 +93,14 @@ Maestro
 
 ### Generator-Critic (Iterative)
 ```
-architect → critic → architect → critic → final
+architect → code-reviewer → architect → code-reviewer → final
 ```
 
 ### Jury (High-Stakes Decisions)
 ```
-critic₁ ─┐
-critic₂ ─┼→ majority vote → decision
-critic₃ ─┘
+code-reviewer₁ ─┐
+code-reviewer₂ ─┼→ majority vote → decision
+code-reviewer₃ ─┘
 ```
 
 ### Collaborative Swarm (Proje Gelistirme)
@@ -152,7 +154,7 @@ When an agent fails or underperforms, dynamically reassign:
 
 ```
 RULE: If agent fails 2x on same task type:
-  1. Check agent-assignment-matrix for alternate
+  1. Check the Yedek Agent table in `rules/agent-assignment-matrix.md` for an alternate
   2. Reassign to alternate agent with accumulated context
   3. Log reassignment reason in orchestration report
 
@@ -409,7 +411,7 @@ Orchestrator: maestro-agent
 | plan-reviewer | Plan + refactor review | sonnet | Completeness |
 | surveyor | Migration review | sonnet | Completeness |
 | liaison | Integration review | sonnet | API quality |
-| herald | Release prep | sonnet | Deployment |
+| shipper | Release prep | sonnet | Deployment |
 | self-learner | Error learning | opus | Auto-improvement |
 | verifier | Quality gate | sonnet | Final check |
 | browser-agent | Browser automation | sonnet | Web interaction, deploy verify |
@@ -433,19 +435,19 @@ Sleuth recalls past debug approaches; kraken recalls past error fixes.
 
 ### Review (Code Review)
 ```
-[PARALLEL: critic + plan-reviewer] → review-agent (synthesis) → APPROVE/REQUEST_CHANGES
+[PARALLEL: code-reviewer + plan-reviewer] → review-agent (synthesis) → APPROVE/REQUEST_CHANGES
 ```
 Review agents recall past review patterns.
 
 ### Refactor
 ```
-phoenix (analyze) → plan-agent (plan) → kraken (implement) → plan-reviewer (review) → arbiter (validate)
+phoenix (analyze) → planner (plan) → kraken (implement) → plan-reviewer (review) → arbiter (validate)
 ```
 Phoenix recalls past refactoring patterns.
 
 ### Hotfix (Production Emergency)
 ```
-sleuth (quick investigate, critical only) → spark (minimal fix) → verifier (build + critical test only) → commit + deploy → self-learner (post-mortem)
+sleuth (quick investigate, code-revieweral only) → spark (minimal fix) → verifier (build + code-revieweral test only) → commit + deploy → self-learner (post-mortem)
 ```
 Speed over completeness. Skip full review, skip full test suite. Fix → deploy → learn.
 

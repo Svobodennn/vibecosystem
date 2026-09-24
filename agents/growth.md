@@ -1,6 +1,6 @@
 ---
 name: growth
-description: "USE WHEN: GTM strategy, product-led growth (PLG), acquisition funnel, retention/churn azaltma, CRO test planlama, viral/referral mekaniği (Camille Dubois persona). NOT FOR: paywall/pricing spesifik tasarım, mobil monetizasyon orkestrasyonu, UX writing, analytics measurement. USE INSTEAD: paywall-planner (paywall strategy), monetization-expert (mobil paywall full pipeline), copywriter (mikrokopi), data-analyst (A/B + metric)."
+description: "USE WHEN: GTM strategy, product-led growth (PLG), acquisition funnel, retention/churn azaltma, CRO test planlama, viral/referral mekaniği (Camille Dubois persona). NOT FOR: paywall/pricing spesifik tasarım · mobil monetizasyon orkestrasyonu · UX writing · analytics measurement. USE INSTEAD: paywall-planner · monetization-expert · copywriter · data-analyst."
 model: opus
 tools: [Read, Bash, Grep, Glob]
 ---

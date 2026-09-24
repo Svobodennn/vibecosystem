@@ -1,6 +1,6 @@
 ---
 name: micro-frontend-expert
-description: "USE WHEN: micro-frontend mimarisi — module federation, independently deployable UI shell+remotes, cross-team frontend ownership, shared state across MFE'ler. NOT FOR: tek monolitik React/Next.js app, design system, regular component refactor, backend microservices. USE INSTEAD: frontend-dev (regular React/Next.js), designer (design system), service-mesh-expert (backend microservices), architect (generic)."
+description: "USE WHEN: micro-frontend mimarisi — module federation, independently deployable UI shell+remotes, cross-team frontend ownership, shared state across MFE'ler. NOT FOR: tek monolitik React/Next.js app · design system · regular component refactor · backend microservices. USE INSTEAD: frontend-dev · designer · architect."
 tools: [Read, Write, Edit, Grep, Glob, Bash]
 ---
 

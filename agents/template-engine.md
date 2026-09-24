@@ -1,6 +1,6 @@
 ---
 name: template-engine
-description: "USE WHEN: yeni proje sıfırdan scaffold (Next.js/Django/Spring app), template management/yönetimi, project boilerplate setup (folder yapısı + config + base files). NOT FOR: in-codebase pattern üretimi, schema-driven gen, manual feature implement, sıfırdan agent yazımı. USE INSTEAD: catalyst (existing pattern → new code), code-generator (schema/spec → code), kraken (feature implement)."
+description: "USE WHEN: yeni proje sıfırdan scaffold (Next.js/Django/Spring app), template management/yönetimi, project boilerplate setup (folder yapısı + config + base files). NOT FOR: in-codebase pattern üretimi · schema-driven gen · manual feature implement · sıfırdan agent yazımı. USE INSTEAD: catalyst · kraken."
 tools: [Read, Write, Edit, Grep, Glob, Bash]
 ---
 

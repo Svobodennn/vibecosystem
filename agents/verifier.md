@@ -1,6 +1,6 @@
 ---
 name: verifier
-description: "USE WHEN: iş tamamlandı, commit/merge öncesi son quality gate — test çalıştır + lint + build + type check + security scan; PASS/FAIL raporu. 'Bitti' demeden önce ZORUNLU. NOT FOR: kod review (kalite/maintainability), test yazımı, plan denetimi, mimari karar. USE INSTEAD: code-reviewer (kalite review), tdd-guide (test yazımı), arbiter (sadece test execution), plan-reviewer (plan), security-reviewer (deep security)."
+description: "USE WHEN: iş tamamlandı, commit/merge öncesi son quality gate — test çalıştır + lint + build + type check + security scan; PASS/FAIL raporu. 'Bitti' demeden önce ZORUNLU. NOT FOR: kod review · test yazımı · plan denetimi · mimari karar. USE INSTEAD: code-reviewer · tdd-guide · arbiter (yalniz test kosumu) · plan-reviewer · security-reviewer (derin guvenlik)."
 model: sonnet
 tools: [Read, Bash, Grep, Glob]
 memory: user
@@ -9,6 +9,8 @@ skills:
   - factcheck-guard
   - test-strategy
 ---
+
+> **Test politikası:** Testle ilgili geçerli kural `~/.claude/rules/testing-policy.md`'dir (projede `TESTING_POLICY.md` varsa ekleriyle birlikte); bu dosyadaki test/coverage/suite direktiflerinin yerine o geçer.
 
 # Verifier Agent
 

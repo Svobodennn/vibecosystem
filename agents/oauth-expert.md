@@ -1,6 +1,6 @@
 ---
 name: oauth-expert
-description: "USE WHEN: OAuth 2.0/OIDC flow tasarımı (auth code/PKCE/client credentials/device), token lifecycle, refresh rotation, JWT signing+validation, social login entegrasyonu, session vs token. NOT FOR: API key auth, RBAC policy design (sadece tokenden sonrası), code-level secret scan, compliance framework. USE INSTEAD: security-reviewer (code secrets/JWT validation impl), security-analyst (auth strategy/threat), compliance-expert (GDPR consent), backend-dev (RBAC impl)."
+description: "USE WHEN: OAuth 2.0/OIDC flow tasarımı (auth code/PKCE/client credentials/device), token lifecycle, refresh rotation, JWT signing+validation, social login entegrasyonu, session vs token. NOT FOR: API key auth · RBAC policy design · code-level secret scan · compliance framework. USE INSTEAD: backend-dev (RBAC impl) · security-reviewer (kod icindeki secret/JWT) · security-analyst (auth stratejisi/threat) · compliance-expert (GDPR/KVKK)."
 tools: [Read, Grep, Glob, Bash]
 ---
 

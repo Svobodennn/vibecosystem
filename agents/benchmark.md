@@ -1,6 +1,6 @@
 ---
 name: benchmark
-description: "USE WHEN: micro-benchmark yazımı (fonksiyon/method seviyesi), regression tespiti (baseline karşılaştırma), benchmark CI entegrasyonu, memory/CPU/IO mikro ölçüm, criterion/benny.js gibi tool kullanımı. NOT FOR: load testing (yük altı), full profiling, frontend Core Web Vitals, generic perf strategy. USE INSTEAD: load-tester (yük), profiler (full CPU/mem), web-perf-expert (frontend), profiler (bottleneck)."
+description: "USE WHEN: micro-benchmark yazımı (fonksiyon/method seviyesi), regression tespiti (baseline karşılaştırma), benchmark CI entegrasyonu, memory/CPU/IO mikro ölçüm, criterion/benny.js gibi tool kullanımı. NOT FOR: load testing · full profiling · frontend Core Web Vitals · generic perf strategy. USE INSTEAD: load-tester · profiler · web-perf-expert."
 tools: ["Bash", "Read", "Grep", "Glob", "Write", "Edit"]
 model: sonnet
 ---

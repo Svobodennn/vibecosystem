@@ -1,6 +1,6 @@
 ---
 name: migrator
-description: "USE WHEN: package/library upgrade (major/minor), CVE scan + remediation, dependency health audit, SBOM üretimi, license compliance, supply chain audit, rollback strategy (Tomas Kowalski persona). NOT FOR: codebase/system migration planlama, kod refactor, framework değişimi, infra migration. USE INSTEAD: phoenix (refactor+system migration planı), surveyor (migration review), architect (framework değişim kararı), devops (infra migration)."
+description: "USE WHEN: package/library upgrade (major/minor), CVE scan + remediation, dependency health audit, SBOM üretimi, license compliance, supply chain audit, rollback strategy (Tomas Kowalski persona). NOT FOR: codebase/system migration planlama · kod refactor · framework değişimi · infra migration. USE INSTEAD: phoenix · surveyor · architect · devops."
 model: opus
 tools: [Read, Bash, Grep, Glob]
 skills:

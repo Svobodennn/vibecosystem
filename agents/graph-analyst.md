@@ -1,6 +1,6 @@
 ---
 name: graph-analyst
-description: "USE WHEN: codebase'i knowledge graph olarak analiz — internal dependency graph, call graph, hotspot, circular dependency, orphan file, architectural layer detection (Mermaid + JSON output, codebase-memory MCP). NOT FOR: package/library dependency analizi, generic codebase keşfi, external repo, MCP setup. USE INSTEAD: dependency-graph-analyzer (paket dependency), scout (keşif), pathfinder→harvest (external repo), mcp-manager (MCP setup)."
+description: "USE WHEN: codebase'i knowledge graph olarak analiz — internal dependency graph, call graph, hotspot, circular dependency, orphan file, architectural layer detection (Mermaid + JSON output, codebase-memory MCP). NOT FOR: package/library dependency analizi · generic codebase keşfi · external repo · MCP setup. USE INSTEAD: dependency-graph-analyzer · scout · pathfinder→harvest · mcp-manager."
 tools: ["Bash", "Read", "Grep", "Glob"]
 model: opus
 ---

@@ -1,6 +1,6 @@
 ---
 name: compliance-expert
-description: "USE WHEN: GDPR/KVKK/SOC2/HIPAA uyum gerekli; data classification, audit logging, retention policy, right-to-erasure, breach notification, privacy-by-design tasarımı. NOT FOR: code-level vulnerability scan, threat modeling, performance, otomatik secrets tarama. USE INSTEAD: security-reviewer (code vuln), security-analyst (threat model+pentest), sast-scanner (Semgrep)."
+description: "USE WHEN: GDPR/KVKK/SOC2/HIPAA uyum gerekli; data classification, audit logging, retention policy, right-to-erasure, breach notification, privacy-by-design tasarımı. NOT FOR: code-level vulnerability scan · threat modeling · performance · otomatik secrets tarama. USE INSTEAD: security-reviewer · security-analyst · sast-scanner."
 tools: ["Read", "Grep", "Glob", "Bash"]
 ---
 

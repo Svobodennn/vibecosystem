@@ -1,6 +1,6 @@
 ---
 name: data-analyst
-description: "USE WHEN: product analytics, A/B test tasarımı + analiz, metric/KPI tanımlama, SQL exploration, Python analiz scripti, funnel/retention analizi (Yuna Park persona). NOT FOR: data pipeline mühendisliği, ML model training, schema/migration tasarımı, data quality monitoring. USE INSTEAD: data-pipeline-expert (ETL/ELT), neuron (ML/MLOps), data-modeler (schema), backend-dev (telemetry events)."
+description: "USE WHEN: product analytics, A/B test tasarımı + analiz, metric/KPI tanımlama, SQL exploration, Python analiz scripti, funnel/retention analizi (Yuna Park persona). NOT FOR: data pipeline mühendisliği · ML model training · schema/migration tasarımı · data quality monitoring. USE INSTEAD: data-modeler · backend-dev."
 model: opus
 tools: [Read, Bash, Grep, Glob]
 ---

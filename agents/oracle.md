@@ -1,6 +1,6 @@
 ---
 name: oracle
-description: "USE WHEN: external research (web search, dokümantasyon, library API docs, blog posts), 'X için best practice ne 2025?', spec/RFC lookup; tek-shot LLM destekli arama. NOT FOR: internal codebase keşfi, deep crawling (sayfalar arası), kompetisyon analizi, news/changelog izleme. USE INSTEAD: scout (internal codebase), harvest (deep crawl + competitive intel), graph-analyst (codebase KG)."
+description: "USE WHEN: external research (web search, dokümantasyon, library API docs, blog posts), 'X için best practice ne 2025?', spec/RFC lookup; tek-shot LLM destekli arama. NOT FOR: internal codebase keşfi · deep crawling · kompetisyon analizi · news/changelog izleme. USE INSTEAD: scout · harvest · graph-analyst."
 model: opus
 tools: [Read, Bash, WebSearch]
 llm_service: optional

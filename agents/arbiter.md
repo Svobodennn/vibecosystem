@@ -1,9 +1,11 @@
 ---
 name: arbiter
-description: "USE WHEN: unit + integration test çalıştırma, test output parse, fail analizi, coverage rapor üretimi, CI-style test validation; tdd-guide veya kraken sonrası test runner. NOT FOR: test YAZMA, E2E test çalıştırma, mutation/contract testing, final quality gate. USE INSTEAD: tdd-guide (test yazma), e2e-runner (E2E execution), mutation-tester, contract-testing-expert, verifier (final gate)."
+description: "USE WHEN: unit + integration test çalıştırma, test output parse, fail analizi, coverage rapor üretimi, CI-style test validation; tdd-guide veya kraken sonrası test runner. NOT FOR: test YAZMA · E2E test çalıştırma · mutation/contract testing · final quality gate. USE INSTEAD: tdd-guide · e2e-runner · mutation-tester · contract-testing-expert · verifier."
 model: opus
 tools: [Bash, Read, Write, Glob, Grep]
 ---
+
+> **Test politikası:** Testle ilgili geçerli kural `~/.claude/rules/testing-policy.md`'dir (projede `TESTING_POLICY.md` varsa ekleriyle birlikte); bu dosyadaki test/coverage/suite direktiflerinin yerine o geçer.
 
 # Arbiter
 

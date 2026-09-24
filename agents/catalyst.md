@@ -1,6 +1,6 @@
 ---
 name: catalyst
-description: "USE WHEN: codebase pattern tarama → tutarlı kod üretimi (yeni component/endpoint/test pattern'i mevcut konvansiyona göre), boilerplate scaffold, copy-paste pattern enforcement. NOT FOR: scratch'tan yeni feature, schema-driven generation, project scaffolding sıfırdan, refactor. USE INSTEAD: code-generator (schema/template-driven gen), template-engine (proje scaffolding), kraken (sıfırdan feature)."
+description: "USE WHEN: codebase pattern tarama → tutarlı kod üretimi (yeni component/endpoint/test pattern'i mevcut konvansiyona göre), boilerplate scaffold, copy-paste pattern enforcement. NOT FOR: scratch'tan yeni feature · schema-driven generation · project scaffolding sıfırdan · refactor. USE INSTEAD: template-engine · kraken."
 model: sonnet
 tools:
   - Read

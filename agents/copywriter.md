@@ -1,6 +1,6 @@
 ---
 name: copywriter
-description: "USE WHEN: UX writing, mikrokopi, error/empty state mesajı, button label, landing page copy, marka sesi/tonu, onboarding flow text (Ellie Marchetti persona). NOT FOR: teknik dokümantasyon, blog post/SEO content, GTM strategy, accessibility audit. USE INSTEAD: technical-writer (API docs/README), growth (GTM+marketing content), seo-specialist (SEO content), designer (UI hiyerarşi)."
+description: "USE WHEN: UX writing, mikrokopi, error/empty state mesajı, button label, landing page copy, marka sesi/tonu, onboarding flow text (Ellie Marchetti persona). NOT FOR: teknik dokümantasyon · blog post/SEO content · GTM strategy · accessibility audit. USE INSTEAD: technical-writer · growth · seo-specialist · designer."
 model: opus
 tools: [Bash, Read, Edit, Write, Grep, Glob]
 skills:

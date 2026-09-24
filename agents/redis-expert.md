@@ -1,6 +1,6 @@
 ---
 name: redis-expert
-description: "USE WHEN: Redis veri yapısı seçimi (string/hash/list/set/zset/stream), cache strategy (write-through/aside/behind), pub/sub, Lua script, cluster topology, eviction policy, Redis Streams. NOT FOR: persistent primary DB, search, message queue (Kafka), session DB-as-primary. USE INSTEAD: database-reviewer/vault (primary DB), elasticsearch-expert (search), kafka-expert (durable message queue), mongodb-expert (doc primary)."
+description: "USE WHEN: Redis veri yapısı seçimi (string/hash/list/set/zset/stream), cache strategy (write-through/aside/behind), pub/sub, Lua script, cluster topology, eviction policy, Redis Streams. NOT FOR: persistent primary DB · search · message queue · session DB-as-primary. USE INSTEAD: database-reviewer/vault · elasticsearch-expert."
 tools: ["Read", "Grep", "Glob", "Bash"]
 ---
 

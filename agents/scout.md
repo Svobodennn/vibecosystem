@@ -1,6 +1,6 @@
 ---
 name: scout
-description: "USE WHEN: codebase keşfi — pattern bulma, mevcut implementasyon analizi, hangi dosya nerede, naming convention çıkarma, 'how is X done in this repo' tipi soru. NOT FOR: external research (web/docs), repo dependency graph, knowledge graph analizi, session pattern. USE INSTEAD: oracle (external web/docs), harvest (deep web crawl), graph-analyst (KG/AST), pathfinder→harvest (external repo)."
+description: "USE WHEN: codebase keşfi — pattern bulma, mevcut implementasyon analizi, hangi dosya nerede, naming convention çıkarma, 'how is X done in this repo' tipi soru. NOT FOR: external research · repo dependency graph · knowledge graph analizi · session pattern. USE INSTEAD: oracle · harvest · graph-analyst · pathfinder→harvest."
 model: sonnet
 tools: [Read, Grep, Glob, Bash]
 ---

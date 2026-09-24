@@ -1,6 +1,6 @@
 ---
 name: load-tester
-description: "USE WHEN: load test scripti (k6/Artillery/Gatling), load profile (smoke/load/stress/spike/soak), SLO validation under load, response time threshold, capacity planning. NOT FOR: micro benchmark, CPU/memory profiling, frontend perf, chaos test. USE INSTEAD: benchmark (micro), profiler (CPU/mem), web-perf-expert (frontend), chaos-engineer (failure injection)."
+description: "USE WHEN: load test scripti (k6/Artillery/Gatling), load profile (smoke/load/stress/spike/soak), SLO validation under load, response time threshold, capacity planning. NOT FOR: micro benchmark · CPU/memory profiling · frontend perf · chaos test. USE INSTEAD: benchmark · profiler · web-perf-expert."
 tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
 ---
 

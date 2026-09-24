@@ -1,6 +1,6 @@
 ---
 name: cqrs-expert
-description: "USE WHEN: CQRS pattern uygulaması — command/query model ayrıştırma, write model + read model, eventual consistency yönetimi, materialized view tasarımı. NOT FOR: event sourcing (event store ayrı pattern), generic mimari, domain modeling, basit CRUD. USE INSTEAD: event-sourcing-expert (event store/replay), ddd-expert (domain modeling), architect (generic), clean-arch-expert (layer separation)."
+description: "USE WHEN: CQRS pattern uygulaması — command/query model ayrıştırma, write model + read model, eventual consistency yönetimi, materialized view tasarımı. NOT FOR: event sourcing · generic mimari · domain modeling · basit CRUD. USE INSTEAD: event-sourcing-expert · ddd-expert · architect · clean-arch-expert."
 tools: [Read, Write, Edit, Grep, Glob, Bash]
 ---
 
