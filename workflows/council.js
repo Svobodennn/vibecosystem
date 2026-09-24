@@ -297,13 +297,24 @@ const defectVerdicts = rows.map((r) => {
   else if (emp.attempted) status = 'killed'
   else status = 'unproven'
 
+  // evidence_state: `flipped` boolean'ı üç ayrı durumu tek bayrağa sıkıştırıyordu ve
+  // 28 satırda 28 kez 0 çıktı — hangi sebeple olduğu ayırt edilemiyordu.
+  const flippedNow = !!(first && final && first.refuted !== final.refuted)
+  let evidence_state
+  if (!emp) evidence_state = 'none'
+  else if (emp.blocked_by) evidence_state = 'blocked'
+  else if (emp.reproduced) evidence_state = flippedNow ? 'flipped' : 'confirmed'
+  else if (emp.attempted) evidence_state = 'disproved'
+  else evidence_state = 'none'
+
   return {
     claim_id: r.claim.id,
     lane: 'defect',
     status,
+    evidence_state,
     first_vote: first ? (first.refuted ? 'refuted' : 'survives') : 'no_vote',
     final_vote: final ? (final.refuted ? 'refuted' : 'survives') : 'no_vote',
-    flipped: !!(first && final && first.refuted !== final.refuted),
+    flipped: flippedNow,
     flip_reason: (final && final.changed_because) || null,
     empirical: emp ? { reproduced: emp.reproduced, attempted: emp.attempted, blocked_by: emp.blocked_by || null } : null,
     evidence: emp ? emp.evidence : first ? first.evidence : null,
@@ -360,7 +371,20 @@ const report = await agent(
     (droppedDefects.length
       ? `YARGILANMAYAN iddialar (maxClaims sınırı): ${JSON.stringify(droppedDefects)} — raporda AÇIKÇA belirt.\n`
       : '') +
-    '\nZORUNLU: her defect iddiası için council-votes.jsonl satırını yaz (ts için `date -u +%FT%TZ`).\n' +
+    `\nTELEMETRİ (hazır satırlar, elle kurma): ${JSON.stringify(
+      defectVerdicts.map((v) => ({
+        session: a.session || null,
+        claim_id: v.claim_id,
+        first_vote: v.first_vote,
+        final_vote: v.final_vote,
+        evidence_state: v.evidence_state,
+        gate,
+        flip_reason: v.flip_reason,
+      }))
+    )}\n` +
+    'ZORUNLU: bu diziyi `council-ledger.mjs vote-batch` ile tek seferde yaz. ' +
+    '`session` null ise hedefin taban adıyla (repo/dizin adı) doldur. ' +
+    'printf ile elle satır YAZMA — şema doğrulaması CLI\'da.\n' +
     'Azınlık görüşünü ve unproven maddeleri yuvarlamadan aktar.',
   { label: 'chair', phase: 'Karar', agentType: 'council-chair' }
 )

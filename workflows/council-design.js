@@ -173,20 +173,26 @@ log(
 )
 
 // ---- Bulgu: farkli mercekler, HEPSI envantere bagli ---------------------
+// `prefix` AÇIK olarak tanımlı — `key.slice(0,3)` ile türetiliyordu ve ilk üç harfi
+// paylaşan iki mercek eklendiğinde id'ler yine çakışırdı (bu alanın düzelttiği hatanın
+// ta kendisi). Yeni mercek eklerken benzersiz prefix vermek zorunludur.
 const LENSES = [
   {
+    prefix: 'TUT',
     key: 'tutarlilik',
     prompt:
       'MERCEK: doküman ↔ gerçeklik tutarsızlığı. Dokümanın/kararın X dediği ama kodun Y yaptığı yerler. ' +
       'Özellikle "dondurulmuş/kilitli" ilan edilmiş alanların gerçekten dondurulmuş olup olmadığı.',
   },
   {
+    prefix: 'KAR',
     key: 'karar',
     prompt:
       'MERCEK: karar kaydı. Kodda/yapıda görünen ama hiçbir yerde gerekçesi yazılmamış kararlar; ' +
       'veya kaydedilmiş ama artık geçerli olmayan kararlar. Tek yönlü kapılara (geri dönülemez tercih) öncelik ver.',
   },
   {
+    prefix: 'KAB',
     key: 'kabul',
     prompt:
       'MERCEK: görev ve kabul kriteri. Kabul kriteri olmayan görevler, test edilemez biçimde yazılmış ' +
@@ -207,16 +213,18 @@ const found = await parallel(
         '`consequence` alanına izlenebilir sonucu yaz ("X değişince Y sessizce bozulur"); ' +
         'sonucu olmayan tercih beyanı yazma. Fix ÖNERME.',
       { label: `find:${l.key}`, phase: 'Bulgu', schema: CLAIMS_SCHEMA, agentType: 'scout' }
-    ).then((r) => ({ lens: l.key, li, claims: (r && r.claims) || [] }))
+    ).then((r) => ({ lens: l.key, prefix: l.prefix, claims: (r && r.claims) || [] }))
   )
 )
 
 // Id'yi MERCEK PREFIKSIYLE yeniden yaz. Agent'ların verdiği id'ler mercekler arasında
 // çakışıyordu (iki mercek de C1..C9 üretti); gate `claim_id` ile eşleştirdiği için
 // çakışma yanlış iddiaya yanlış karar bağlayabilirdi.
-const perLens = (found || []).filter(Boolean).map((r) =>
-  r.claims.map((c, i) => ({ ...c, lens: r.lens, id: `${r.lens.slice(0, 3).toUpperCase()}-${i + 1}` }))
-)
+const okLenses = (found || []).filter(Boolean)
+if (okLenses.length < LENSES.length) {
+  log(`DIKKAT: ${LENSES.length - okLenses.length} mercek sonuç döndürmedi — o açıdan hiç bulgu aranmadı.`)
+}
+const perLens = okLenses.map((r) => r.claims.map((c, i) => ({ ...c, lens: r.lens, id: `${r.prefix}-${i + 1}` })))
 
 // Merceklerden SIRAYLA al (round-robin). Düz birleştirmede ilk merceğin tamamı
 // sınırı doldurup diğer mercekleri tamamen dışarıda bırakıyordu.
