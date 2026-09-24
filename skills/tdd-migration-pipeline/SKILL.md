@@ -56,7 +56,7 @@ Instruct test-agent (use arbiter):
 - Write failing tests in {target_dir}/tests/
 - Tests should define expected behavior before implementation
 
-Instruct review-agent (use critic):
+Instruct review-agent (use code-reviewer):
 - Validate tests cover spec completely
 - No gaps in behavioral coverage
 ```
@@ -74,7 +74,7 @@ Instruct premortem-agent (use premortem skill):
 
 ### Phase 4: PHASED PLAN
 ```
-Instruct planner-agent (use architect or plan-agent):
+Instruct planner (use architect or planner):
 - Input: spec.md + tests + mitigations
 - Output: phased-plan.yaml
 - Requirements:
@@ -92,7 +92,7 @@ For each phase in phased-plan.yaml:
   - Use qlty for quality checks
   - Run tests after each change
 
-  Instruct review-agent (use critic or judge):
+  Instruct review-agent (use code-reviewer or code-reviewer):
   - Validate implementation matches spec
   - Check for regressions in previous phases
   - Verify no breaking changes
@@ -100,7 +100,7 @@ For each phase in phased-plan.yaml:
 
 ### Phase 6: INTEGRATION VALIDATION
 ```
-Instruct integration-agent (use atlas or validator):
+Instruct backend-dev (use e2e-runner or verifier):
 - Use tldr to diff against {reference_repo}
 - Check for:
   - No race conditions
@@ -128,11 +128,11 @@ SKILLS: [tldr-code, qlty-check, {domain-specific}]
 |-------|-----------|----------|
 | Spec | research | `scout` or `architect` |
 | Tests | validate | `arbiter` |
-| Review | review | `critic` or `judge` |
+| Review | review | `code-reviewer` or `code-reviewer` |
 | Premortem | review | `premortem` skill |
-| Plan | plan | `architect` or `plan-agent` |
+| Plan | plan | `architect` or `planner` |
 | Build | implement | `kraken` (large) or `spark` (small) |
-| Integration | validate | `atlas` or `validator` |
+| Integration | validate | `e2e-runner` or `verifier` |
 
 ## Example Orchestration
 
@@ -145,11 +145,11 @@ Task(scout): "Analyze /src/old-system using tldr structure and tldr extract.
 Task(arbiter): "Read /migration/spec.md. Write failing tests to /migration/tests/
                that define expected behavior."
 
-Task(critic): "Review /migration/spec.md vs /migration/tests/.
+Task(code-reviewer): "Review /migration/spec.md vs /migration/tests/.
               Report any behavioral gaps."
 
 # Phase 3 (x3)
-Task(premortem): "Review /migration/spec.md and /migration/tests/.
+Task(plan-reviewer): "Review /migration/spec.md and /migration/tests/.
                  Identify failure modes. Add mitigations directly to spec. Pass 1/3."
 [repeat with "Pass 2/3", "Pass 3/3"]
 
@@ -161,12 +161,12 @@ Task(architect): "From /migration/spec.md and /migration/tests/,
 Task(kraken): "Implement phase 1 from /migration/phased-plan.yaml.
               Code goes in /migration/src/. Run tests after."
 
-Task(critic): "Review /migration/src/ against /migration/spec.md.
+Task(code-reviewer): "Review /migration/src/ against /migration/spec.md.
               Check for spec compliance and regressions."
 [repeat for each phase]
 
 # Phase 6
-Task(atlas): "Run full integration tests on /migration/src/.
+Task(e2e-runner): "Run full integration tests on /migration/src/.
              Use tldr to diff against /src/old-system.
              Output /migration/validation-report.md."
 ```

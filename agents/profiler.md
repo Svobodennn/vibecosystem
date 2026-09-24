@@ -1,6 +1,6 @@
 ---
 name: profiler
-description: "USE WHEN: performance profiling (CPU/memory/IO), race condition detection, memory leak analysis, bottleneck identification, hot path analysis, flame graph yorumlama. NOT FOR: load testing (yük altında), micro-benchmark, frontend Core Web Vitals, log analizi. USE INSTEAD: load-tester (k6/Artillery yük), benchmark (micro-benchmark), web-perf-expert (Core Web Vitals), log-analyzer (log)."
+description: "USE WHEN: performance profiling (CPU/memory/IO), race condition detection, memory leak analysis, bottleneck identification, hot path analysis, flame graph yorumlama. NOT FOR: load testing · micro-benchmark · frontend Core Web Vitals · log analizi. USE INSTEAD: load-tester · benchmark · web-perf-expert · log-analyzer Iteratif perf optimizasyonu icin `experiment-loop` skill'i ile birlikte kullanilir."
 model: opus
 tools: [Read, Bash, Grep, Glob]
 skills:

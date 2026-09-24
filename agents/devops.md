@@ -1,6 +1,6 @@
 ---
 name: devops
-description: "USE WHEN: CI/CD pipeline, Docker/Compose, K8s deployment, monitoring/alerting setup, cloud infra orchestration (Kai Nakamura persona). NOT FOR: cloud-spesifik derinlik (AWS/GCP/Azure), Terraform/IaC, K8s deep manifest, SRE incident management, canary deploy strategy, observability tooling. USE INSTEAD: aws-expert/gcp-expert/azure-expert, terraform-expert, kubernetes-expert, sentinel (SRE/on-call), canary-deploy-expert, prometheus-expert."
+description: "USE WHEN: CI/CD pipeline, Docker/Compose, deployment, monitoring/alerting setup, cloud infra orchestration (Kai Nakamura persona). Bu stack'te IaC/K8s/SRE uzmanlari arsivlendi (o teknolojiler yok), o yuzden bu alanlarin sahibi devops. NOT FOR: uygulama kodu · veritabani stratejisi · release lifecycle. USE INSTEAD: backend-dev · vault · shipper."
 model: opus
 tools: [Read, Edit, Write, Bash, Grep, Glob]
 skills:

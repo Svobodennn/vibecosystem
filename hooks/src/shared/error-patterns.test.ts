@@ -4,7 +4,32 @@
  * (2026-06-04'te ledger'da sahte kayıtlar kanıtlandı).
  */
 import { describe, it, expect } from 'vitest';
-import { matchErrorPatterns } from './error-patterns.js';
+import { matchErrorPatterns, isIntentionalEmptyRun } from './error-patterns.js';
+
+describe('isIntentionalEmptyRun — related / pass-with-no-tests runs', () => {
+  it.each([
+    'yarn vitest related --run --passWithNoTests src/lib/a.ts',
+    'npx vitest related src/lib/a.ts',
+    'npx jest --findRelatedTests controllers/a.js --passWithNoTests',
+  ])('%s → intentional', (cmd) => {
+    expect(isIntentionalEmptyRun(cmd)).toBe(true);
+  });
+
+  it.each([
+    'npx vitest run',
+    'npm test',
+    'npx jest __tests__/a.test.js',
+    'npm test -- --passWithNoTests',
+    'npx vitest run --passWithNoTests',
+    '',
+  ])('%s → not intentional', (cmd) => {
+    expect(isIntentionalEmptyRun(cmd)).toBe(false);
+  });
+
+  it('missing command → not intentional', () => {
+    expect(isIntentionalEmptyRun(undefined)).toBe(false);
+  });
+});
 
 describe('matchErrorPatterns — gerçek hatalar yakalanır', () => {
   it.each([
@@ -17,7 +42,7 @@ describe('matchErrorPatterns — gerçek hatalar yakalanır', () => {
     ['Export template not found for preset Windows', 'godot-export-error'],
     ['error[E0382]: borrow of moved value', 'rust-error'],
     [' FAIL src/components/auth.test.ts\n  ● login fails', 'test-failure'],
-    ['FAIL\tgithub.com/acme/app\t0.412s', 'go-test-failure'],
+    ['FAIL\tgithub.com/demon/tide\t0.412s', 'go-test-failure'],
     ['FAILED tests/test_auth.py::test_login - AssertionError', 'pytest-failure'],
     ['Tests: 3 failed, 12 passed', 'test-failure'],
     // B3: boş test koşumu = false-green

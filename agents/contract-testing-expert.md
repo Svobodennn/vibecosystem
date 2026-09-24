@@ -1,6 +1,6 @@
 ---
 name: contract-testing-expert
-description: "USE WHEN: consumer-driven contract testing (Pact), provider verification, API compatibility check between services, schema evolution güvenliği (microservice'ler arası). NOT FOR: unit/integration test, E2E test, runtime schema validation, API design. USE INSTEAD: tdd-guide (unit/int test), e2e-runner (E2E), schema-validator (runtime), api-designer (API tasarımı)."
+description: "USE WHEN: consumer-driven contract testing (Pact), provider verification, API compatibility check between services, schema evolution güvenliği (microservice'ler arası). NOT FOR: unit/integration test · E2E test · runtime schema validation · API design. USE INSTEAD: tdd-guide · e2e-runner · schema-validator · api-designer."
 tools: [Read, Grep, Glob, Bash]
 ---
 

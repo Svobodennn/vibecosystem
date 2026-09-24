@@ -63,7 +63,7 @@ Complete
 1. **Main context = orchestration only**
    - Never read files directly (use scout)
    - Never implement directly (use kraken/spark)
-   - Never run tests directly (use validator)
+   - Never run tests directly (use verifier)
    - Only pipe context and coordinate
 
 2. **Agents do ALL work**
@@ -72,8 +72,8 @@ Complete
    | Explore/analyze | scout |
    | Write tests + implement | kraken |
    | Quick fixes | spark |
-   | Run tests/validate | validator |
-   | Code review | critic |
+   | Run tests/validate | verifier |
+   | Code review | code-reviewer |
 
 3. **Parallel where independent**
    - All items can be implemented in parallel if independent
@@ -81,8 +81,8 @@ Complete
    - TLDR analysis runs in parallel with planning
 
 4. **Review after each major step**
-   - After implementation: critic reviews
-   - After fixes: validator re-validates
+   - After implementation: code-reviewer reviews
+   - After fixes: verifier re-validates
 
 ## Instructions
 
@@ -144,24 +144,24 @@ Task (kraken): Implement <item> using TDD workflow
 ### Step 3: Review + Validate (parallel)
 
 ```
-Task (critic): Review all new files against pattern
-Task (validator): Run full test suite
-Task (validator): QLTY check all files
+Task (code-reviewer): Review all new files against pattern
+Task (verifier): Run full test suite
+Task (verifier): QLTY check all files
 ```
 
 ### Step 4: Fix Issues
 
-If critic/validator found issues:
+If code-reviewer/verifier found issues:
 
 ```
 Task (spark): Fix <specific issue>
-Task (validator): Re-validate
+Task (verifier): Re-validate
 ```
 
 ### Step 5: TLDR Diff
 
 ```
-Task (validator): TLDR diff new files vs reference
+Task (verifier): TLDR diff new files vs reference
   - tldr structure <new_file> --lang <lang>
   - tldr structure <reference> --lang <lang>
   - Compare patterns
@@ -192,8 +192,8 @@ Resulted in:
 |-----|------|
 | Read files in main context | Launch scout agent |
 | Write code in main context | Launch kraken/spark agent |
-| Run tests in main context | Launch validator agent |
-| Skip review | Always launch critic |
+| Run tests in main context | Launch verifier agent |
+| Skip review | Always launch code-reviewer |
 | Sequential items | Parallel krakens |
 | Fix in main context | Launch spark |
 

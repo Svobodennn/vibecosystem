@@ -53,7 +53,7 @@ uv run python -m runtime.harness scripts/braintrust_analyze.py --token-trends
 
 ### Session Analysis
 - Tool usage breakdown
-- Agent spawns (plan-agent, debug-agent, etc.)
+- Agent spawns (planner, sleuth, etc.)
 - Skill activations (/commit, /research, etc.)
 - Token consumption estimates
 

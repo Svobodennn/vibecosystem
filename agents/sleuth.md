@@ -1,6 +1,6 @@
 ---
 name: sleuth
-description: "USE WHEN: aktif bug investigation, root cause analysis, kullanıcı 'fix/bozuk/calismiyor' dedi, bug semptomdan kaynağa iz sürme. NOT FOR: bug fix uygulama, reproduce adımı çıkarma, post-fix pattern arama, log mining, performance bottleneck. USE INSTEAD: spark/kraken (fix uygulama), replay (reproduce), coroner (post-fix pattern), log-analyzer (log mining), profiler (perf bug)."
+description: "USE WHEN: aktif bug investigation, root cause analysis, kullanıcı 'fix/bozuk/calismiyor' dedi, bug semptomdan kaynağa iz sürme. NOT FOR: bug fix uygulama · reproduce adımı çıkarma · post-fix pattern arama · log mining · performance bottleneck. USE INSTEAD: spark/kraken · replay · coroner · log-analyzer · profiler."
 model: opus
 tools: [Read, Bash, Grep, Glob]
 memory: user

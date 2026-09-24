@@ -1,6 +1,6 @@
 ---
 name: swift-expert
-description: "USE WHEN: iOS native Swift/SwiftUI implementasyonu, iOS mimari kararı (MVVM/TCA/VIPER), Combine/structured concurrency (async/await), Apple platform best practices, UIKit/SwiftUI bridge. NOT FOR: Android (Kotlin), cross-platform mobile (RN/Flutter), iOS payment/RevenueCat strategy, generic backend. USE INSTEAD: kotlin-expert (Android), spectre (RN/Flutter cross-platform), paywall-planner/monetization-expert (iOS paywall), backend-dev (server-side)."
+description: "USE WHEN: iOS native Swift/SwiftUI implementasyonu, iOS mimari kararı (MVVM/TCA/VIPER), Combine/structured concurrency (async/await), Apple platform best practices, UIKit/SwiftUI bridge. NOT FOR: Android · cross-platform mobile · iOS payment/RevenueCat strategy · generic backend. USE INSTEAD: spectre · paywall-planner/monetization-expert · backend-dev."
 tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
 ---
 

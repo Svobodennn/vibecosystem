@@ -1,6 +1,6 @@
 ---
 name: security-analyst
-description: "USE WHEN: strategic security — pentest planlama, threat modeling (STRIDE/PASTA), attack surface analizi, security architecture review (Zara Osei persona). NOT FOR: per-code-change vulnerability detection, otomatik SAST, regulatory compliance, incident response automation. USE INSTEAD: security-reviewer (per-code vuln), sast-scanner (Semgrep), compliance-expert (GDPR/SOC2/HIPAA), incident-responder (P0-P3 response)."
+description: "USE WHEN: strategic security — pentest planlama, threat modeling (STRIDE/PASTA), attack surface analizi, security architecture review (Zara Osei persona). NOT FOR: per-code-change vulnerability detection · otomatik SAST · regulatory compliance · incident response automation. USE INSTEAD: security-reviewer · sast-scanner · compliance-expert."
 model: opus
 tools: [Read, Bash, Grep, Glob]
 ---

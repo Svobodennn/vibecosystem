@@ -1,6 +1,6 @@
 ---
 name: council-blast-radius
-description: "USE WHEN: council workflow tarafından çağrılır — değişikliğin yıkım yarıçapını, geri alınabilirliğini ölçmek ve STRUCTURAL lane iddialarına ikinci görüş vermek için. Tek 'irreversible' kararı yapısal bir kokuyu bloklayıcıya yükseltebilir. NOT FOR: defect reprodüksiyonu, kod kalitesi review, deploy uygulama. USE INSTEAD: council-empiricist (defect kanıtı), code-reviewer (kalite), shipper/canary-deploy-expert (deploy)."
+description: "USE WHEN: council workflow tarafından çağrılır — değişikliğin yıkım yarıçapını, geri alınabilirliğini ölçmek ve STRUCTURAL lane iddialarına ikinci görüş vermek için. Tek 'irreversible' kararı yapısal bir kokuyu bloklayıcıya yükseltebilir. NOT FOR: defect reprodüksiyonu · kod kalitesi review · deploy uygulama. USE INSTEAD: council-empiricist · code-reviewer · shipper."
 tools: ["Read", "Grep", "Glob", "Bash"]
 model: opus
 memory: user

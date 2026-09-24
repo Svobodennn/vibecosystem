@@ -1,9 +1,11 @@
 ---
 name: phoenix
-description: "USE WHEN: refactor strategy planı, codebase yeniden yapılandırma, system/database migration planlama, tech-debt cleanup roadmap; HEM refactor HEM migration için tek planlama agent'i. NOT FOR: refactor uygulaması, dead code temizliği, dependency upgrade, plan review, migration review. USE INSTEAD: kraken (refactor implement), janitor (hygiene/dead code), migrator (dependency upgrade), plan-reviewer (review), surveyor (migration review)."
+description: "USE WHEN: refactor strategy planı, codebase yeniden yapılandırma, system/database migration planlama, tech-debt cleanup roadmap; HEM refactor HEM migration için tek planlama agent'i. NOT FOR: refactor uygulaması · dead code temizliği · dependency upgrade · plan review · migration review. USE INSTEAD: kraken · janitor · migrator · plan-reviewer · surveyor."
 model: opus
 tools: [Read, Bash, Grep, Glob]
 ---
+
+> **Test politikası:** Testle ilgili geçerli kural `~/.claude/rules/testing-policy.md`'dir (projede `TESTING_POLICY.md` varsa ekleriyle birlikte); bu dosyadaki test/coverage/suite direktiflerinin yerine o geçer.
 
 # Phoenix
 
@@ -147,7 +149,7 @@ function cleanFunction() {
 | 1: [Name] | kraken | spark | code-reviewer |
 | N: Cleanup | janitor | spark | verifier |
 
-Kaynak: `~/.claude/rules/agent-assignment-matrix.md`. Agent adi `~/.claude/agents/` icinde birebir var olmali. Matrix'ten sapma varsa tek satir gerekce yaz.
+Kaynak: agent'in kendi `description`'i. Agent adi `~/.claude/agents/` icinde birebir var olmali. Yedek/escalation icin `~/.claude/rules/agent-assignment-matrix.md`. Sapma varsa tek satir gerekce yaz.
 
 ## Implementation Phases
 
@@ -241,7 +243,7 @@ metadata.type) ve MEMORY.md index'ine tek satir pointer ekle. Duplicate varsa gu
 7. **Consider consumers** - maintain compatibility where needed
 8. **Store patterns** - Save refactoring approaches for future use
 9. **Write to shared plans** - persist for other agents
-10. **Assign agents per phase** - every phase names its executing + QA agents (Agent Roster table, source: `~/.claude/rules/agent-assignment-matrix.md`); plan-reviewer rejects plans without it
+10. **Assign agents per phase** - every phase names its executing + QA agents (Agent Roster table; source: each agent's own `description`, Yedek/escalation from `rules/agent-assignment-matrix.md`); plan-reviewer rejects plans without it
 
 ---
 
@@ -358,7 +360,7 @@ Author: phoenix-agent
 | 3: Core Upgrade | migrator | kraken | verifier + surveyor |
 | 4: Cleanup | janitor | spark | verifier |
 
-Kaynak: `~/.claude/rules/agent-assignment-matrix.md`. Post-migration review: surveyor.
+Kaynak: agent'in kendi `description`'i. Post-migration review: surveyor.
 
 ## Implementation Phases
 

@@ -15,8 +15,7 @@
     "verifier",
     "maestro",
     "janitor",
-    "build-error-resolver",
-    "refactor-cleaner"
+    "build-error-resolver"
   ],
   "skills": [
     "build",

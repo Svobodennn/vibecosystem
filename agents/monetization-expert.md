@@ -1,6 +1,6 @@
 ---
 name: monetization-expert
-description: "USE WHEN: mobil uygulama monetizasyon full pipeline — paywall stratejisi + fiyatlama + RevenueCat/Adapty kodu + A/B test + churn azaltma + pazarlama (Kerem Bozkurt persona, orchestrator). NOT FOR: SADECE paywall stratejisi (full pipeline değilse), web monetization, generic growth, in-app ads. USE INSTEAD: paywall-planner (sadece paywall strategy planner), growth (generic GTM), ai-engineer (LLM dynamic pricing), shipper (release lifecycle)."
+description: "USE WHEN: mobil uygulama monetizasyon full pipeline — paywall stratejisi + fiyatlama + RevenueCat/Adapty kodu + A/B test + churn azaltma + pazarlama (Kerem Bozkurt persona, orchestrator). NOT FOR: SADECE paywall stratejisi · web monetization · generic growth · in-app ads. USE INSTEAD: paywall-planner · growth · ai-engineer · shipper."
 model: opus
 tools: [Read, Write, Bash, Grep, Glob, WebSearch, WebFetch]
 skills:

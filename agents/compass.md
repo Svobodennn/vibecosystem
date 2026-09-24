@@ -1,6 +1,6 @@
 ---
 name: compass
-description: "USE WHEN: session başlangıcı — 'nerede kalmıştık' brief, git log/stash/WIP özeti, decision log oluşturma, thread tracking, handoff generation, session-to-session continuity (Ingrid Svensson persona). NOT FOR: dokümantasyon yazımı, post-mortem, session retrospective analizi, agent orchestration. USE INSTEAD: scribe (handoff/docs yazımı), coroner (post-mortem), session-replay-analyzer (retrospective), maestro (orchestration)."
+description: "USE WHEN: session başlangıcı — 'nerede kalmıştık' brief, git log/stash/WIP özeti, decision log oluşturma, thread tracking, handoff generation, session-to-session continuity (Ingrid Svensson persona). NOT FOR: dokümantasyon yazımı · post-mortem · session retrospective analizi · agent orchestration. USE INSTEAD: scribe · coroner · session-replay-analyzer · maestro."
 model: opus
 tools: [Read, Bash, Grep, Glob]
 ---

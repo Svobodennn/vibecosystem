@@ -220,3 +220,7 @@ export function matchErrorPatterns(output: string): ErrorMatch[] {
   }
   return matches;
 }
+
+export function isIntentionalEmptyRun(command?: string): boolean {
+  return !!command && /--findRelatedTests\b|\bvitest\s+related\b/.test(command);
+}

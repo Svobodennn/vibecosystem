@@ -1,6 +1,6 @@
 ---
 name: cost-tracker
-description: "USE WHEN: token kullanım analizi, session/proje maliyet hesabı, agent spawn cost/benefit ratio, model seçim (Opus vs Sonnet) ROI, budget alarm + optimizasyon önerisi. NOT FOR: agent reliability/trust, agent reassignment, post-execution session retro, real-time monitoring. USE INSTEAD: reputation-engine (agent güven), session-replay-analyzer (session retro), sentinel (real-time monitoring)."
+description: "USE WHEN: token kullanım analizi, session/proje maliyet hesabı, agent spawn cost/benefit ratio, model seçim (Opus vs Sonnet) ROI, budget alarm + optimizasyon önerisi. NOT FOR: agent reliability/trust · agent reassignment · post-execution session retro · real-time monitoring. USE INSTEAD: reputation-engine · session-replay-analyzer."
 tools: [Read, Bash, Grep, Glob]
 ---
 

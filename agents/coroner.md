@@ -1,6 +1,6 @@
 ---
 name: coroner
-description: "USE WHEN: bug fix TAMAMLANDI → aynı hatalı pattern codebase'in başka yerlerinde var mı kontrol; 5 Whys root cause analizi, blameless post-mortem, learning capture. NOT FOR: aktif bug investigation, fix uygulama, reproduce, incident response. USE INSTEAD: sleuth (aktif investigation), spark/kraken (fix), replay (reproduce), incident-responder (P0-P3)."
+description: "USE WHEN: bug fix TAMAMLANDI → aynı hatalı pattern codebase'in başka yerlerinde var mı kontrol; 5 Whys root cause analizi, blameless post-mortem, learning capture. NOT FOR: aktif bug investigation · fix uygulama · reproduce · incident response. USE INSTEAD: sleuth · spark/kraken · replay."
 model: sonnet
 tools: [Read, Bash, Grep, Glob]
 memory: user

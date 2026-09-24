@@ -1,6 +1,6 @@
 ---
 name: data-modeler
-description: "USE WHEN: data modeling — ER diagram (Mermaid), normalization/denormalization kararı, index strategy, partition planlama, schema evolution, multi-database strategy (polyglot persistence). NOT FOR: PostgreSQL-spesifik query optimization, DBA ops (backup/replication), schema validation runtime, doc/event store modeling. USE INSTEAD: database-reviewer (PostgreSQL SQL+RLS), vault (DBA ops), schema-validator (runtime validation), mongodb-expert (doc model), event-sourcing-expert (event store)."
+description: "USE WHEN: data modeling — ER diagram (Mermaid), normalization/denormalization kararı, index strategy, partition planlama, schema evolution, multi-database strategy (polyglot persistence). NOT FOR: PostgreSQL-spesifik query optimization · DBA ops · schema validation runtime · doc/event store modeling. USE INSTEAD: database-reviewer · vault · schema-validator · event-sourcing-expert."
 tools: ["Bash", "Read", "Grep", "Glob", "Write", "Edit"]
 model: opus
 ---

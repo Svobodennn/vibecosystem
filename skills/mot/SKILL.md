@@ -85,7 +85,7 @@ echo "Checking agent cross-references..."
 for agent in .claude/agents/*.md; do
   [ -f "$agent" ] || continue
   # Find subagent_type references
-  refs=$(grep -oE 'subagent_type[=:]["'\'']*([a-z-]+)' "$agent" 2>/dev/null | sed 's/.*["'\'']//' | sed 's/["'\'']$//')
+  refs=$(grep -oE 'subagent_type[=:]["'\'']*([a-z0-9_-]+)' "$agent" 2>/dev/null | sed 's/.*["'\'']//' | sed 's/["'\'']$//')
   for ref in $refs; do
     if [ ! -f ".claude/agents/$ref.md" ]; then
       echo "WARN: $agent references non-existent agent: $ref"
@@ -183,10 +183,23 @@ echo "Checking Python dependencies..."
 echo "=== CROSS-REFERENCES ==="
 
 # Check skills reference valid agents
+echo "Checking Task(<name>) and prose spawn references..."
+# subagent_type disindaki bicimler: Task(<isim>), "Spawn <isim> agent", tablo hucresi
+for f in $(find .claude/skills .claude/agents -name "*.md"); do
+  refs=$(grep -oE 'Task\(([a-z][a-z0-9_-]+)\)|Spawn ([a-z][a-z0-9_-]+) agent' "$f" 2>/dev/null \
+         | sed -E 's/Task\(//; s/\)//; s/^Spawn //; s/ agent$//')
+  for ref in $refs; do
+    if [ -n "$ref" ] && [ ! -f ".claude/agents/$ref.md" ]; then
+      echo "FAIL: $f spawns missing agent: $ref"
+      FAIL=1
+    fi
+  done
+done
+
 echo "Checking skill → agent references..."
 FAIL=0
 for skill in $(find .claude/skills -name "SKILL.md"); do
-  refs=$(grep -oE 'subagent_type[=:]["'\'']*([a-z-]+)' "$skill" 2>/dev/null | sed 's/.*["'\'']//' | sed 's/["'\'']$//')
+  refs=$(grep -oE 'subagent_type[=:]["'\'']*([a-z0-9_-]+)' "$skill" 2>/dev/null | sed 's/.*["'\'']//' | sed 's/["'\'']$//')
   for ref in $refs; do
     if [ -n "$ref" ] && [ ! -f ".claude/agents/$ref.md" ]; then
       echo "FAIL: $skill references missing agent: $ref"

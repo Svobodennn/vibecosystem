@@ -1,6 +1,6 @@
 ---
 name: bannerlord-expert
-description: "USE WHEN: Mount & Blade II: Bannerlord mod geliştirme ve bakımı — SubModule.xml + BUTR build sistemi, Harmony patch (yazma + version-porting), campaign behavior/model, Gauntlet UI (UIExtenderEx), MCM ayarları, reference-assembly'ye karşı derleme, çok-sürümlü destek (supported-game-versions.txt), BLSE ile deploy/test, Nexus/fork PR katkısı. NOT FOR: motor-agnostik oyun tasarımı/denge, art asset üretimi, diğer motorlar (Godot/Unity/Unreal). USE INSTEAD: godot-expert (Godot), architect (motor-bağımsız mimari), kraken (genel C# logic), tech-radar (araç değerlendirme)."
+description: "USE WHEN: Mount & Blade II: Bannerlord mod geliştirme ve bakımı — SubModule.xml + BUTR build sistemi, Harmony patch (yazma + version-porting), campaign behavior/model, Gauntlet UI (UIExtenderEx), MCM ayarları, reference-assembly'ye karşı derleme, çok-sürümlü destek (supported-game-versions.txt), BLSE ile deploy/test, Nexus/fork PR katkısı. NOT FOR: motor-agnostik oyun tasarımı/denge · art asset üretimi · diğer motorlar (Unity/Unreal dahil -- onlar icin uzman YOK). USE INSTEAD: godot-expert · architect · kraken · tech-radar."
 tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit", "WebSearch", "WebFetch"]
 ---
 

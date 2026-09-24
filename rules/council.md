@@ -95,13 +95,100 @@ Gölge mod çıkışı: metrik yeniden tasarlanıp tetikleyici hook'u yazıldı�
 
 | # | Tarih | Hedef | Gate | Bloklayıcı | flip | Not |
 |---|---|---|---|---|---|---|
-| 1 | 2026-07-30 | sql-heist HEAD~5..HEAD (35 dosya/1024+) | PASS_WITH_NOTES | 0 | 0/3 | 14 iddia (4 defect + 10 structural). **3/3 defect kör turda öldü** — gerekçeler güçlü (spec + testler + ön koşul). Tüm değer structural hatta: 7 advisory / 3 rejected. Kanıtçı hiç koşmadı. D4 maxClaims'e takıldı. 625k token / 8.4 dk. |
+| 1 | 2026-07-30 | proje-a HEAD~5..HEAD (35 dosya/1024+) | PASS_WITH_NOTES | 0 | 0/3 | 14 iddia (4 defect + 10 structural). **3/3 defect kör turda öldü** — gerekçeler güçlü (spec + testler + ön koşul). Tüm değer structural hatta: 7 advisory / 3 rejected. Kanıtçı hiç koşmadı. D4 maxClaims'e takıldı. 625k token / 8.4 dk. |
 
-| 2 | 2026-07-30 | arabam-sende HEAD~5..HEAD (deploy.sh) | **BLOCK** | 2 | 0/3 | İlk gerçek isabet. Kanıtçı fiilen koştu: deploy doğrulaması **tautolojik** (C1/C2 ampirik kanıtlı). C3 `unproven` — safety classifier prod deploy script'ini koşmayı bloklayınca `killed` DEĞİL `unproven` oldu (düzeltme sahada doğrulandı). 3 iddia maxClaims'e takıldı. 840k token / 10.4 dk. |
+| 2 | 2026-07-30 | proje-b HEAD~5..HEAD (deploy.sh) | **BLOCK** | 2 | 0/3 | İlk gerçek isabet. Kanıtçı fiilen koştu: deploy doğrulaması **tautolojik** (C1/C2 ampirik kanıtlı). C3 `unproven` — safety classifier prod deploy script'ini koşmayı bloklayınca `killed` DEĞİL `unproven` oldu (düzeltme sahada doğrulandı). 3 iddia maxClaims'e takıldı. 840k token / 10.4 dk. |
 
-| 3 | 2026-07-30 | BreakLoop HEAD~4..HEAD (XP parity) | **BLOCK** | 2 (+1 bastırıldı) | 0/3 | Kanıtçı `xcodebuild test` KOŞTU, drift'i iki yönde de kanıtladı. Konsey benim "XP geri alınamaz" çerçevemi düzeltti (server recompute overwrite ediyor). **Karar kuralı hatası: XP-5 self-mint bulgusu advisory'ye düşürüldü** — düzeltildi. 907k token / 12.4 dk. |
+| 3 | 2026-07-30 | proje-c HEAD~4..HEAD (XP parity) | **BLOCK** | 2 (+1 bastırıldı) | 0/3 | Kanıtçı `xcodebuild test` KOŞTU, drift'i iki yönde de kanıtladı. Konsey benim "XP geri alınamaz" çerçevemi düzeltti (server recompute overwrite ediyor). **Karar kuralı hatası: XP-5 self-mint bulgusu advisory'ye düşürüldü** — düzeltildi. 907k token / 12.4 dk. |
 
 | 4 | 2026-08-06 | **design modu** — council'ın kendisi (10 dosya) | PASS_WITH_NOTES | 0 | n/a | design modu takılmadan çalıştı (önceki denemede 0 iddia / 527k boşa). 32 iddia, 6 yargılandı, **26'sı (%81) kapıda kaldı** ve Reis "en ağır eleştiriler kapıda kaldı" diye kayda geçti. 4 gerçek tutarsızlık bulundu, hepsi düzeltildi. 846k token / 8 dk. |
+
+| 5 | 2026-08-06 | proje-d | **BLOCK** | 5 | conf:5 | 5 defect iddiasının tamamı ayakta kaldı, hepsinde kanıt üretildi. Rapor edilmedi, ledger'dan geriye dönük işlendi. |
+| 6 | 2026-08-20 | proje-e | **BLOCK** | 8 | conf:4 none:4 | İlk sağlıklı karışım: 4 kör turda öldü, 4 kanıtla ayakta kaldı (%50 filtre). Rapor edilmedi, ledger'dan işlendi. |
+
+### Telemetri altyapısı (2026-08-26)
+
+`flip` boolean'ı emekli edildi; yerine **`evidence_state`** geldi:
+`none` · `blocked` · `disproved` · `confirmed` · `flipped`.
+
+Gerekçe veriyle sabit: 6 koşum / 28 defect iddiasında `flipped` **28/28 kez 0** çıktı ama
+sebep her seferinde farklıydı. Üçlü ayrım ilk kez şunu görünür kıldı:
+
+```
+none 14 · confirmed 14 · flipped 0 · disproved 0 · blocked 0
+```
+
+**Yorum:** kanıt üretilen 14 iddianın tamamında kanıt ilk oyu *doğruladı*, hiçbirinde
+çevirmedi. Kalan 14'ünde kanıt hiç üretilmedi (kör turda ölüm). Yani reconsider turu
+bugüne kadar **sıfır bilgi** üretti. İki okuması var — kör tur zaten isabetli, ya da
+reconsider turu kanıta gerçekten bakmıyor. Ayrım için `flipped` beklemek yerine
+reconsider turunu bir süre kaldırıp `confirmed` oranının değişip değişmediğine bakmak
+daha ucuz bir deney olur.
+
+### Defterlerin tek yazıcısı: `council-ledger.mjs`
+
+Reis artık `printf` ile satır yazmıyor. Sebep: serbest yazım şemayı bozmuştu —
+`empirical` alanı 28 satırda **üç farklı tipte** (obje/boolean/string), `session`
+üç farklı biçimde yazılmıştı; defter programatik olarak analiz edilemez hale gelmişti
+(analiz script'i iki kez çöktü).
+
+```bash
+node ~/.claude/canavar/council-ledger.mjs vote-batch '<dizi>'   # oy satırları (workflow hazır verir)
+node ~/.claude/canavar/council-ledger.mjs outcome '<json>'      # bulgu sonucu
+node ~/.claude/canavar/council-ledger.mjs report                # çıkış kriteri raporu
+node ~/.claude/canavar/council-ledger.mjs normalize             # eski satırları şemaya çevir (yedekler)
+```
+
+Doğrulama prozada değil kodda: uuid session, kanıtsız oy değişimi, geçersiz enum
+reddedilir ve **yazılmaz**. `flipped` beyan edilmez, `first_vote`/`final_vote`'tan türetilir.
+
+#### Ledger CLI review turu (2026-08-26) — kabul edilen / reddedilen
+
+`code-reviewer` 3 critical + 5 warning çıkardı. Hepsi yedek dosyayla karşılaştırılarak
+**elle doğrulandı**; ikisi reddedildi.
+
+Kabul edilip düzeltilenler:
+- **Alan kaybı (gerçekleşmişti):** ilk `normalize` turu `blocking_member` alanını
+  14 satırdan sessizce silmişti. Yedekten geri alındı; bilinmeyen alanlar artık
+  `extra` altında korunuyor.
+- **`blocked` durumu kaybolmuştu:** `empirical: "blocked"` string'i düz `none`'a
+  çevriliyordu. Raporda `blocked: 0` görünmesinin sebebi buydu — şimdi `blocked: 1`.
+- **Bozuk satır sessizce meşrulaşıyordu:** `normalize` hatalı satırı temiz gibi yazıyordu;
+  artık `_schema_errs` ile işaretleniyor ve rapor sayıyor.
+- **`vote-batch` yarım yazıyordu** → önce hepsi doğrulanır, sonra tek `appendFileSync`;
+  ayrıca `(session, claim_id, run_id)` tekrarı reddedilir (retry'de çift kayıt yok).
+- **`normalize` atomik değildi** → `tmp` + `rename`.
+- **`normalizeSession` fazla agresifti:** `-deploy|-review|-run` kırpması "my-deploy"
+  gibi meşru repo adlarını bozuyor ve `x` ile `x-deploy`'u aynı projeye düşürüyordu.
+  Kırpma kaldırıldı; yalnız `council-` süslemesi kırpılıyor, sonuç boşsa orijinal korunur.
+- **Koşum ≠ proje:** ikisi de `session` sayısından türetiliyordu, "≥3 proje" kriteri
+  hiç kontrol edilmiyordu. `run_id` eklendi; koşum `run_id`'den, proje `session`'dan.
+- **`council_status` varsayılanı** (`'blocking'`) kaldırıldı — unutulan statü kriter 2'nin
+  paydasına sızıyordu. Artık zorunlu.
+
+**Reddedilenler (veriye bakılarak):**
+- *"`empirical: false` → `disproved` olmalı"*: yanlış. O 6 satırın **altısı da**
+  `refuted → refuted`, yani kör turda ölmüş ve Kanıtçı hiç koşmamış. `none` doğru.
+- *"`advisory` de bastırılmış sayılmalı"*: uygulandı, kriter 3 sağlıklı davranışta
+  kırmızı yandı. `advisory` tam haliyle raporlanır ve kullanıcı karar verir;
+  `advisory → fixed` sistemin **hedefidir**, ihlali değil. Geri alındı, gerekçe koda yazıldı.
+
+### `council-outcomes.jsonl` — doğrulama döngüsünün kapanması
+
+Çıkış kriteri #2 ve #3 bugüne kadar **ölçülemezdi**, çünkü "bu bulgu gerçekten
+düzeltmeye değdi mi" bilgisini yazacak yer yoktu. Artık var:
+
+`{ts, session, claim_id, council_status, outcome, note, verified_by}`
+`council_status`: `blocking|unproven|advisory|killed|unjudged`
+`outcome`: `fixed|rejected|false_positive|deferred|unverified`
+
+**Bir bulgu düzeltildiğinde ya da reddedildiğinde buraya satır yazmak zorunludur** —
+yoksa konseyin haklı olup olmadığı hiçbir zaman ölçülemez.
+
+İlk rapor (11 sonuç kaydı): kriter #3 **ihlal durumda** — `proje-a/D4-HintTray`
+`unjudged` çıkıp sonra gerçek bug olduğu doğrulandı. Sayaç oradan başlıyor.
+Kriter #2 hâlâ ölçülemez: 6 bulgu `unverified` (proje-b C1/C2/C3, proje-c
+xp-1/xp-2/XP-5) — bunlar kapanmadan isabet oranı hesaplanamaz.
 
 ### Koşum #4'ten çıkan gözlemler (öz-inceleme)
 

@@ -1,7 +1,9 @@
 ---
 name: tdd-workflow
-description: Use this skill when writing new features, fixing bugs, or refactoring code. Enforces test-driven development with 80%+ coverage including unit, integration, and E2E tests.
+description: RED-GREEN-REFACTOR workflow for changes in the testing-policy scope (bug fixes, silent logic, money/auth). The policy decides what needs a test; there is no coverage target.
 ---
+
+> **Test politikası:** Testle ilgili geçerli kural `~/.claude/rules/testing-policy.md`'dir (projede `TESTING_POLICY.md` varsa ekleriyle birlikte); bu dosyadaki test/coverage/suite direktiflerinin yerine o geçer.
 
 # Test-Driven Development Workflow
 

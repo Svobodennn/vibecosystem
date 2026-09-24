@@ -3,6 +3,8 @@ name: verification-loop
 description: Comprehensive verification system covering build, types, lint, tests, security, and diff review before a PR.
 ---
 
+> **Test politikası:** Testle ilgili geçerli kural `~/.claude/rules/testing-policy.md`'dir (projede `TESTING_POLICY.md` varsa ekleriyle birlikte); bu dosyadaki test/coverage/suite direktiflerinin yerine o geçer.
+
 # Verification Loop Skill
 
 A comprehensive verification system for Claude Code sessions.

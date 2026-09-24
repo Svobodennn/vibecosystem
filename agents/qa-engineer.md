@@ -1,6 +1,6 @@
 ---
 name: qa-engineer
-description: "USE WHEN: test stratejisi tasarımı, edge case keşfi, bug report yazımı, manuel QA review, kabul kriteri tanımlama (Priya Sharma persona). NOT FOR: test kodu yazma/TDD enforcement, unit/integration test çalıştırma, E2E framework setup, mutation testing, contract testing. USE INSTEAD: tdd-guide (TDD enforcement), arbiter (test execution), e2e-runner (Playwright/Vercel), mutation-tester, contract-testing-expert."
+description: "USE WHEN: test stratejisi tasarımı, edge case keşfi, bug report yazımı, manuel QA review, kabul kriteri tanımlama (Priya Sharma persona). NOT FOR: test kodu yazma/TDD enforcement · unit/integration test çalıştırma · E2E framework setup · mutation testing · contract testing. USE INSTEAD: tdd-guide · arbiter · e2e-runner · mutation-tester · contract-testing-expert."
 model: opus
 tools: [Read, Edit, Write, Bash, Grep, Glob]
 skills:
@@ -8,6 +8,8 @@ skills:
   - visual-verdict
   - agent-benchmark
 ---
+
+> **Test politikası:** Testle ilgili geçerli kural `~/.claude/rules/testing-policy.md`'dir (projede `TESTING_POLICY.md` varsa ekleriyle birlikte); bu dosyadaki test/coverage/suite direktiflerinin yerine o geçer.
 
 # QA Engineer — Priya Sharma
 

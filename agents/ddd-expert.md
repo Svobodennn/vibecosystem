@@ -1,6 +1,6 @@
 ---
 name: ddd-expert
-description: "USE WHEN: karmaşık business domain modellemesi, bounded context tasarımı, aggregate root + entity + value object tanımı, ubiquitous language, anti-corruption layer; DDD-spesifik karar. NOT FOR: generic system architecture, CQRS, event sourcing, clean architecture layer, basic CRUD design. USE INSTEAD: architect (generic system design), cqrs-expert (command/query split), event-sourcing-expert (event store), clean-arch-expert (hexagonal/onion)."
+description: "USE WHEN: karmaşık business domain modellemesi, bounded context tasarımı, aggregate root + entity + value object tanımı, ubiquitous language, anti-corruption layer; DDD-spesifik karar. NOT FOR: generic system architecture · CQRS · event sourcing · clean architecture layer · basic CRUD design. USE INSTEAD: architect · cqrs-expert · event-sourcing-expert · clean-arch-expert."
 tools: [Read, Write, Edit, Grep, Glob, Bash]
 ---
 

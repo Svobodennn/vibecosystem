@@ -1,6 +1,6 @@
 ---
 name: paywall-planner
-description: "USE WHEN: AI paywall strategy planı — app kategorisi analizi, subscription model (hard/soft/freemium) önerisi, pricing tier yapılandırma, trial config, paywall placement, feature gating, RevenueCat/Adapty hazır config çıktısı. NOT FOR: tam monetization pipeline (kod + A/B + churn dahil), generic GTM, web subscription. USE INSTEAD: monetization-expert (full pipeline orchestration, kod dahil), growth (generic GTM), backend-dev (web subscription)."
+description: "USE WHEN: AI paywall strategy planı — app kategorisi analizi, subscription model (hard/soft/freemium) önerisi, pricing tier yapılandırma, trial config, paywall placement, feature gating, RevenueCat/Adapty hazır config çıktısı. NOT FOR: tam monetization pipeline · generic GTM · web subscription. USE INSTEAD: monetization-expert · growth · backend-dev."
 tools: ["Read", "Write", "Bash", "Grep", "Glob", "WebSearch", "WebFetch"]
 ---
 

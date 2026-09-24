@@ -55,7 +55,7 @@
       "enforcement": "suggest",
       "description": "Deep bug investigation and troubleshooting",
       "promptTriggers": {
-        "keywords": ["investigate", "bug", "crash", "troubleshoot", "why is it failing"]
+        "keywords": ["investigate", "bug", "debug", "crash", "troubleshoot", "why is it failing"]
       }
     },
     "architect": {

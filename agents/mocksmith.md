@@ -1,6 +1,6 @@
 ---
 name: mocksmith
-description: "USE WHEN: test data fixture üretimi — TypeScript type'larından realistic mock data, edge case variants (null/empty/max/unicode), fixture library kurulumu, database seed data, factory pattern. NOT FOR: test yazma, test execution, contract testing, manual data exploration. USE INSTEAD: tdd-guide (test yazma), arbiter (test run), contract-testing-expert (Pact data), data-analyst (gerçek data exploration)."
+description: "USE WHEN: test data fixture üretimi — TypeScript type'larından realistic mock data, edge case variants (null/empty/max/unicode), fixture library kurulumu, database seed data, factory pattern. NOT FOR: test yazma · test execution · contract testing · manual data exploration. USE INSTEAD: tdd-guide · arbiter · contract-testing-expert · data-analyst."
 model: sonnet
 tools: [Read, Bash, Grep, Glob]
 ---

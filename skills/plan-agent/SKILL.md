@@ -1,5 +1,4 @@
 ---
-name: plan-agent
 description: Planning agent that creates implementation plans and handoffs from conversation context
 ---
 
@@ -102,7 +101,7 @@ Parse the conversation context to understand:
 
 ### Step 2: Research the Codebase
 
-Spawn exploration agents in parallel to gather context:
+Spawn scout agents in parallel to gather context:
 
 **Use scout** to find relevant files:
 ```
@@ -167,7 +166,7 @@ Use this structure:
 | 1: [Name] | backend-dev | kraken | code-reviewer + security-reviewer | — |
 | 2: [Name] | frontend-dev | spark | code-reviewer | Task 1 |
 
-Source: `~/.claude/rules/agent-assignment-matrix.md`. Verify names exist in `~/.claude/agents/`. Note deviations with rationale.
+Source: each agent's own `description`. Verify names exist in `~/.claude/agents/`. Yedek/escalation: `~/.claude/rules/agent-assignment-matrix.md`. Note deviations with rationale.
 
 ## Tasks
 

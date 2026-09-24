@@ -1,6 +1,6 @@
 ---
 name: sast-scanner
-description: "USE WHEN: PostToolUse hook tetiklendi, Semgrep ile otomatik SAST tarama (OWASP Top 10 + secrets + injection + unsafe constructs) gerekiyor; her code edit sonrası lightweight scan. NOT FOR: manuel security review, threat modeling, compliance audit, derin code quality. USE INSTEAD: security-reviewer (manuel review + remediation), security-analyst (strategic+pentest), compliance-expert (GDPR/SOC2)."
+description: "USE WHEN: PostToolUse hook tetiklendi, Semgrep ile otomatik SAST tarama (OWASP Top 10 + secrets + injection + unsafe constructs) gerekiyor; her code edit sonrası lightweight scan. NOT FOR: manuel security review · threat modeling · compliance audit · derin code quality. USE INSTEAD: security-reviewer · security-analyst · compliance-expert."
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 model: opus
 ---

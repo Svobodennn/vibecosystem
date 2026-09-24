@@ -7,6 +7,7 @@ import { tmpdir } from 'os';
 // Import shared resource reader (Phase 4 module)
 import { readResourceState, ResourceState } from './shared/resource-reader.js';
 import { startTimer, endTimer } from './shared/hook-profiler.js';
+import { activeTestingPolicy, projectDirFrom, withTddInsteadOfWorkflow, withoutTddGuide } from './shared/testing-policy.js';
 
 // Import validation module for false-positive reduction
 import {
@@ -15,23 +16,48 @@ import {
     SkillMatch,
 } from './skill-validation-prompt.js';
 
+/**
+ * Matches a trigger keyword against a prompt using a left word boundary only.
+ *
+ * Substring matching fired "ui" inside "guide" and "api" inside "rapid". A
+ * boundary on the right was tried and rejected: it silently dropped inflected
+ * forms, losing 16 of 20 realistic Turkish prompts ("testleri", "apiyi",
+ * "dockeri") plus English derivations ("deployments", "implementation",
+ * "architectural"). A silent miss disables a trigger outright, while a noisy
+ * match is visible and already handled by shouldValidateWithLLM. The left
+ * boundary alone removes every reported false positive.
+ *
+ * The boundary is only applied when the keyword starts with a word character,
+ * so a keyword like ".net" would still match.
+ */
+const keywordRegexCache = new Map<string, RegExp>();
+
+function matchesKeyword(prompt: string, keyword: string): boolean {
+    const kw = keyword.toLowerCase().trim();
+    if (!kw) {
+        return false;
+    }
+    let regex = keywordRegexCache.get(kw);
+    if (!regex) {
+        const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const left = /^\w/.test(kw) ? '\\b' : '';
+        try {
+            regex = new RegExp(`${left}${escaped}`, 'i');
+        } catch {
+            // Fail closed: falling back to substring would reintroduce the bug
+            return false;
+        }
+        keywordRegexCache.set(kw, regex);
+    }
+    return regex.test(prompt);
+}
+
 interface HookInput {
     session_id: string;
     transcript_path: string;
     cwd: string;
     permission_mode: string;
     prompt: string;
-}
-
-function orchestrationEnabled(): boolean {
-    try {
-        const runtimePath = join(process.env.HOME || '', '.claude', 'vibecosystem-runtime.json');
-        if (!existsSync(runtimePath)) return false;
-        const runtime = JSON.parse(readFileSync(runtimePath, 'utf-8'));
-        return ['full', 'orchestration'].includes(runtime.activeProfile);
-    } catch {
-        return false;
-    }
 }
 
 // Pattern inference result from Python module
@@ -225,9 +251,6 @@ Or use the /explore skill for guided exploration.
 async function main() {
     const _perfStart = startTimer();
     try {
-        // This hook scans every skill rule on every prompt. It is opt-in only.
-        if (!orchestrationEnabled()) return;
-
         // Read input from stdin
         const input = readFileSync(0, 'utf-8');
         let data: HookInput;
@@ -267,7 +290,7 @@ async function main() {
         // CHANGE 3: Detect semantic queries and suggest TLDR semantic search
         const semanticQuery = detectSemanticQuery(data.prompt);
 
-        const matchedSkills: MatchedSkill[] = [];
+        const rawSkills: MatchedSkill[] = [];
 
         // Check each skill for matches
         for (const [skillName, config] of Object.entries(rules.skills)) {
@@ -279,7 +302,7 @@ async function main() {
             // Keyword matching
             if (triggers.keywords) {
                 const matchedKeyword = triggers.keywords.find(kw =>
-                    prompt.includes(kw.toLowerCase())
+                    matchesKeyword(prompt, kw)
                 );
                 if (matchedKeyword) {
                     // Check if this match needs LLM validation
@@ -293,7 +316,7 @@ async function main() {
                     };
                     const needsValidation = shouldValidateWithLLM(skillMatchForValidation);
 
-                    matchedSkills.push({
+                    rawSkills.push({
                         name: skillName,
                         matchType: 'keyword',
                         matchedTerm: matchedKeyword,
@@ -316,7 +339,7 @@ async function main() {
                     }
                 });
                 if (intentMatch) {
-                    matchedSkills.push({
+                    rawSkills.push({
                         name: skillName,
                         matchType: 'intent',
                         config,
@@ -327,7 +350,7 @@ async function main() {
         }
 
         // Check each agent for matches
-        const matchedAgents: MatchedSkill[] = [];
+        const rawAgents: MatchedSkill[] = [];
         if (rules.agents) {
             for (const [agentName, config] of Object.entries(rules.agents)) {
                 const triggers = config.promptTriggers;
@@ -338,7 +361,7 @@ async function main() {
                 // Keyword matching
                 if (triggers.keywords) {
                     const matchedKeyword = triggers.keywords.find(kw =>
-                        prompt.includes(kw.toLowerCase())
+                        matchesKeyword(prompt, kw)
                     );
                     if (matchedKeyword) {
                         // Check if this match needs LLM validation
@@ -352,7 +375,7 @@ async function main() {
                         };
                         const needsValidation = shouldValidateWithLLM(skillMatchForValidation);
 
-                        matchedAgents.push({
+                        rawAgents.push({
                             name: agentName,
                             matchType: 'keyword',
                             matchedTerm: matchedKeyword,
@@ -376,7 +399,7 @@ async function main() {
                         }
                     });
                     if (intentMatch) {
-                        matchedAgents.push({
+                        rawAgents.push({
                             name: agentName,
                             matchType: 'intent',
                             config,
@@ -389,6 +412,11 @@ async function main() {
         }
 
         // Generate output if matches found OR pattern inference succeeded OR semantic query detected
+        // The testing policy scopes test writing: offer `tdd`, never tdd-workflow or tdd-guide.
+        const hasTestingPolicy = activeTestingPolicy(projectDirFrom(data.cwd)) !== null;
+        const matchedSkills = hasTestingPolicy ? withTddInsteadOfWorkflow(rawSkills) : rawSkills;
+        const matchedAgents = hasTestingPolicy ? withoutTddGuide(rawAgents) : rawAgents;
+
         if (matchedSkills.length > 0 || matchedAgents.length > 0 || patternInference || semanticQuery.isSemanticQuery) {
             // Check which skills need LLM validation (potential false positives)
             const skillsNeedingValidation = matchedSkills.filter(s => s.needsValidation);

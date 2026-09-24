@@ -1,130 +1,75 @@
 ---
 name: skill-developer
-description: Meta-skill for creating and managing Claude Code skills
+description: Create, split, or retire a Claude Code skill - directory layout, frontmatter, invocation mode, and registration. Use when asked to make a new skill, turn a script or workflow into one, or clean up an existing one.
 allowed-tools: [Bash, Read, Write, Edit]
 ---
 
 # Skill Developer
 
-Meta-skill for creating new Claude Code skills, including skills that wrap MCP pipelines.
+The **mechanics** of adding a skill to this setup. The **writing** is a separate discipline: call the Skill tool with `writing-for-agents` before authoring the content, and read its `SKILL-MECHANICS.md` for the invocation choice. This file covers only where files go and how they get registered.
 
-## When to Use
+## First, don't
 
-- "Create a skill for X"
-- "Help me make a new skill"
-- "Turn this script into a skill"
-- "How do I create a skill?"
+This setup has 300+ skills, and their descriptions cost ~9.2K tokens of context on **every turn**. A new skill is never free. Before creating one, rule out the cheaper moves:
 
-## Skill Structure
+1. **Does an existing skill already own this?** `ls ~/.claude/skills/ | grep <topic>` and read the near-misses. Extending one beats adding another.
+2. **Is it really a rule?** Standing policy that must never be missed belongs in `~/.claude/rules/` (always loaded). A procedure reached when the task fits belongs here.
+3. **Is it really an agent?** Work that needs its own context window or genuine independence belongs in `~/.claude/agents/`.
+4. **Is it one line in a router?** `hizir`, `help`, `workflow-router`, `search-router` already exist to hold pointers.
 
-Skills live in `.claude/skills/<skill-name>/`:
+If a new skill is still right, continue.
+
+## Layout
 
 ```
-.claude/skills/my-skill/
-├── SKILL.md          # Required: Main skill definition
-├── scripts/          # Optional: Supporting scripts
-└── templates/        # Optional: Templates, examples
+~/.claude/skills/<skill-name>/
+├── SKILL.md          # required
+├── <REFERENCE>.md    # optional: disclosed reference, one file per branch
+├── scripts/          # optional
+└── templates/        # optional
 ```
 
-### SKILL.md Format
+Global (`~/.claude/skills/`) applies in every project. Project-scoped (`<repo>/.claude/skills/`) applies only there, and wins on a name clash. Default to global only when the skill is genuinely project-agnostic.
+
+## Frontmatter
 
 ```yaml
 ---
-name: skill-name
-description: Brief description (shown in skill list)
-allowed-tools: [Bash, Read, Write]  # Optional: restrict tools
+name: skill-name                    # kebab-case, matches the directory
+description: What it is + the distinct branches that should trigger it
+allowed-tools: [Bash, Read, Write]  # optional, restricts tools
 ---
-
-# Skill Name
-
-## When to Use
-[When Claude should discover this skill]
-
-## Instructions
-[Step-by-step instructions for Claude to follow]
-
-## Examples
-[Usage examples]
 ```
 
-## Creating an MCP Pipeline Skill
+The `description` is the skill's always-loaded context pointer, and it is the single highest-leverage line in the file. Write it last, after the body exists, and follow the pointer rules in `writing-for-agents`.
 
-To create a new MCP chain script and wrap it as a skill:
+Invocation, in short (full reasoning in `writing-for-agents/SKILL-MECHANICS.md`):
 
-### Step 1: Use the Template
+- **Model-invoked** (default, omit both flags): agent can fire it, human can type it. Pays permanent context load.
+- **User-only** (`disable-model-invocation: true`): only the human can type it. No context load. Right for expensive orchestrators.
+- **Model-only** (`user-invocable: false`): hides it from the human's slash menu but **still pays full context load**. Rarely what you want.
 
-Copy the multi-tool-pipeline template:
+Omit `model` so the skill inherits the parent (`rules/performance.md`).
 
-```bash
-cp $CLAUDE_PROJECT_DIR/scripts/multi_tool_pipeline.py $CLAUDE_PROJECT_DIR/scripts/my_pipeline.py
-```
+## Structure of the body
 
-Reference the template pattern:
+- **Steps** if the skill is a procedure, in order, each ending on a checkable completion criterion.
+- **Reference** if the skill is a body of rules, flat is fine.
+- Push a branch only some runs need into its own file and point at it. Inline what every run needs.
 
-```bash
-cat $CLAUDE_PROJECT_DIR/.claude/skills/multi-tool-pipeline/SKILL.md
-cat $CLAUDE_PROJECT_DIR/scripts/multi_tool_pipeline.py
-```
+## Registration
 
-### Step 2: Customize the Script
+Nothing is required: dropping `SKILL.md` in place makes the skill available, and the harness reports it immediately.
 
-Edit your new script to chain the MCP tools you need:
-
-```python
-async def main():
-    from runtime.mcp_client import call_mcp_tool
-    args = parse_args()
-
-    # Chain your MCP tools (serverName__toolName)
-    result1 = await call_mcp_tool("server1__tool1", {"param": args.arg1})
-    result2 = await call_mcp_tool("server2__tool2", {"input": result1})
-
-    print(result2)
-```
-
-### Step 2: Create the Skill
-
-Create `.claude/skills/my-pipeline/SKILL.md`:
-
-```markdown
----
-name: my-pipeline
-description: What the pipeline does
-allowed-tools: [Bash, Read]
----
-
-# My Pipeline Skill
-
-## When to Use
-- [Trigger conditions]
-
-## Instructions
-
-Run the pipeline:
-
-\`\`\`bash
-uv run python -m runtime.harness scripts/my_pipeline.py --arg1 "value"
-\`\`\`
-
-### Parameters
-- `--arg1`: Description
-
-## MCP Servers Required
-- server1: For tool1
-- server2: For tool2
-```
-
-### Step 3: Add Triggers (Optional)
-
-Add to `.claude/skills/skill-rules.json`:
+`skills/skill-rules.json` adds keyword and intent-pattern triggers via the `skill-activation-prompt.mjs` hook, but it currently registers **3 skills out of 300+**. Add an entry only when the trigger genuinely cannot live in the description (a file path, an intent phrasing rather than a topic word). A weak description is fixed by rewriting the description.
 
 ```json
 {
   "skills": {
-    "my-pipeline": {
+    "my-skill": {
       "type": "domain",
-      "enforcement": "suggest",
       "priority": "medium",
+      "enforcement": "suggest",
       "description": "What it does",
       "promptTriggers": {
         "keywords": ["keyword1", "keyword2"],
@@ -135,29 +80,22 @@ Add to `.claude/skills/skill-rules.json`:
 }
 ```
 
-## Reference Files
-
-For full details, read:
+## Verify
 
 ```bash
-cat $CLAUDE_PROJECT_DIR/.claude/rules/skill-development.md
-cat $CLAUDE_PROJECT_DIR/.claude/rules/mcp-scripts.md
+~/.claude/skills/<name>/SKILL.md          # exists, frontmatter parses
+node ~/.claude/hooks/dist/canavar-cli.mjs health   # hook chain still healthy
 ```
 
-## Quick Checklist
+Then invoke it once in a real task. A skill that has never run is a hypothesis. The `agent-linter` skill checks structural conformance (frontmatter, naming, required sections) across skills and agents if you want a sweep rather than a spot check.
 
-- [ ] SKILL.md has frontmatter (name, description)
-- [ ] "When to Use" section is clear
-- [ ] Instructions are copy-paste ready
-- [ ] MCP servers documented if needed
-- [ ] Triggers added to skill-rules.json (optional)
+## Retiring one
 
-## Examples in This Repo
-
-Look at existing skills for patterns:
+Deleting is the cheapest performance win available here, and the hardest to bring yourself to do (`writing-for-agents`, sediment). A skill earns deletion when its description carries no trigger, nothing invokes it, and its body caches something the environment already answers. Move it out rather than editing around it:
 
 ```bash
-ls $CLAUDE_PROJECT_DIR/.claude/skills/
-cat $CLAUDE_PROJECT_DIR/.claude/skills/commit/SKILL.md
-cat $CLAUDE_PROJECT_DIR/.claude/skills/firecrawl-scrape/SKILL.md
+mkdir -p ~/.claude/skills/.archive
+mv ~/.claude/skills/<name> ~/.claude/skills/.archive/
 ```
+
+`rules/safety-and-quality.md` forbids deleting without asking: archive, then confirm with the user before anything leaves the disk.

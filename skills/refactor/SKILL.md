@@ -3,6 +3,8 @@ name: refactor
 description: Code refactoring workflow - analyze → plan → implement → review → validate
 ---
 
+> **Test politikası:** Testle ilgili geçerli kural `~/.claude/rules/testing-policy.md`'dir (projede `TESTING_POLICY.md` varsa ekleriyle birlikte); bu dosyadaki test/coverage/suite direktiflerinin yerine o geçer.
+
 # /refactor - Refactoring Workflow
 
 Safe refactoring with review gates.
@@ -32,7 +34,7 @@ Safe refactoring with review gates.
 | # | Agent | Role | Output |
 |---|-------|------|--------|
 | 1 | **phoenix** | Analyze current code, identify improvement areas | Analysis report |
-| 2 | **plan-agent** | Create safe refactoring plan | Step-by-step plan |
+| 2 | **phoenix** | Create safe refactoring plan | Step-by-step plan |
 | 3 | **kraken** | Implement the refactoring | Code changes |
 | 4 | **plan-reviewer** | Review changes for correctness | Review report |
 | 5 | **arbiter** | Verify all tests still pass | Test report |
@@ -68,7 +70,7 @@ Task(
 
 ```
 Task(
-  subagent_type="plan-agent",
+  subagent_type="phoenix",
   prompt="""
   Plan refactoring: [TARGET_CODE]
 
@@ -94,7 +96,7 @@ Task(
   prompt="""
   Implement refactoring: [TARGET_CODE]
 
-  Plan: [from plan-agent]
+  Plan: [from phoenix]
 
   Requirements:
   - Follow plan exactly
@@ -144,7 +146,7 @@ Task(
 
 ### Extract Module
 ```
-phoenix → plan-agent → kraken → plan-reviewer → arbiter
+phoenix → phoenix → kraken → plan-reviewer → arbiter
 ```
 
 ### Rename/Restructure
@@ -154,7 +156,7 @@ phoenix → kraken → arbiter  (simpler, skip detailed planning)
 
 ### Architecture Change
 ```
-phoenix → plan-agent → [kraken → plan-reviewer] × N phases → arbiter
+phoenix → phoenix → [kraken → plan-reviewer] × N phases → arbiter
 ```
 
 ## Example
@@ -173,7 +175,7 @@ Found: Validation logic spread across 4 files
 - order.ts (lines 88-130)
 
 Phase 2: Planning extraction...
-[Spawns plan-agent]
+[Spawns phoenix]
 Plan:
 1. Create src/validation/index.ts
 2. Extract common validators

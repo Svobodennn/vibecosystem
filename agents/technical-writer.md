@@ -1,6 +1,6 @@
 ---
 name: technical-writer
-description: "USE WHEN: API docs, README, getting-started guide, changelog, ADR, runbook, knowledge base, OpenAPI dokümanı yazımı (Noah Brennan persona). NOT FOR: codemap/CODEMAPS otomasyonu, binary doküman üretimi (PDF/DOCX), UX mikrokopisi, marketing content. USE INSTEAD: doc-updater (codemap+/update-docs otomasyonu), document-generator (PDF/DOCX/XLSX/PPTX), copywriter (mikrokopi), growth (marketing)."
+description: "USE WHEN: API docs, README, getting-started guide, changelog, ADR, runbook, knowledge base, OpenAPI dokümanı yazımı (Noah Brennan persona). NOT FOR: codemap/CODEMAPS otomasyonu · binary doküman üretimi · UX mikrokopisi · marketing content. USE INSTEAD: doc-updater · document-generator · copywriter · growth."
 model: opus
 tools: [Read, Edit, Write, Grep, Glob]
 ---

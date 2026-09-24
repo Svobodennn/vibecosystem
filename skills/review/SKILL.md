@@ -1,215 +1,117 @@
 ---
 name: review
-description: Comprehensive code review workflow - parallel specialized reviews → synthesis
+description: Review the changes since a fixed point (commit, branch, tag, merge-base) on two axes - Standards (does it follow this repo's conventions plus a code-smell baseline?) and Spec (does it do what the issue asked?). Use when reviewing a branch, a PR, work in progress, or "review since X".
 ---
 
-# /review - Code Review Workflow
+# Review
 
-Multi-perspective code review with parallel specialists.
+Two-axis review of the diff between `HEAD` and a fixed point:
 
-## When to Use
+- **Standards**: does the code conform to this repo's documented conventions?
+- **Spec**: does the code faithfully implement the originating issue or spec?
 
-- "Review this code"
-- "Review my PR"
-- "Check this before I merge"
-- "Get feedback on implementation"
-- Before merging significant changes
-- Quality gates
+Both axes run as **parallel sub-agents** so they don't pollute each other's context, then this skill aggregates their findings.
 
-## Workflow Overview
+**Why two axes.** A change can pass one and fail the other. Code that follows every convention but implements the wrong thing is Standards-pass, Spec-fail. Code that does exactly what the issue asked but breaks the project's conventions is the reverse. Reporting them separately stops one axis from masking the other, which is why step 5 does not merge or rerank them.
 
-```
-         ┌──────────┐
-         │  critic  │ ─┐
-         │ (code)   │  │
-         └──────────┘  │
-                       │
-         ┌──────────┐  │      ┌──────────────┐
-         │plan-reviewer│ ─┼────▶ │ review-agent │
-         │ (plan)   │  │      │ (synthesis)  │
-         └──────────┘  │      └──────────────┘
-                       │
-         ┌──────────┐  │
-         │plan-reviewer│ ─┘
-         │ (change) │
-         └──────────┘
+## 1. Pin the fixed point
 
-         Parallel                Sequential
-         perspectives            synthesis
-```
+Whatever the user said is the fixed point: a commit SHA, branch name, tag, `main`, `HEAD~5`. If they didn't specify one, ask.
 
-## Agent Sequence
+Capture the diff command once: `git diff <fixed-point>...HEAD` (three-dot, so the comparison is against the merge-base). Note the commits with `git log <fixed-point>..HEAD --oneline`.
 
-| # | Agent | Focus | Execution |
-|---|-------|-------|-----------|
-| 1 | **critic** | Code quality, patterns, readability | Parallel |
-| 1 | **plan-reviewer** | Architecture, plan adherence | Parallel |
-| 1 | **plan-reviewer** | Change impact, risk assessment | Parallel |
-| 2 | **review-agent** | Synthesize all reviews, final verdict | After 1 |
+Confirm the ref resolves (`git rev-parse <fixed-point>`) and the diff is non-empty **before** spawning anything. A bad ref should fail here, not inside two parallel sub-agents.
 
-## Review Perspectives
+## 2. Identify the spec source
 
-- **critic**: Is this good code? (Style, patterns, readability)
-- **plan-reviewer**: Does this match the design? (Architecture, plan)
-- **plan-reviewer**: Is this change safe? (Risk, impact, regressions)
-- **review-agent**: Overall assessment and recommendations
+In this order:
 
-## Execution
+1. Issue references in the commit messages (`#123`, `ABC-456`, `Closes #45`). Fetch Linear issues with the Linear MCP, GitHub issues with `gh issue view`.
+2. A path the user passed as an argument.
+3. A spec, plan, or PRD under `docs/`, `specs/`, `thoughts/`, or `.scratch/` matching the branch name or feature.
+4. Otherwise ask where the spec is. If there isn't one, skip the Spec sub-agent and say so in the report.
 
-### Phase 1: Parallel Reviews
+Where the work came from a `rules/pre-implementation-contract.md` plan, **that plan is the spec**, and its Goal section is the acceptance criteria to review against.
 
-```
-# Code quality review
-Task(
-  subagent_type="critic",
-  prompt="""
-  Review code quality: [SCOPE]
+## 3. Identify the standards sources
 
-  Evaluate:
-  - Code style and consistency
-  - Design patterns used
-  - Readability and maintainability
-  - Error handling
-  - Test coverage
+Anything in the repo documenting how code should be written: the project's `CLAUDE.md`, `CONTRIBUTING.md`, `CODING_STANDARDS.md`, `.editorconfig`, lint config. Plus the global `rules/coding-style.md` and `rules/architecture-principles.md`.
 
-  Output: List of issues with severity (critical/major/minor)
-  """,
-  run_in_background=true
-)
+On top of whatever the repo documents, the Standards axis always carries the **smell baseline** below: a fixed set of Fowler code smells (*Refactoring*, ch. 3) that applies even when a repo documents nothing. Two rules bind it:
 
-# Architecture review
-Task(
-  subagent_type="plan-reviewer",
-  prompt="""
-  Review architecture alignment: [SCOPE]
+- **The repo overrides.** A documented repo standard always wins; where it endorses something the baseline would flag, suppress the smell.
+- **Always a judgement call.** Each smell is a labelled heuristic ("possible Feature Envy"), never a hard violation. Skip anything tooling already enforces (Prettier, ESLint, `tsc`, and the `post-edit-diagnostics` hook already cover formatting and types).
 
-  Check:
-  - Follows established patterns
-  - Matches implementation plan (if exists)
-  - Consistent with system design
-  - No architectural violations
+Each smell reads *what it is* → *how to fix*. Match it against the diff:
 
-  Output: Alignment assessment with concerns
-  """,
-  run_in_background=true
-)
+- **Mysterious Name**: a function, variable, or type whose name doesn't reveal what it does or holds. → rename it; if no honest name comes, the design's murky.
+- **Duplicated Code**: the same logic shape appears in more than one hunk or file in the change. → extract the shared shape, call it from both.
+- **Feature Envy**: a method that reaches into another object's data more than its own. → move the method onto the data it envies.
+- **Data Clumps**: the same few fields or params keep travelling together (a type wanting to be born). → bundle them into one type, pass that.
+- **Primitive Obsession**: a primitive or string standing in for a domain concept that deserves its own type. → give the concept its own small type.
+- **Repeated Switches**: the same `switch`/`if`-cascade on the same type recurs across the change. → replace with polymorphism, or one map both sites share.
+- **Shotgun Surgery**: one logical change forces scattered edits across many files in the diff. → gather what changes together into one module.
+- **Divergent Change**: one file or module is edited for several unrelated reasons. → split so each module changes for one reason.
+- **Speculative Generality**: abstraction, parameters, or hooks added for needs the spec doesn't have. → delete it; inline back until a real need shows.
+- **Message Chains**: long `a.b().c().d()` navigation the caller shouldn't depend on. → hide the walk behind one method on the first object.
+- **Middle Man**: a class or function that mostly just delegates onward. → cut it, call the real target direct.
+- **Refused Bequest**: a subclass or implementer that ignores or overrides most of what it inherits. → drop the inheritance, use composition.
 
-# Change impact review
-Task(
-  subagent_type="plan-reviewer",
-  prompt="""
-  Review change impact: [SCOPE]
+Where the diff is architectural rather than local, the `codebase-design` vocabulary is sharper than the smell list: a **shallow** module is the smell Fowler doesn't name.
 
-  Assess:
-  - Risk level of changes
-  - Affected systems/components
-  - Backward compatibility
-  - Potential regressions
-  - Security implications
+## 4. Spawn both sub-agents in parallel
 
-  Output: Risk assessment with recommendations
-  """,
-  run_in_background=true
-)
+Send both in one message so they run concurrently. Omit `model` so they inherit the parent (`rules/performance.md`).
 
-# Wait for all parallel reviews
-[Check TaskOutput for all three]
-```
+**Standards** → `code-reviewer`. The prompt must include:
 
-### Phase 2: Synthesis
+- The full diff command and commit list.
+- The standards-source files found in step 3, **plus the smell baseline pasted in full** (the sub-agent has no other access to it).
+- The brief: *"Report, per file/hunk where relevant, (a) every place the diff violates a documented standard: cite the standard (file + rule); and (b) any baseline smell you spot: name it and quote the hunk. Distinguish hard violations from judgement calls: documented-standard breaches can be hard, baseline smells are always judgement calls, and a documented repo standard overrides the baseline. Skip anything tooling enforces. Under 400 words."*
 
-```
-Task(
-  subagent_type="review-agent",
-  prompt="""
-  Synthesize reviews for: [SCOPE]
+**Spec** → `plan-reviewer`. The prompt must include:
 
-  Reviews:
-  - critic: [code quality findings]
-  - plan-reviewer: [architecture findings]
-  - plan-reviewer: [change impact findings]
+- The diff command and commit list.
+- The path or fetched contents of the spec.
+- The brief: *"Report: (a) requirements the spec asked for that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep); (c) requirements that look implemented but where the implementation looks wrong. Quote the spec line for each finding. Under 400 words."*
 
-  Create final review:
-  - Overall verdict (APPROVE / REQUEST_CHANGES / NEEDS_DISCUSSION)
-  - Prioritized action items
-  - Blocking vs non-blocking issues
-  - Summary for PR description
-  """
-)
-```
+If the spec is missing, skip the Spec sub-agent and note it in the report.
 
-## Review Modes
+**Add a third axis only when the diff earns it**, in the same parallel batch:
 
-### Full Review
-```
-User: /review
-→ All four agents, comprehensive review
-```
+| Diff touches | Add | As axis |
+|---|---|---|
+| auth, user input, secrets, API endpoints, payments | `security-reviewer` | Security |
+| SQL, migrations, schema | `database-reviewer` | Data |
+| Python | `python-reviewer` | replaces Standards |
 
-### Quick Review
-```
-User: /review --quick
-→ critic only, fast feedback
-```
+## 5. Aggregate
 
-### Security Focus
-```
-User: /review --security
-→ Add aegis (security agent) to parallel phase
-```
+Present each axis under its own heading (`## Standards`, `## Spec`, `## Security`), verbatim or lightly cleaned. **Do not merge or rerank findings across axes**: the separation is the whole point.
 
-### PR Review
-```
-User: /review PR #123
-→ Fetch PR diff, review changes
-```
+End with one line per axis: total findings, and the worst issue *within that axis*. Don't pick a single winner across axes.
 
-## Example
+Then a verdict:
 
-```
-User: /review the authentication changes
+- **APPROVE**: ready to merge, all findings minor
+- **REQUEST_CHANGES**: blocking findings must be fixed
+- **NEEDS_DISCUSSION**: a design decision needs the user's input
 
-Claude: Starting /review workflow...
+## 6. Escalate to council when the axes disagree
 
-Phase 1: Running parallel reviews...
-┌────────────────────────────────────────────┐
-│ critic: Reviewing code quality...          │
-│ plan-reviewer: Checking architecture...         │
-│ plan-reviewer: Assessing change impact...         │
-└────────────────────────────────────────────┘
+`rules/council.md` fires a council automatically on **contradiction**: one axis passes while another fails. Standards-PASS with Security-FAIL is the canonical case. Two other triggers apply to a review:
 
-critic: Found 2 issues
-- [minor] Inconsistent error messages in auth.ts
-- [major] Missing input validation in login()
+- the diff touches `**/auth/**`, `**/payment/**`, `**/billing/**`, `**/migrations/**`, `**/*.sql`, public API surface, `.claude/hooks/**`, or `.github/workflows/**`
+- the diff is over ~200 lines or 5 files
 
-plan-reviewer: ✅ Matches authentication plan
+Council is in **shadow mode**: it reports, it does not block. It also costs ~400-900K subagent tokens per run, so offer it rather than launching it, and only where the blast radius justifies it.
 
-plan-reviewer: Medium risk
-- Affects: login, signup, password reset
-- Breaking change: session token format
+## Modes
 
-Phase 2: Synthesizing...
+- `/review` — Standards + Spec (plus any earned third axis)
+- `/review --quick` — Standards only
+- `/review PR #123` — resolve the PR's base as the fixed point, review the PR diff
 
-┌─────────────────────────────────────────────┐
-│ Review Summary                              │
-├─────────────────────────────────────────────┤
-│ Verdict: REQUEST_CHANGES                    │
-│                                             │
-│ Blocking:                                   │
-│ 1. Add input validation to login()          │
-│                                             │
-│ Non-blocking:                               │
-│ 2. Standardize error messages               │
-│                                             │
-│ Notes:                                      │
-│ - Document session token format change      │
-│ - Consider migration path for existing      │
-│   sessions                                  │
-└─────────────────────────────────────────────┘
-```
+## Handing findings back
 
-## Verdicts
-
-- **APPROVE**: Ready to merge, all issues are minor
-- **REQUEST_CHANGES**: Blocking issues must be fixed
-- **NEEDS_DISCUSSION**: Architectural decisions need input
+Findings are not fixes. Route them by size: `spark` for a one-file change, `kraken` for anything multi-file, under `rules/qa-loop.md` (max 3 retries, then escalate). A fix is done when `@verifier` passes, not when the reviewer's comment is addressed.

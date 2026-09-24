@@ -1,6 +1,6 @@
 ---
 name: session-replay-analyzer
-description: "USE WHEN: Hizir session retrospective — tool call pattern tespiti, verimlilik metrikleri (token/duration/retry), anti-pattern bulma, session karşılaştırma, agent kullanım analizi. NOT FOR: agent reputation scoring, cost tracking, real-time monitoring, debugging. USE INSTEAD: reputation-engine (agent trust score), cost-tracker (token cost), sentinel (real-time), sleuth (debug)."
+description: "USE WHEN: Hizir session retrospective — tool call pattern tespiti, verimlilik metrikleri (token/duration/retry), anti-pattern bulma, session karşılaştırma, agent kullanım analizi. NOT FOR: agent reputation scoring · cost tracking · real-time monitoring · debugging. USE INSTEAD: reputation-engine · cost-tracker · sleuth."
 tools: [Read, Bash, Grep, Glob]
 ---
 

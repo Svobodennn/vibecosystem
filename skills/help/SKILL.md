@@ -47,7 +47,7 @@ Based on response, show relevant tools:
 | Goal | Show |
 |------|------|
 | Explore codebase | scout agent, tldr CLI, /explore workflow |
-| Fix a bug | /fix workflow, sleuth agent, debug-agent |
+| Fix a bug | /fix workflow, sleuth agent, sleuth |
 | Build feature | /build workflow, architect agent, kraken agent |
 | Prove math | /prove skill, lean4 skill, Godel-Prover |
 | Research docs | oracle agent, nia-docs, perplexity |
@@ -66,15 +66,15 @@ Orchestrate multi-agent pipelines for complex tasks.
 |----------|---------|-------------|
 | /fix | Bug investigation → diagnosis → implementation | sleuth → kraken → arbiter |
 | /build | Feature planning → implementation → testing | architect → kraken → arbiter |
-| /debug | Deep investigation of issues | debug-agent, sleuth |
+| /debug | Deep investigation of issues | sleuth, sleuth |
 | /tdd | Test-driven development cycle | arbiter → kraken → arbiter |
-| /refactor | Code transformation with safety | phoenix → kraken → judge |
-| /review | Code review and feedback | critic, judge |
-| /security | Vulnerability analysis | aegis |
+| /refactor | Code transformation with safety | phoenix → kraken → code-reviewer |
+| /review | Code review and feedback | code-reviewer, code-reviewer |
+| /security | Vulnerability analysis | security-reviewer |
 | /explore | Codebase discovery | scout |
-| /test | Test execution and validation | arbiter, atlas |
+| /test | Test execution and validation | arbiter, e2e-runner |
 | /release | Version bumps, changelog | shipper |
-| /migrate | Framework/infrastructure changes | pioneer, phoenix |
+| /migrate | Framework/infrastructure changes | kraken, phoenix |
 
 **Usage**: Just describe your goal. Claude routes to the right workflow.
 ```
@@ -99,34 +99,34 @@ Spawn via Task tool with subagent_type.
 | Agent | Purpose | Model |
 |-------|---------|-------|
 | architect | Feature planning, design docs | sonnet |
-| plan-agent | Create implementation plans | sonnet |
+| planner | Create implementation plans | sonnet |
 | phoenix | Refactoring & migration planning | sonnet |
 
 ### Implementation
 | Agent | Purpose | Model |
 |-------|---------|-------|
 | kraken | TDD implementation, refactoring | sonnet |
-| spark | Quick fixes, lightweight changes | haiku |
+| spark | Quick fixes, lightweight changes | sonnet |
 
 ### Review & Validation
 | Agent | Purpose | Model |
 |-------|---------|-------|
 | arbiter | Test execution, validation | sonnet |
-| critic | Code review | sonnet |
-| judge | Refactoring review | sonnet |
+| code-reviewer | Code review | sonnet |
+| code-reviewer | Refactoring review | sonnet |
 
 ### Investigation
 | Agent | Purpose | Model |
 |-------|---------|-------|
 | sleuth | Bug investigation, root cause | sonnet |
-| debug-agent | Issue investigation with logs | sonnet |
+| sleuth | Issue investigation with logs | sonnet |
 | profiler | Performance, race conditions | sonnet |
 
 ### Documentation & Handoff
 | Agent | Purpose | Model |
 |-------|---------|-------|
 | scribe | Documentation, session summaries | sonnet |
-| chronicler | Session analysis, learning extraction | sonnet |
+| scribe | Session analysis, learning extraction | sonnet |
 ```
 
 ### /help tools
@@ -347,7 +347,7 @@ Just describe the bug. I'll use the /fix workflow automatically.
 
 ### Manual Control
 - **sleuth** agent: Deep investigation, root cause analysis
-- **debug-agent**: Log analysis, state inspection
+- **sleuth**: Log analysis, state inspection
 - **kraken** agent: TDD implementation of fix
 
 ### Commands

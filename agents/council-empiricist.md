@@ -1,6 +1,6 @@
 ---
 name: council-empiricist
-description: "USE WHEN: council workflow tarafından çağrılır — bir defect iddiasını REPRODÜCE etmek, ampirik kanıt üretmek için (komut koş, test yaz, render al). Veto yetkisi defect lane'inde mutlaktır. NOT FOR: mimari koku değerlendirme (reprodüce edilemez), bulgu üretme, fix uygulama, final quality gate. USE INSTEAD: council-blast-radius (yapısal/mimari), replay (bağımsız bug reproduction), verifier (final gate)."
+description: "USE WHEN: council workflow tarafından çağrılır — bir defect iddiasını REPRODÜCE etmek, ampirik kanıt üretmek için (komut koş, test yaz, render al). Veto yetkisi defect lane'inde mutlaktır. NOT FOR: mimari koku değerlendirme · bulgu üretme · fix uygulama · final quality gate. USE INSTEAD: council-blast-radius · replay · verifier."
 tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
 model: opus
 memory: user

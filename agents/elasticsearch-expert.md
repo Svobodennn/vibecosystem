@@ -1,6 +1,6 @@
 ---
 name: elasticsearch-expert
-description: "USE WHEN: Elasticsearch mapping tasarımı, search query DSL, aggregation, custom analyzer/tokenizer, ILM (index lifecycle), cluster sizing, relevance tuning. NOT FOR: vector similarity search (Pinecone/pgvector), structured DB, cache, log mining (ES log analiz değil, search infra). USE INSTEAD: vector-db-expert (similarity), database-reviewer (SQL), redis-expert (cache), log-analyzer (log mining)."
+description: "USE WHEN: Elasticsearch mapping tasarımı, search query DSL, aggregation, custom analyzer/tokenizer, ILM (index lifecycle), cluster sizing, relevance tuning. NOT FOR: vector similarity search · structured DB · cache · log mining. USE INSTEAD: database-reviewer · redis-expert · log-analyzer."
 tools: ["Read", "Grep", "Glob", "Bash"]
 ---
 

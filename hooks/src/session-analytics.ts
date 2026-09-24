@@ -6,16 +6,7 @@
 import { readFileSync, appendFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
-
-interface EventLog {
-  ts: string;
-  session: string;
-  event: string;
-  tool: string;
-  agent_id?: string;
-  agent_type?: string;
-  detail: string;
-}
+import { normalizeEvents } from './shared/event-schema.js';
 
 interface PerfEntry {
   ts: string;
@@ -81,7 +72,7 @@ function main() {
   const outputPath = join(cacheDir, 'session-analytics.jsonl');
 
   // Bu session'in verilerini topla
-  const allEvents = readJsonl<EventLog>(eventsPath);
+  const allEvents = normalizeEvents(readJsonl<unknown>(eventsPath));
   const sessionEvents = allEvents.filter(e => e.session === sessionId);
 
   const allPerf = readJsonl<PerfEntry>(perfPath);

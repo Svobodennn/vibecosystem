@@ -1,6 +1,6 @@
 ---
 name: janitor
-description: "USE WHEN: dead code/unused export/duplicate detection, oversized file flagging, TODO debt audit, proactive codebase hygiene scan, pre-sprint cleanup (Sam Calloway persona). NOT FOR: refactor planning, dependency upgrade, mimari karar, schema cleanup. USE INSTEAD: phoenix (refactor strategy), migrator (dep upgrade), architect (mimari)."
+description: "USE WHEN: dead code/unused export/duplicate detection, oversized file flagging, TODO debt audit, proactive codebase hygiene scan, pre-sprint cleanup (Sam Calloway persona). NOT FOR: refactor planning · dependency upgrade · mimari karar · schema cleanup. USE INSTEAD: phoenix · migrator · architect."
 model: opus
 tools: ["Read", "Bash", "Grep", "Glob"]
 skills:

@@ -1,6 +1,6 @@
 ---
 name: mcp-manager
-description: "USE WHEN: MCP (Model Context Protocol) server yönetimi — MCP server keşfi, kurulum, .mcp.json konfigürasyonu, health check, troubleshooting, proje tipine göre MCP stack önerisi. NOT FOR: Agentica SDK ile agent geliştirme, hook yazımı, generic dependency. USE INSTEAD: agentica-agent (Agentica SDK ile Python agent), devops (generic config), migrator (paket dep)."
+description: "USE WHEN: MCP (Model Context Protocol) server yönetimi — MCP server keşfi, kurulum, .mcp.json konfigürasyonu, health check, troubleshooting, proje tipine göre MCP stack önerisi. NOT FOR: Agentica SDK ile agent geliştirme · hook yazımı · generic dependency. USE INSTEAD: agentica-agent · devops · migrator."
 tools: ["Bash", "Read", "Grep", "Glob", "Write", "Edit"]
 model: sonnet
 ---

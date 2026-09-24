@@ -6,16 +6,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
-
-interface EventLog {
-  ts: string;
-  session: string;
-  event: string;
-  tool: string;
-  agent_id?: string;
-  agent_type?: string;
-  detail: string;
-}
+import { normalizeEvents, isLifecycleEvent, NormalizedEvent } from './shared/event-schema.js';
 
 interface ErrorEntry {
   ts: string;
@@ -109,7 +100,7 @@ function main() {
   }
 
   // Bu session'in event'lerini oku
-  const allEvents = readJsonl<EventLog>(eventsPath);
+  const allEvents = normalizeEvents(readJsonl<unknown>(eventsPath));
   const sessionEvents = allEvents.filter(e => e.session === sessionId);
 
   // Bu session'in hatalarini oku
@@ -117,9 +108,9 @@ function main() {
   const sessionErrors = allErrors.filter(e => e.session === sessionId);
 
   // Agent bazli event'leri grupla (main dahil - tum event'ler onemli)
-  const agentEvents = new Map<string, EventLog[]>();
+  const agentEvents = new Map<string, NormalizedEvent[]>();
   for (const evt of sessionEvents) {
-    const aType = evt.agent_type || 'main';
+    const aType = evt.agentType || 'main';
     if (!agentEvents.has(aType)) agentEvents.set(aType, []);
     agentEvents.get(aType)!.push(evt);
   }
@@ -152,9 +143,11 @@ function main() {
     const events = agentEvents.get(agentType) || [];
     const errors = agentErrors.get(agentType) || [];
 
-    // Task sayisi: Agent tool call'lari + file edit'leri
+    // Task kaniti iki yerden gelir: main'in dosyaya dokunan tool call'lari,
+    // ya da bir subagent'in yasam dongusu event'i -- tool_call satirlari
+    // agentType tasimadigi icin subagent'in tek gorunur izi budur.
     const taskEvents = events.filter(e =>
-      e.tool === 'Edit' || e.tool === 'Write' || e.tool === 'Bash'
+      e.tool === 'Edit' || e.tool === 'Write' || e.tool === 'Bash' || isLifecycleEvent(e.event)
     );
 
     if (taskEvents.length > 0 || errors.length > 0) {

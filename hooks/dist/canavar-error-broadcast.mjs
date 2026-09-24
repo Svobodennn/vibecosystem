@@ -244,6 +244,9 @@ var ERROR_PATTERNS = [
     lesson: (m) => `Python modul eksik: ${m[1]}`
   }
 ];
+function isIntentionalEmptyRun(command) {
+  return !!command && /--findRelatedTests\b|\bvitest\s+related\b/.test(command);
+}
 
 // src/canavar-error-broadcast.ts
 function extractFile(output, command) {
@@ -294,6 +297,7 @@ function main() {
   }
   const errors = [];
   for (const ep of ERROR_PATTERNS) {
+    if (ep.type === "empty_test_run" && isIntentionalEmptyRun(input.tool_input?.command)) continue;
     const match = ep.regex.exec(output);
     if (match) {
       errors.push({

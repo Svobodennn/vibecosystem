@@ -1,6 +1,6 @@
 ---
 name: seo-specialist
-description: "USE WHEN: technical SEO — meta/og tags, structured data (JSON-LD), sitemap/robots.txt, canonical, SSR/SSG/ISR kararı SEO açısından, Core Web Vitals SEO impact, internal linking. NOT FOR: content SEO (keyword research/writing), generic frontend perf, marketing GTM. USE INSTEAD: copywriter (content SEO+microcopy), web-perf-expert (genel frontend perf), growth (marketing GTM), frontend-dev (impl)."
+description: "USE WHEN: technical SEO — meta/og tags, structured data (JSON-LD), sitemap/robots.txt, canonical, SSR/SSG/ISR kararı SEO açısından, Core Web Vitals SEO impact, internal linking. NOT FOR: content SEO · generic frontend perf · marketing GTM. USE INSTEAD: copywriter · web-perf-expert · growth · frontend-dev."
 tools: ["Read", "Grep", "Glob", "Bash"]
 ---
 

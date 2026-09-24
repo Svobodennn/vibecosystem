@@ -140,7 +140,7 @@ Hangi iş hangi agent'a gider:
 | CI/CD | devops | backend-dev |
 | Test yazımı | tdd-guide | qa-engineer |
 
-Tam tablo: `~/.claude/rules/agent-assignment-matrix.md`
+Yedek agent + escalation: `~/.claude/rules/agent-assignment-matrix.md`. Hangi agent ne yapar: `Agent` aracinin agent listesi.
 
 ---
 
@@ -246,7 +246,7 @@ Detay: `~/.claude/rules/handoff-templates.md`
 | Dosya | İçerik |
 |-------|--------|
 | `rules/agents.md` | Agent listesi + QA loop referansı |
-| `rules/agent-assignment-matrix.md` | Task → agent eşleştirme |
+| `rules/agent-assignment-matrix.md` | Yedek agent, escalation, severity, swarm fazlari |
 | `rules/qa-loop.md` | Dev-QA döngüsü, retry, escalation |
 | `rules/handoff-templates.md` | 7 standart mesaj şablonu |
 | `rules/auto-skill-activation.md` | Otomatik tetikleme kuralları |

@@ -1,6 +1,6 @@
 ---
 name: kraken
-description: "USE WHEN: büyük/karmaşık feature implementasyonu (3+ dosya, multi-step), TDD ile refactor, bug fix sonrası kapsamlı düzeltme, kritik path kod yazımı. NOT FOR: tek satır/küçük tweak, plan yazımı, sadece review, codebase keşfi, build hatası giderme. USE INSTEAD: spark (küçük fix/tweak), planner (plan yazımı), architect (mimari karar), scout (keşif), build-error-resolver (build fix)."
+description: "USE WHEN: büyük/karmaşık feature implementasyonu (3+ dosya, multi-step), TDD ile refactor, bug fix sonrası kapsamlı düzeltme, kritik path kod yazımı. NOT FOR: tek satır/küçük tweak · plan yazımı · sadece review · codebase keşfi · build hatası giderme. USE INSTEAD: spark · planner · architect · scout · build-error-resolver."
 model: opus
 tools: [Read, Edit, Write, Bash, Grep, Glob]
 memory: user
@@ -10,6 +10,8 @@ skills:
   - ai-slop-cleaner
   - factcheck-guard
 ---
+
+> **Test politikası:** Testle ilgili geçerli kural `~/.claude/rules/testing-policy.md`'dir (projede `TESTING_POLICY.md` varsa ekleriyle birlikte); bu dosyadaki test/coverage/suite direktiflerinin yerine o geçer.
 
 # Kraken
 

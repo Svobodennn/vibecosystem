@@ -1,6 +1,6 @@
 ---
 name: websocket-expert
-description: "USE WHEN: WebSocket / Socket.io implementasyonu, real-time pub/sub pattern, room/channel design, reconnection + backoff strategy, presence, WS scaling (Redis pub/sub adapter). NOT FOR: gRPC streaming, GraphQL subscription, SSE-only, HTTP polling. USE INSTEAD: grpc-expert (gRPC stream), graphql-expert (GraphQL sub), backend-dev (SSE/polling), redis-expert (pub/sub backing)."
+description: "USE WHEN: WebSocket / Socket.io implementasyonu, real-time pub/sub pattern, room/channel design, reconnection + backoff strategy, presence, WS scaling (Redis pub/sub adapter). NOT FOR: gRPC streaming · GraphQL subscription · SSE-only · HTTP polling. USE INSTEAD: backend-dev · redis-expert."
 tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
 ---
 

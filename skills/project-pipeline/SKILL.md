@@ -3,10 +3,12 @@ name: project-pipeline
 description: Yeni proje icin gate'li, asamali dokuman pipeline'i kurar (anayasa + asama belgeleri + canli yonetim katmani + agent roster + paralel calisma disiplini). Kullan: sifirdan proje baslatirken, ozellikle bir referans urunu inceleyip kendi versiyonunu yapacakken; "docs olustur", "plan yapisi kur", "yeni proje baslat", "demon-tide gibi docs" istendiginde. Multi-agent paralel calisma ve maestro dikte protokolu dahil. NOT FOR: mevcut projede tek feature plani (plan-documentation), 3-dosyali hafif takip (persistent-planning), brownfield kesif (onboard).
 ---
 
+> **Test politikası:** Testle ilgili geçerli kural `~/.claude/rules/testing-policy.md`'dir (projede `TESTING_POLICY.md` varsa ekleriyle birlikte); bu dosyadaki test/coverage/suite direktiflerinin yerine o geçer.
+
 # Project Pipeline — Gate'li Proje Dokümanı Yapısı
 
 Sıfırdan bir ürün geliştirirken kurulan doküman iskeleti. `demon-tide` projesinde geliştirilip
-`cebinden-clone`'da uyarlanan yapı. Amacı üç şey:
+bir klon projesinde uyarlanan yapı. Amacı üç şey:
 
 1. **Kararı koddan önce yazmak** — her aşama bir kapıyla kapanır, kapı geçilmeden sonraki aşama başlamaz
 2. **Doküman driftini kapatmak** — tek kaynak ilkesi: hiçbir sayı/ID iki yerde yazılmaz
@@ -129,7 +131,7 @@ hash yazar. Commit'siz dönen agent'ın işi strand kalır ve `git worktree prun
 İki tablo + bir bölüm:
 1. **Faz Özeti:** faz | teslim (çalışır durum) | ana agent(lar) | epic kapsamı
 2. **Agent Roster:** faz | ana agent | yedek | QA agent(lar) | paralel
-3. **Matris sapma gerekçeleri:** `agent-assignment-matrix.md`'den her sapma tek cümleyle gerekçelenir
+3. **Sapma gerekçeleri:** agent'ın kendi `description`'ının kapsamadığı her atama tek cümleyle gerekçelenir
 
 Ayrıca her faz başlığının altına satır içi atama:
 `> Agents: <ana> (<alan>) + <ana2> (<alan>) → <QA>. Paralel: <ne ile>`

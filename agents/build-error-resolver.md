@@ -1,9 +1,11 @@
 ---
 name: build-error-resolver
-description: "USE WHEN: TypeScript/JavaScript build fail, type error, lint hatası → minimal diff ile düzeltme; build green'e dönsün diye odaklı fix. NOT FOR: Go build (ayrı agent), mimari değişiklik gerektiren refactor, generic kod review, runtime error. USE INSTEAD: go-build-resolver (Go), kraken (mimari değişim), code-reviewer (review), sleuth (runtime debug)."
+description: "USE WHEN: TypeScript/JavaScript build fail, type error, lint hatası → minimal diff ile düzeltme; build green'e dönsün diye odaklı fix. NOT FOR: Go build · mimari değişiklik gerektiren refactor · generic kod review · runtime error. USE INSTEAD: kraken · code-reviewer · sleuth."
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 model: opus
 ---
+
+> **Test politikası:** Testle ilgili geçerli kural `~/.claude/rules/testing-policy.md`'dir (projede `TESTING_POLICY.md` varsa ekleriyle birlikte); bu dosyadaki test/coverage/suite direktiflerinin yerine o geçer.
 
 # Build Error Resolver
 

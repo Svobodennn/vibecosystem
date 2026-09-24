@@ -20,7 +20,7 @@ Structured release preparation to ship with confidence.
 
 ```
 ┌─────────┐    ┌─────────┐    ┌──────────────┐    ┌──────────┐    ┌─────────┐
-│  aegis  │───▶│  atlas  │───▶│ review-agent │───▶│  shipper │───▶│  scribe │
+│  security-reviewer  │───▶│  e2e-runner  │───▶│ review-agent │───▶│  shipper │───▶│  scribe │
 │         │    │         │    │              │    │          │    │         │
 └─────────┘    └─────────┘    └──────────────┘    └──────────┘    └─────────┘
   Security       E2E            Final              Version         Release
@@ -31,8 +31,8 @@ Structured release preparation to ship with confidence.
 
 | # | Agent | Role | Output |
 |---|-------|------|--------|
-| 1 | **aegis** | Security vulnerability scan | Security report |
-| 2 | **atlas** | Run full E2E test suite | Test report |
+| 1 | **security-reviewer** | Security vulnerability scan | Security report |
+| 2 | **e2e-runner** | Run full E2E test suite | Test report |
 | 3 | **review-agent** | Final release review | Release approval |
 | 4 | **shipper** | Version bump, changelog generation | Updated version files |
 | 5 | **scribe** | Release notes, documentation | RELEASE.md, docs |
@@ -51,7 +51,7 @@ Structured release preparation to ship with confidence.
 
 ```
 Task(
-  subagent_type="aegis",
+  subagent_type="security-reviewer",
   prompt="""
   Security audit for release: [VERSION]
 
@@ -71,7 +71,7 @@ Task(
 
 ```
 Task(
-  subagent_type="atlas",
+  subagent_type="e2e-runner",
   prompt="""
   Run E2E tests for release: [VERSION]
 
@@ -169,7 +169,7 @@ Task(
 ### Hotfix
 ```
 /release --hotfix
-→ Expedited: aegis → atlas → shipper
+→ Expedited: security-reviewer → e2e-runner → shipper
 ```
 
 ## Example
@@ -180,12 +180,12 @@ User: /release v2.0.0
 Claude: Starting /release workflow for v2.0.0...
 
 Phase 1: Security audit...
-[Spawns aegis]
+[Spawns security-reviewer]
 ✅ No critical vulnerabilities
 ⚠️ 2 low-severity issues (documented)
 
 Phase 2: E2E tests...
-[Spawns atlas]
+[Spawns e2e-runner]
 ✅ 156/156 E2E tests passing
 
 Phase 3: Final review...

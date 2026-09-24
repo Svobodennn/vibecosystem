@@ -1,6 +1,6 @@
 ---
 name: scribe
-description: "USE WHEN: agent-to-agent handoff dokümanı, phase transition özeti, session summary yazımı, continuity ledger yönetimi (kararlar + WIP + open threads). NOT FOR: technical docs (API/README), context recovery (oturum başı), codemap güncellemesi, error learning. USE INSTEAD: technical-writer (technical docs), compass (context recovery), doc-updater (codemap), self-learner (error learning)."
+description: "USE WHEN: agent-to-agent handoff dokümanı, phase transition özeti, session summary yazımı, continuity ledger yönetimi (kararlar + WIP + open threads). NOT FOR: technical docs · context recovery · codemap güncellemesi · error learning. USE INSTEAD: technical-writer · compass · doc-updater · self-learner."
 model: sonnet
 tools: [Bash, Read, Write, Glob, Grep]
 ---

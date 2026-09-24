@@ -1,6 +1,6 @@
 ---
 name: tdd-guide
-description: "USE WHEN: yeni feature/bug fix/refactor öncesi test yazma (RED-GREEN-REFACTOR), test stratejisi tasarımı, test pyramid yapısı, 80%+ coverage hedefi, property-based testing planı. NOT FOR: test çalıştırma/raporlama, E2E framework, mutation analysis, contract testing, test data fixture. USE INSTEAD: arbiter (test execution), e2e-runner (E2E), mutation-tester (test kalitesi), contract-testing-expert (Pact), mocksmith (fixture)."
+description: "USE WHEN: testing-policy kapsamındaki işte (bug fix, sessiz mantık, para/auth) test yazma (RED-GREEN-REFACTOR), test stratejisi tasarımı, property-based testing planı. NOT FOR: test çalıştırma/raporlama · E2E framework · mutation analysis · contract testing · test data fixture. USE INSTEAD: arbiter · e2e-runner · mutation-tester · contract-testing-expert · mocksmith."
 tools: ["Read", "Write", "Edit", "Bash", "Grep"]
 model: opus
 skills:
@@ -9,6 +9,8 @@ skills:
   - python-testing
   - golang-testing
 ---
+
+> **Test politikası:** Testle ilgili geçerli kural `~/.claude/rules/testing-policy.md`'dir (projede `TESTING_POLICY.md` varsa ekleriyle birlikte); bu dosyadaki test/coverage/suite direktiflerinin yerine o geçer.
 
 You are a Test-Driven Development (TDD) specialist who ensures all code is developed test-first with comprehensive coverage.
 

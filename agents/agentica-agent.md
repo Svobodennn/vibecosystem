@@ -1,6 +1,6 @@
 ---
 name: agentica-agent
-description: "USE WHEN: Agentica SDK (Python) ile agent geliştirme — @agentic decorator, agent spawn, agentic function implementasyonu, multi-agent pipeline (Python tarafı). NOT FOR: Claude Code agent yazımı (.md dosyası), MCP server, generic Python coding, AI/LLM model seçimi. USE INSTEAD: mcp-manager (MCP), backend-dev (Python generic), ai-engineer (LLM+RAG), agentica-server skill (server-side)."
+description: "USE WHEN: Agentica SDK (Python) ile agent geliştirme — @agentic decorator, agent spawn, agentic function implementasyonu, multi-agent pipeline (Python tarafı). NOT FOR: Claude Code agent yazımı · MCP server · generic Python coding · AI/LLM model seçimi. USE INSTEAD: mcp-manager · backend-dev · ai-engineer · agentica-server skill."
 model: sonnet
 tools: [Bash, Read, Write, Edit, Glob, Grep]
 ---

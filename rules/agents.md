@@ -1,7 +1,8 @@
 # Agent Orchestration
 
 ## Ilgili Kurallar
-- `agent-assignment-matrix.md` → Hangi task hangi agent'a gider
+- `agent-assignment-matrix.md` → Yedek agent, escalation zinciri, severity→response, swarm faz haritasi.
+  (Hangi task hangi agent'a gider: agent'in kendi `description`'i -- arac tanimiyla yuklu)
 - `qa-loop.md` → Dev-QA dongusu, retry logic, escalation
 - `handoff-templates.md` → Agent arasi mesaj sablonlari
 
@@ -13,7 +14,7 @@ Located in `~/.claude/agents/`:
 |-------|---------|-------------|
 | planner | Implementation planning | Complex features, refactoring |
 | architect | System design | Architectural decisions |
-| tdd-guide | Test-driven development | New features, bug fixes |
+| tdd-guide | Test-driven development | Bug fixes, logic in `testing-policy.md` scope |
 | code-reviewer | Code review | After writing code |
 | security-reviewer | Security analysis | Before commits |
 | build-error-resolver | Fix build errors | When build fails |
@@ -35,7 +36,7 @@ Located in `~/.claude/agents/`:
 No user prompt needed:
 1. Complex feature requests - Use **planner** agent
 2. Code just written/modified - Use **code-reviewer** agent
-3. Bug fix or new feature - Use **tdd-guide** agent
+3. Bug fix or logic in `testing-policy.md` scope - Use **tdd-guide** agent
 4. Architectural decision - Use **architect** agent
 5. Hata yapildiginda - Use **self-learner** agent
 6. Is tamamlandiginda - Use **verifier** agent

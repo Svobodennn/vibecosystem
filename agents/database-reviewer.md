@@ -1,6 +1,6 @@
 ---
 name: database-reviewer
-description: "USE WHEN: PostgreSQL SQL/migration/schema yazıldı; query optimization, index strategy, RLS policy, Supabase patterns review gerekiyor. NOT FOR: NoSQL (MongoDB), in-memory (Redis), search (Elasticsearch), generic kod review, DBA strategy (backup/replication). USE INSTEAD: mongodb-expert, redis-expert, elasticsearch-expert, vault (DBA strategy), code-reviewer (uygulama kodu)."
+description: "USE WHEN: PostgreSQL SQL/migration/schema yazıldı; query optimization, index strategy, RLS policy, Supabase patterns review gerekiyor. NOT FOR: NoSQL · in-memory · search · generic kod review · DBA strategy. USE INSTEAD: redis-expert · elasticsearch-expert · vault (DBA stratejisi: backup/replication) · code-reviewer (uygulama kodu)."
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 model: opus
 memory: user

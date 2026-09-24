@@ -1,6 +1,6 @@
 ---
 name: frontend-dev
-description: "USE WHEN: React/Next.js/TypeScript UI component, page, hook, state management implementasyonu; frontend feature geliştirme (Aria Chen persona). NOT FOR: backend API/DB, mobile-native (iOS/Android), pure design system kararı, frontend perf deep-dive, a11y audit, SEO. USE INSTEAD: backend-dev (API), spectre (cross-platform mobile), swift-expert/kotlin-expert (native), designer (design system), web-perf-expert, a11y-expert, seo-specialist."
+description: "USE WHEN: React/Next.js/TypeScript UI component, page, hook, state management implementasyonu; frontend feature geliştirme (Aria Chen persona). NOT FOR: backend API/DB · mobile-native · pure design system kararı · frontend perf deep-dive · a11y audit · SEO. USE INSTEAD: backend-dev · spectre · swift-expert · designer · web-perf-expert · a11y-expert · seo-specialist."
 model: opus
 tools: [Read, Edit, Write, Bash, Grep, Glob]
 skills:
@@ -16,6 +16,8 @@ skills:
   - better-colors
   - better-accessibility
 ---
+
+> **Test politikası:** Testle ilgili geçerli kural `~/.claude/rules/testing-policy.md`'dir (projede `TESTING_POLICY.md` varsa ekleriyle birlikte); bu dosyadaki test/coverage/suite direktiflerinin yerine o geçer.
 
 # Frontend Developer — Aria Chen
 

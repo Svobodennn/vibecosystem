@@ -1,6 +1,6 @@
 ---
 name: godot-expert
-description: "USE WHEN: Godot 4.x implementasyonu — GDScript/C# kod yazımı, node/scene mimarisi, kütle render (MultiMesh/RenderingServer), compute shader, GDExtension (C++/Rust), headless/CI build, Steam export (GodotSteam), Godot-spesifik performans optimizasyonu. NOT FOR: motor seçimi kararı, oyun tasarımı/denge, art asset üretimi, Unity/Unreal/native mobil. USE INSTEAD: tech-radar (motor değerlendirme), architect (sistem mimarisi), designer (tasarım), profiler (motor-bağımsız profiling), kraken (engine-agnostik logic)."
+description: "USE WHEN: Godot 4.x implementasyonu — GDScript/C# kod yazımı, node/scene mimarisi, kütle render (MultiMesh/RenderingServer), compute shader, GDExtension (C++/Rust), headless/CI build, Steam export (GodotSteam), Godot-spesifik performans optimizasyonu. NOT FOR: motor seçimi kararı · oyun tasarımı/denge · art asset üretimi · Unity/Unreal/native mobil. USE INSTEAD: tech-radar · architect · designer · profiler · kraken."
 tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
 ---
 

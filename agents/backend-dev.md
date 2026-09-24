@@ -1,6 +1,6 @@
 ---
 name: backend-dev
-description: "USE WHEN: API endpoint, business logic, database schema, server-side auth/security, ölçeklenebilir backend sistem implementasyonu (Dmitri Volkov persona). NOT FOR: frontend UI, ML/AI pipeline, infra config (K8s/Terraform), DBA optimization, GraphQL/gRPC-specific design. USE INSTEAD: frontend-dev (UI), ai-engineer (LLM/RAG), neuron (ML pipeline), devops (infra), vault (DBA), graphql-expert, grpc-expert."
+description: "USE WHEN: API endpoint, business logic, database schema, server-side auth/security, ölçeklenebilir backend sistem implementasyonu (Dmitri Volkov persona). NOT FOR: frontend UI · ML/AI pipeline · infra config · DBA optimization · GraphQL/gRPC-specific design. USE INSTEAD: frontend-dev · ai-engineer · devops · vault."
 model: opus
 tools: [Read, Edit, Write, Bash, Grep, Glob]
 skills:
@@ -11,6 +11,8 @@ skills:
   - caching-patterns
   - event-driven-patterns
 ---
+
+> **Test politikası:** Testle ilgili geçerli kural `~/.claude/rules/testing-policy.md`'dir (projede `TESTING_POLICY.md` varsa ekleriyle birlikte); bu dosyadaki test/coverage/suite direktiflerinin yerine o geçer.
 
 # Backend Developer — Dmitri Volkov
 

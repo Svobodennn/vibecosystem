@@ -2,6 +2,50 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { join } from "path";
 import { homedir } from "os";
+
+// src/shared/event-schema.ts
+var LIFECYCLE_EVENTS = /* @__PURE__ */ new Set(["agent_spawn", "agent_complete", "agent_error"]);
+function asString(value) {
+  return typeof value === "string" ? value : "";
+}
+function normalizeEvent(raw) {
+  if (!raw || typeof raw !== "object") {
+    return null;
+  }
+  const r = raw;
+  const meta = r.metadata && typeof r.metadata === "object" ? r.metadata : {};
+  const ts = asString(r.ts) || asString(r.timestamp);
+  const session = asString(r.session) || asString(r.sessionId);
+  const event = asString(r.event) || asString(r.type);
+  if (!ts && !session && !event) {
+    return null;
+  }
+  return {
+    ts,
+    // Yazanlar zaten 8 karaktere kirpiyor; idempotent, tuketici filtresiyle hizali
+    session: session.slice(0, 8),
+    event,
+    tool: asString(r.tool) || asString(meta.tool),
+    detail: asString(r.detail) || asString(meta.command) || asString(meta.promptSummary) || asString(meta.source),
+    agentType: asString(r.agent_type) || asString(r.agentType),
+    agentId: asString(r.agent_id) || asString(r.agentId)
+  };
+}
+function normalizeEvents(rawList) {
+  const out = [];
+  for (const raw of rawList) {
+    const normalized = normalizeEvent(raw);
+    if (normalized) {
+      out.push(normalized);
+    }
+  }
+  return out;
+}
+function isLifecycleEvent(event) {
+  return LIFECYCLE_EVENTS.has(event);
+}
+
+// src/canavar-skill-tracker.ts
 function fileToSkill(detail) {
   if (/\.(ts|tsx|js|jsx|mjs|cjs)$/i.test(detail)) return "typescript";
   if (/\.(py|pyi)$/i.test(detail)) return "python";
@@ -52,13 +96,13 @@ function main() {
     } catch {
     }
   }
-  const allEvents = readJsonl(eventsPath);
+  const allEvents = normalizeEvents(readJsonl(eventsPath));
   const sessionEvents = allEvents.filter((e) => e.session === sessionId);
   const allErrors = readJsonl(ledgerPath);
   const sessionErrors = allErrors.filter((e) => e.session === sessionId);
   const agentEvents = /* @__PURE__ */ new Map();
   for (const evt of sessionEvents) {
-    const aType = evt.agent_type || "main";
+    const aType = evt.agentType || "main";
     if (!agentEvents.has(aType)) agentEvents.set(aType, []);
     agentEvents.get(aType).push(evt);
   }
@@ -85,7 +129,7 @@ function main() {
     const events = agentEvents.get(agentType) || [];
     const errors = agentErrors.get(agentType) || [];
     const taskEvents = events.filter(
-      (e) => e.tool === "Edit" || e.tool === "Write" || e.tool === "Bash"
+      (e) => e.tool === "Edit" || e.tool === "Write" || e.tool === "Bash" || isLifecycleEvent(e.event)
     );
     if (taskEvents.length > 0 || errors.length > 0) {
       profile.total_tasks++;

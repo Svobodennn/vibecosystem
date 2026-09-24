@@ -1,6 +1,6 @@
 ---
 name: psyche
-description: "USE WHEN: rubber duck debugging (problem konuşarak anlama), frustration detection (kullanıcı sıkışmış), decision fatigue, agent'lar arası anlaşmazlık mediation, session retrospective (Dr. Elif Demir persona). NOT FOR: teknik debug, agent reputation, cost analysis, agent spawning. USE INSTEAD: sleuth (teknik debug), reputation-engine (agent trust), cost-tracker, maestro (orchestration)."
+description: "USE WHEN: rubber duck debugging (problem konuşarak anlama), frustration detection (kullanıcı sıkışmış), decision fatigue, agent'lar arası anlaşmazlık mediation, session retrospective (Dr. Elif Demir persona). NOT FOR: teknik debug · agent reputation · cost analysis · agent spawning. USE INSTEAD: sleuth · reputation-engine · cost-tracker · maestro."
 model: opus
 tools: [Read, Grep, Glob]
 ---

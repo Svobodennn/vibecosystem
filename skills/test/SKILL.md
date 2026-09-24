@@ -24,7 +24,7 @@ Run comprehensive test suite with parallel execution.
 │ (type check)│      │ (unit)    │  │
 └─────────────┘      └───────────┘  │
                                     ├──▶ ┌─────────┐
-                     ┌───────────┐  │    │  atlas  │
+                     ┌───────────┐  │    │  e2e-runner  │
                      │  arbiter  │ ─┘    │ (e2e)   │
                      │ (integ)   │       └─────────┘
                      └───────────┘
@@ -39,7 +39,7 @@ Run comprehensive test suite with parallel execution.
 |---|-------|------|-----------|
 | 1 | **arbiter** | Unit tests, type checks, linting | Parallel |
 | 1 | **arbiter** | Integration tests | Parallel |
-| 2 | **atlas** | E2E/acceptance tests | After 1 passes |
+| 2 | **e2e-runner** | E2E/acceptance tests | After 1 passes |
 
 ## Why This Order?
 
@@ -121,7 +121,7 @@ Task(
 
 ```
 Task(
-  subagent_type="atlas",
+  subagent_type="e2e-runner",
   prompt="""
   Run E2E tests for: [SCOPE]
 
@@ -176,7 +176,7 @@ arbiter: ✅ 45/45 unit tests passing
 arbiter: ✅ 12/12 integration tests passing
 
 Phase 2: Running E2E tests...
-atlas: ✅ 8/8 E2E tests passing
+e2e-runner: ✅ 8/8 E2E tests passing
 
 Test Summary:
 ┌─────────────┬─────────┬────────┐

@@ -1,6 +1,6 @@
 ---
 name: replay
-description: "USE WHEN: bug reproduce edilemiyor → %100 reproducible adımları çıkar, flaky test analizi, race condition detection, environment matching (versiyon/data/state). NOT FOR: root cause analysis, fix uygulama, post-fix pattern arama, log mining. USE INSTEAD: sleuth (root cause), spark/kraken (fix), coroner (pattern propagation), log-analyzer (log mining)."
+description: "USE WHEN: bug reproduce edilemiyor → %100 reproducible adımları çıkar, flaky test analizi, race condition detection, environment matching (versiyon/data/state). NOT FOR: root cause analysis · fix uygulama · post-fix pattern arama · log mining. USE INSTEAD: sleuth · spark/kraken · coroner · log-analyzer."
 model: sonnet
 tools: [Read, Bash, Grep, Glob]
 ---

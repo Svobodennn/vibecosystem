@@ -35,7 +35,7 @@ Safe migrations for frameworks, languages, and infrastructure.
 |---|-------|------|--------|
 | 1 | **oracle** | Research target framework/version | Research report |
 | 2 | **phoenix** | Analyze current codebase for migration impact | Impact analysis |
-| 3 | **plan-agent** | Create phased migration plan | Migration plan |
+| 3 | **phoenix** | Create phased migration plan | Migration plan |
 | 4 | **kraken** | Implement migration changes | Code changes |
 | 5 | **surveyor** | Review migration for completeness | Migration review |
 
@@ -95,7 +95,7 @@ Task(
 
 ```
 Task(
-  subagent_type="plan-agent",
+  subagent_type="phoenix",
   prompt="""
   Create migration plan: [FROM] → [TO]
 
@@ -121,7 +121,7 @@ Task(
   prompt="""
   Implement migration phase: [PHASE_N]
 
-  Plan: [from plan-agent]
+  Plan: [from phoenix]
 
   Requirements:
   - Follow plan exactly
@@ -204,7 +204,7 @@ Impact analysis:
 - Test coverage: 78%
 
 Phase 3: Creating migration plan...
-[Spawns plan-agent]
+[Spawns phoenix]
 
 Migration Plan: Express → Fastify
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

@@ -330,7 +330,7 @@ ROUTING DECISION
 ## Integration with vibecosystem
 
 ### Agent Assignment Matrix
-This skill overrides the default model assignments in `agent-assignment-matrix.md` when a scoring reason exists. The matrix defines WHICH agent handles a task; this skill defines WHICH MODEL that agent uses.
+This skill decides WHICH MODEL an agent uses when a scoring reason exists. WHICH agent handles a task comes from that agent's own `description`, not from `agent-assignment-matrix.md` (which now holds Yedek/escalation/severity/swarm only).
 
 Priority order:
 1. Hard rules (override everything)

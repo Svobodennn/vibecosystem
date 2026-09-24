@@ -1,6 +1,6 @@
 ---
 name: council-simplifier
-description: "USE WHEN: council workflow tarafından çağrılır — değişikliğin doğru olan en küçük hâli mi olduğunu denetlemek için (gereksiz soyutlama, AI bloat, yeniden kullanılabilir mevcut kod). Asla veto/blocking vermez, sadece not düşer. NOT FOR: doğruluk/güvenlik denetimi, refactor uygulama, dead code temizliği. USE INSTEAD: council-refuter (doğruluk), janitor (dead code), phoenix (refactor planı), ai-slop-cleaner skill (uygulama)."
+description: "USE WHEN: council workflow tarafından çağrılır — değişikliğin doğru olan en küçük hâli mi olduğunu denetlemek için (gereksiz soyutlama, AI bloat, yeniden kullanılabilir mevcut kod). Asla veto/blocking vermez, sadece not düşer. NOT FOR: doğruluk/güvenlik denetimi · refactor uygulama · dead code temizliği. USE INSTEAD: council-refuter · janitor · phoenix · ai-slop-cleaner skill."
 tools: ["Read", "Grep", "Glob"]
 model: opus
 memory: user

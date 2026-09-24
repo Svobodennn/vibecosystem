@@ -1,6 +1,6 @@
 ---
 name: document-generator
-description: "USE WHEN: binary doküman üretimi — PDF (rapor/proposal/CV), DOCX (sözleşme/proposal), XLSX (tablo/finansal model), PPTX (sunum); template engine ile profesyonel tasarım. NOT FOR: markdown/README yazımı, code documentation, API spec, marketing copy. USE INSTEAD: technical-writer (markdown/README/API docs), doc-updater (codemap), copywriter (marketing içerik)."
+description: "USE WHEN: binary doküman üretimi — PDF (rapor/proposal/CV), DOCX (sözleşme/proposal), XLSX (tablo/finansal model), PPTX (sunum); template engine ile profesyonel tasarım. NOT FOR: markdown/README yazımı · code documentation · API spec · marketing copy. USE INSTEAD: technical-writer (markdown/README/API docs) · doc-updater (codemap) · copywriter (marketing)."
 model: sonnet
 tools: [Read, Write, Edit, Bash, Grep, Glob]
 ---

@@ -146,8 +146,8 @@ Proceed? [Yes / Adjust settings]
 |-------|-------|-------------|
 | `bug` | debug -> implement_task -> test-driven-development -> commit | General bug fix workflow |
 | `hook` | debug-hooks -> hook-developer -> implement_task -> test hook | Hook-specific debugging |
-| `deps` | dependency-preflight -> oracle -> plan-agent -> implement_plan -> qlty-check | Dependency issues |
-| `pr-comments` | github-search -> research-codebase -> plan-agent -> implement_plan -> commit | Address PR feedback |
+| `deps` | dependency-preflight -> oracle -> planner -> implement_plan -> qlty-check | Dependency issues |
+| `pr-comments` | github-search -> scout -> planner -> implement_plan -> commit | Address PR feedback |
 
 ## Options
 
@@ -373,7 +373,7 @@ Task(
 
   Root cause: {diagnosis.root_cause}
 
-  Follow plan-agent workflow:
+  Follow planner workflow:
   1. Research correct dependency versions
   2. Create implementation plan
   3. Update lockfiles
@@ -392,7 +392,7 @@ Task(
 
   Comments: {diagnosis.pr_comments}
 
-  Follow plan-agent workflow:
+  Follow planner workflow:
   1. Research codebase for context
   2. Create implementation plan for each comment
   3. Implement changes
@@ -509,7 +509,7 @@ dependency-preflight (check current state)
 oracle (find correct versions/alternatives)
   |
   v
-plan-agent (create fix plan)
+planner (create fix plan)
   |
   v
 [HUMAN CHECKPOINT: diagnosis + plan review]
@@ -536,10 +536,10 @@ commit
 github-search (fetch PR context)
   |
   v
-research-codebase (understand context)
+scout (understand context)
   |
   v
-plan-agent (plan for each comment)
+planner (plan for each comment)
   |
   v
 [HUMAN CHECKPOINT: plan review]
@@ -647,9 +647,9 @@ This skill orchestrates:
 - `kraken`: TDD implementation agent
 - `implement_task`: Single task implementation
 - `test-driven-development`: Test creation
-- `plan-agent`: Complex fix planning
+- `planner`: Complex fix planning
 - `dependency-preflight`: Dependency checks
-- `oracle` / `research-codebase`: Context gathering
+- `oracle` / `scout`: Context gathering
 - `github-search`: PR context fetching
 - `qlty-check`: Quality verification
 - `premortem`: Risk assessment before implementation

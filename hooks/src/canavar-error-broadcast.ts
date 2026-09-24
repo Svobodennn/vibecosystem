@@ -8,7 +8,7 @@ import { join } from 'path';
 import { homedir } from 'os';
 import { notify } from './shared/notify.js';
 import { getCurrentRepo, createIssue } from './shared/github-bridge.js';
-import { ERROR_PATTERNS } from './shared/error-patterns.js';
+import { ERROR_PATTERNS, isIntentionalEmptyRun } from './shared/error-patterns.js';
 
 interface PostToolInput {
   session_id: string;
@@ -102,6 +102,7 @@ function main() {
   const errors: ErrorEntry[] = [];
 
   for (const ep of ERROR_PATTERNS) {
+    if (ep.type === 'empty_test_run' && isIntentionalEmptyRun(input.tool_input?.command)) continue;
     const match = ep.regex.exec(output);
     if (match) {
       errors.push({

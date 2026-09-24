@@ -1,6 +1,6 @@
 ---
 name: i18n-expert
-description: "USE WHEN: technical i18n — string extraction, ICU MessageFormat, pluralization rules (CLDR), framework setup (next-intl, react-i18next, formatjs), translation key management, lazy locale loading. NOT FOR: locale-aware UX design, cultural adaptation, RTL CSS implement, marketing translation. USE INSTEAD: babel (locale UX + RTL design + cultural), frontend-dev (RTL CSS), copywriter (translation copy)."
+description: "USE WHEN: technical i18n — string extraction, ICU MessageFormat, pluralization rules (CLDR), framework setup (next-intl, react-i18next, formatjs), translation key management, lazy locale loading. NOT FOR: locale-aware UX design · cultural adaptation · RTL CSS implement · marketing translation. USE INSTEAD: babel · frontend-dev · copywriter."
 tools: [Read, Write, Edit, Grep, Glob, Bash]
 ---
 

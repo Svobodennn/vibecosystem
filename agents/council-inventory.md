@@ -1,6 +1,6 @@
 ---
 name: council-inventory
-description: "USE WHEN: council-design workflow'un ilk aşaması — inceleme yüzeyini SONLU bir envantere indirger (doküman seti, modül listesi, karar/görev artefaktları). Finder'ların sınırsız gezinip takılmasını engelleyen kapı. NOT FOR: bulgu üretme, kod review, mimari karar verme, kod keşfi (genel). USE INSTEAD: scout (genel keşif), architect (karar), council-design finder'ları (bulgu)."
+description: "USE WHEN: council-design workflow'un ilk aşaması — inceleme yüzeyini SONLU bir envantere indirger (doküman seti, modül listesi, karar/görev artefaktları). Finder'ların sınırsız gezinip takılmasını engelleyen kapı. NOT FOR: bulgu üretme · kod review · mimari karar verme · kod keşfi. USE INSTEAD: scout · architect · council-design finder'ları."
 tools: ["Read", "Grep", "Glob", "Bash"]
 model: opus
 memory: user

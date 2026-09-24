@@ -1,194 +1,143 @@
 ---
-description: Debug issues by investigating logs, database state, and git history
+name: debug
+description: Diagnosis loop for hard bugs and performance regressions. Use when the user says "debug this" / "diagnose", or reports something broken, throwing, failing, or slow.
 ---
 
 # Debug
 
-You are tasked with helping debug issues during manual testing or implementation. This command allows you to investigate problems by examining logs, database state, and git history without editing files. Think of this as a way to bootstrap a debugging session without using the primary window's context.
+A discipline for hard bugs. Skip a phase only when you can say why.
 
-## Initial Response
+The one idea: **build a tight feedback loop that goes red on this bug, before you theorise about it.** Everything else here is mechanical. Reading code to form a theory without a loop is the exact failure this skill prevents.
 
-When invoked WITH a plan/ticket file:
-```
-I'll help debug issues with [file name]. Let me understand the current state.
+When exploring the codebase, read `CONTEXT.md` (if it exists) for a clear mental model of the relevant modules, and check `docs/adr/` for decisions in the area you're touching.
 
-What specific problem are you encountering?
-- What were you trying to test/implement?
-- What went wrong?
-- Any error messages?
+For the environment specifics of this machine (where logs live, how to query a local DB, how to check a service), see [ENVIRONMENT.md](ENVIRONMENT.md).
 
-I'll investigate the logs, database, and git state to help figure out what's happening.
-```
+## Redact
 
-When invoked WITHOUT parameters:
-```
-I'll help debug your current issue.
+This skill has you show commands, outputs, and captured artifacts. **Redact every secret first**: write `<REDACTED>` in its place. Build loops against env vars so the credential stays in the environment rather than in what you show. Captured artifacts carry auth headers: quote only the lines that carry the signal.
 
-Please describe what's going wrong:
-- What are you working on?
-- What specific problem occurred?
-- When did it last work?
+If the redacted output is not enough to diagnose the bug, say so and ask the user.
 
-I can investigate logs, database state, and recent changes to help identify the issue.
-```
+## Phase 1: Build a feedback loop
 
-## Environment Information
+**This is the skill.** If you have a **tight** pass/fail signal that goes red on *this* bug, you will find the cause: bisection, hypothesis-testing, and instrumentation all just consume it. If you don't have one, no amount of staring at code will save you.
 
-You have access to these key locations and tools:
+Spend disproportionate effort here. Be aggressive, be creative, refuse to give up.
 
-**Logs**:
-- Application logs (check project-specific locations)
-- Common locations: `./logs/`, `~/.local/share/{app}/`, `/var/log/`
+### Ways to construct one, in roughly this order
 
-**Database** (if applicable):
-- SQLite databases can be queried with `sqlite3`
-- Check project config for database locations
+1. **Failing test** at whatever seam reaches the bug: unit, integration, e2e.
+2. **Curl / HTTP script** against a running dev server.
+3. **CLI invocation** with a fixture input, diffing stdout against a known-good snapshot.
+4. **Headless browser script** (Playwright, or the `claude-in-chrome` tools) that drives the UI and asserts on DOM/console/network.
+5. **Replay a captured trace.** Save a real request, payload, or event log to disk; replay it through the code path in isolation.
+6. **Throwaway harness.** Spin up a minimal subset of the system (one service, mocked deps) that exercises the bug path with a single function call.
+7. **Property / fuzz loop.** If the bug is "sometimes wrong output", run 1000 random inputs and look for the failure mode.
+8. **Bisection harness.** If the bug appeared between two known states (commit, dataset, version), automate "boot at state X, check, repeat" so you can `git bisect run` it.
+9. **Differential loop.** Run the same input through old-version vs new-version (or two configs) and diff outputs.
+10. **Human-in-the-loop script.** Last resort. If a human must click, drive *them* with a script so the loop is still structured: call the Skill tool with `wizard` to author it. Captured output feeds back to you.
 
-**Git State**:
-- Check current branch, recent commits, uncommitted changes
-- Similar to how `commit` and `describe_pr` commands work
+Where reproduction itself is the hard part (flaky, race, environment-dependent), hand it to the `replay` agent rather than grinding on it here.
 
-**Service Status**:
-- Check running processes: `ps aux | grep {service}`
-- Check listening ports: `lsof -i :{port}`
+### Tighten the loop
 
-## Process Steps
+Treat the loop as a product. Once you have *a* loop, **tighten** it:
 
-### Step 1: Understand the Problem
+- Faster? (Cache setup, skip unrelated init, narrow the test scope.)
+- Sharper signal? (Assert on the specific symptom, not "didn't crash".)
+- More deterministic? (Pin time, seed RNG, isolate filesystem, freeze network.)
 
-After the user describes the issue:
+A 30-second flaky loop is barely better than no loop; a 2-second deterministic one is a debugging superpower.
 
-1. **Read any provided context** (plan or ticket file):
-   - Understand what they're implementing/testing
-   - Note which phase or step they're on
-   - Identify expected vs actual behavior
+### Non-deterministic bugs
 
-2. **Quick state check**:
-   - Current git branch and recent commits
-   - Any uncommitted changes
-   - When the issue started occurring
+The goal is not a clean repro but a **higher reproduction rate**. Loop the trigger 100×, parallelise, add stress, narrow timing windows, inject sleeps. A 50%-flake bug is debuggable; 1% is not. Keep raising the rate until it's debuggable.
 
-### Step 2: Investigate the Issue
+### When you genuinely cannot build a loop
 
-Spawn parallel Task agents for efficient investigation:
+Stop and say so explicitly. List what you tried. Ask the user for (a) access to an environment that reproduces it, (b) a redacted captured artifact (HAR file, log dump, core dump, screen recording with timestamps), or (c) permission to add temporary production instrumentation. Do **not** proceed to hypothesise without a loop.
 
-```
-Task 1 - Check Recent Logs:
-Find and analyze the most recent logs for errors:
-1. Find latest logs: ls -t ./logs/*.log | head -1 (or project-specific location)
-2. Search for errors, warnings, or issues around the problem timeframe
-3. Note the working directory if shown
-4. Look for stack traces or repeated errors
-Return: Key errors/warnings with timestamps
-```
+### Completion criterion: a tight loop that goes red
 
-```
-Task 2 - Database State (if applicable):
-Check the current database state:
-1. Locate database file (check project config)
-2. Connect: sqlite3 {database_path}
-3. Check schema: .tables and .schema for relevant tables
-4. Query recent data based on the issue
-5. Look for stuck states or anomalies
-Return: Relevant database findings
-```
+Phase 1 is done when you can name **one command** that you have **already run at least once** (show the invocation and its output, redacted), and that is:
 
-```
-Task 3 - Git and File State:
-Understand what changed recently:
-1. Check git status and current branch
-2. Look at recent commits: git log --oneline -10
-3. Check uncommitted changes: git diff
-4. Verify expected files exist
-5. Look for any file permission issues
-Return: Git state and any file issues
-```
+- [ ] **Red-capable**: it drives the actual bug code path and asserts the **user's exact symptom**, so it goes red on this bug and green once fixed. Not "runs without erroring": it must be able to catch *this* bug.
+- [ ] **Deterministic**: same verdict every run (flaky bugs: a pinned, high reproduction rate, per above).
+- [ ] **Fast**: seconds, not minutes.
+- [ ] **Agent-runnable**: you can run it unattended.
 
-### Step 3: Present Findings
+No red-capable command, no Phase 2.
 
-Based on the investigation, present a focused debug report:
+## Phase 2: Reproduce and minimise
 
-```markdown
-## Debug Report
+Run the loop. Watch it go red.
 
-### What's Wrong
-[Clear statement of the issue based on evidence]
+Confirm:
 
-### Evidence Found
+- [ ] The loop produces the failure mode the **user** described, not a different failure that happens to be nearby. Wrong bug means wrong fix.
+- [ ] The failure reproduces across multiple runs (or at a high enough rate to debug against).
+- [ ] You captured the exact symptom (error message, wrong output, timing) so later phases can verify the fix addresses it.
 
-**From Logs**:
-- [Error/warning with timestamp]
-- [Pattern or repeated issue]
+Then shrink the repro to the **smallest scenario that still goes red**. Cut inputs, callers, config, data, and steps **one at a time**, re-running the loop after each cut. Keep only what's load-bearing.
 
-**From Database** (if applicable):
-```sql
--- Relevant query and result
-[Finding from database]
-```
+Why bother: a minimal repro shrinks the hypothesis space in Phase 3 and becomes the clean regression test in Phase 5.
 
-**From Git/Files**:
-- [Recent changes that might be related]
-- [File state issues]
+Done when **every remaining element is load-bearing**: removing any one of them makes the loop go green.
 
-### Root Cause
-[Most likely explanation based on evidence]
+## Phase 3: Hypothesise
 
-### Next Steps
+Generate **3-5 ranked hypotheses** before testing any of them. Single-hypothesis generation anchors on the first plausible idea.
 
-1. **Try This First**:
-   ```bash
-   [Specific command or action]
-   ```
+Each must be **falsifiable**: state the prediction.
 
-2. **If That Doesn't Work**:
-   - Restart relevant services
-   - Check browser console for frontend errors
-   - Run with debug flags enabled
+> "If X is the cause, then changing Y will make the bug disappear / changing Z will make it worse."
 
-### Can't Access?
-Some issues might be outside my reach:
-- Browser console errors (F12 in browser)
-- MCP server internal state
-- System-level issues
+If you can't state the prediction, it's a vibe: discard or sharpen it.
 
-Would you like me to investigate something specific further?
-```
+**Show the ranked list to the user before testing.** They often re-rank instantly ("we just deployed a change to #3") or know what they've already ruled out. Cheap checkpoint, big saving. Don't block on it: proceed with your ranking if they're away.
 
-## Important Notes
+Delegate the search to `sleuth` when it needs to read more than a handful of files (`rules/proactive-delegation.md`), and keep the loop in the main context so you stay the one holding the signal.
 
-- **Focus on manual testing scenarios** - This is for debugging during implementation
-- **Always require problem description** - Can't debug without knowing what's wrong
-- **Read files completely** - No limit/offset when reading context
-- **Think like `commit` or `describe_pr`** - Understand git state and changes
-- **Guide back to user** - Some issues (browser console, MCP internals) are outside reach
-- **No file editing** - Pure investigation only
+## Phase 4: Instrument
 
-## Quick Reference
+Each probe maps to a specific prediction from Phase 3. **Change one variable at a time.**
 
-**Find Latest Logs**:
-```bash
-ls -t ./logs/*.log | head -1
-# Or check project-specific log locations
-```
+Preference order:
 
-**Database Queries** (SQLite):
-```bash
-sqlite3 {database_path} ".tables"
-sqlite3 {database_path} ".schema {table}"
-sqlite3 {database_path} "SELECT * FROM {table} ORDER BY created_at DESC LIMIT 5;"
-```
+1. **Debugger / REPL inspection** where the env supports it. One breakpoint beats ten logs.
+2. **Targeted logs** at the boundaries that distinguish hypotheses.
+3. Never "log everything and grep".
 
-**Service Check**:
-```bash
-ps aux | grep {service_name}
-lsof -i :{port}
-```
+**Tag every debug log** with a unique prefix, e.g. `[DEBUG-a4f2]`, so cleanup is one grep. Untagged logs survive; tagged logs die.
 
-**Git State**:
-```bash
-git status
-git log --oneline -10
-git diff
-```
+**Perf branch.** For performance regressions, logs are usually wrong. Establish a baseline measurement (timing harness, `performance.now()`, profiler, query plan), then bisect. Measure first, fix second. Where the bottleneck is genuinely unknown, `profiler` has the better tooling.
 
-Remember: This command helps you investigate without burning the primary window's context. Perfect for when you hit an issue during manual testing and need to dig into logs, database, or git state.
+## Phase 5: Fix and regression test
+
+State the root cause before fixing it, and treat it as an existence claim: `rules/claim-verification.md` binds. "The loop goes green when I change X" is evidence; a grep hit is not.
+
+Write the regression test **before the fix**, but only if there is a **correct seam** for it. A correct seam is one where the test exercises the **real bug pattern** as it occurs at the call site. If the only available seam is too shallow (a single-caller test when the bug needs multiple callers; a unit test that can't replicate the chain that triggered it), a test there gives false confidence.
+
+**If no correct seam exists, that itself is the finding.** Note it: the architecture is preventing the bug from being locked down. That is a `codebase-design` problem (the module is shallow, or the seam is in the wrong place), and it belongs in the report.
+
+If a correct seam exists:
+
+1. Turn the minimised repro into a failing test at that seam.
+2. Watch it fail.
+3. Apply the fix.
+4. Watch it pass.
+5. Re-run the Phase 1 loop against the original, un-minimised scenario.
+
+## Phase 6: Cleanup
+
+Required before declaring done:
+
+- [ ] Original repro no longer reproduces (re-run the Phase 1 loop)
+- [ ] Regression test passes, or the absence of a seam is documented
+- [ ] All `[DEBUG-...]` instrumentation removed (grep the prefix)
+- [ ] Throwaway harnesses deleted, or moved to a clearly-marked debug location
+- [ ] The **whole** suite run, not just the new test (`rules/safety-and-quality.md`): a regression elsewhere means the job isn't done
+- [ ] The correct hypothesis stated in the commit or PR message, so the next debugger learns it
+
+Then the two automatic follow-ups from `rules/auto-skill-activation.md`: `coroner` to find the same pattern elsewhere in the codebase, and `self-learner` if the bug came from a wrong assumption worth recording.

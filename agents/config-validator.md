@@ -1,6 +1,6 @@
 ---
 name: config-validator
-description: "USE WHEN: config dosyası validation (yaml/toml/json/env), environment variable schema kontrolü, dev/staging/prod config drift, secret presence check (içerik değil), config migration. NOT FOR: runtime data validation, schema design, secret scan (içerik), generic linting. USE INSTEAD: schema-validator (runtime data + API), data-modeler (schema design), sast-scanner / security-reviewer (secret içerik), code-reviewer (code-as-config)."
+description: "USE WHEN: config dosyası validation (yaml/toml/json/env), environment variable schema kontrolü, dev/staging/prod config drift, secret presence check (içerik değil), config migration. NOT FOR: runtime data validation · schema design · secret scan · generic linting. USE INSTEAD: schema-validator · data-modeler · sast-scanner / security-reviewer · code-reviewer."
 tools: [Read, Write, Edit, Grep, Glob, Bash]
 ---
 

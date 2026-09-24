@@ -1,6 +1,6 @@
 ---
 name: reputation-engine
-description: "USE WHEN: Canavar skill-matrix.json üzerinden agent güvenilirlik skoru, geçmiş başarı/hata oranlarına göre task atama önerisi, takım güven indeksi, agent reassignment kararı. NOT FOR: maliyet analizi, session retrospective, agent spawn, generic agent kalite review. USE INSTEAD: cost-tracker (maliyet), session-replay-analyzer (retrospective), maestro (spawn directive), psyche (agent psychology)."
+description: "USE WHEN: Canavar skill-matrix.json üzerinden agent güvenilirlik skoru, geçmiş başarı/hata oranlarına göre task atama önerisi, takım güven indeksi, agent reassignment kararı. NOT FOR: maliyet analizi · session retrospective · agent spawn · generic agent kalite review. USE INSTEAD: cost-tracker · session-replay-analyzer · maestro · psyche."
 tools: [Read, Bash, Grep, Glob]
 ---
 
