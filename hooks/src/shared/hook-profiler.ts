@@ -7,6 +7,7 @@ import { mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
 import { appendWithRotation } from './log-rotation.js';
+import { readSessionId } from './session-id.js';
 
 const PERF_LOG = join(homedir(), '.claude', 'cache', 'hook-perf.jsonl');
 const MAX_LOG_SIZE = 1024 * 1024; // 1MB
@@ -30,14 +31,18 @@ export function startTimer(): bigint {
  * Zamanlayiciyi durdurur ve sonucu log'a yazar.
  * Hook'un main() sonunda cagir.
  */
-export function endTimer(start: bigint, hookName: string, eventType: string, sessionId = 'unknown'): void {
+// Cagiranlarin cogu sessionId gecmiyordu ve default 'unknown' oldugu icin
+// hook-perf.jsonl'in her satiri filtrelenemez hale geliyordu; artik kalici
+// session dosyasindan okunur.
+export function endTimer(start: bigint, hookName: string, eventType: string, sessionId?: string): void {
+  const resolvedSession = sessionId || readSessionId() || 'unknown';
   const elapsed = Number(process.hrtime.bigint() - start) / 1e6;
   const entry: PerfEntry = {
     ts: new Date().toISOString(),
     hook: hookName,
     event: eventType,
     duration_ms: Math.round(elapsed * 100) / 100,
-    session: sessionId.slice(0, 8),
+    session: resolvedSession.slice(0, 8),
   };
 
   try {

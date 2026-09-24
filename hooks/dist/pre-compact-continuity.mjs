@@ -215,8 +215,8 @@ if (isMainModule) {
 }
 
 // src/shared/hook-profiler.ts
-import { mkdirSync, existsSync as existsSync2 } from "fs";
-import { join } from "path";
+import { mkdirSync as mkdirSync2, existsSync as existsSync2 } from "fs";
+import { join as join2 } from "path";
 import { homedir } from "os";
 
 // src/shared/log-rotation.ts
@@ -240,24 +240,49 @@ function appendWithRotation(filePath, line, maxBytes = 2 * 1024 * 1024, keepLine
   }
 }
 
+// src/shared/session-id.ts
+import { mkdirSync, readFileSync as readFileSync3, writeFileSync as writeFileSync2 } from "fs";
+import { join } from "path";
+var SESSION_ID_FILENAME = ".coordination-session-id";
+function getSessionIdFile(options = {}) {
+  const claudeDir = join(process.env.HOME || "/tmp", ".claude");
+  if (options.createDir) {
+    try {
+      mkdirSync(claudeDir, { recursive: true, mode: 448 });
+    } catch {
+    }
+  }
+  return join(claudeDir, SESSION_ID_FILENAME);
+}
+function readSessionId() {
+  try {
+    const sessionFile = getSessionIdFile();
+    const id = readFileSync3(sessionFile, "utf-8").trim();
+    return id || null;
+  } catch {
+    return null;
+  }
+}
+
 // src/shared/hook-profiler.ts
-var PERF_LOG = join(homedir(), ".claude", "cache", "hook-perf.jsonl");
+var PERF_LOG = join2(homedir(), ".claude", "cache", "hook-perf.jsonl");
 var MAX_LOG_SIZE = 1024 * 1024;
 function startTimer() {
   return process.hrtime.bigint();
 }
-function endTimer(start, hookName, eventType, sessionId = "unknown") {
+function endTimer(start, hookName, eventType, sessionId) {
+  const resolvedSession = sessionId || readSessionId() || "unknown";
   const elapsed = Number(process.hrtime.bigint() - start) / 1e6;
   const entry = {
     ts: (/* @__PURE__ */ new Date()).toISOString(),
     hook: hookName,
     event: eventType,
     duration_ms: Math.round(elapsed * 100) / 100,
-    session: sessionId.slice(0, 8)
+    session: resolvedSession.slice(0, 8)
   };
   try {
-    const cacheDir = join(homedir(), ".claude", "cache");
-    if (!existsSync2(cacheDir)) mkdirSync(cacheDir, { recursive: true });
+    const cacheDir = join2(homedir(), ".claude", "cache");
+    if (!existsSync2(cacheDir)) mkdirSync2(cacheDir, { recursive: true });
     appendWithRotation(PERF_LOG, JSON.stringify(entry) + "\n", MAX_LOG_SIZE, 3e3);
   } catch {
   }

@@ -1,7 +1,7 @@
 // src/instinct-loader.ts
-import { readFileSync as readFileSync2, existsSync as existsSync2 } from "fs";
-import { join as join2 } from "path";
-import { homedir } from "os";
+import { readFileSync as readFileSync2, existsSync as existsSync3 } from "fs";
+import { join as join3 } from "path";
+import { homedir as homedir2 } from "os";
 
 // src/shared/project-identity.ts
 import { execSync } from "child_process";
@@ -81,6 +81,44 @@ function detectProjectName(projectPath) {
   return basename(projectPath);
 }
 
+// src/shared/testing-policy.ts
+import { existsSync as existsSync2 } from "fs";
+import { dirname, join as join2, resolve as resolve2 } from "path";
+import { homedir } from "os";
+var GLOBAL_TESTING_POLICY = join2(homedir(), ".claude", "rules", "testing-policy.md");
+var TESTING_POLICY_FILE = "TESTING_POLICY.md";
+var TEST_WRITING_PATTERNS = ["test-file-creation"];
+function findTestingPolicy(startDir, stopDir = homedir()) {
+  try {
+    const stop = resolve2(stopDir);
+    let dir = resolve2(startDir);
+    for (; ; ) {
+      const candidate = join2(dir, TESTING_POLICY_FILE);
+      if (existsSync2(candidate)) return candidate;
+      const parent = dirname(dir);
+      if (dir === stop || parent === dir) return null;
+      dir = parent;
+    }
+  } catch {
+    return null;
+  }
+}
+function activeTestingPolicy(projectDir, globalPath = GLOBAL_TESTING_POLICY) {
+  const projectPolicy = findTestingPolicy(projectDir);
+  if (projectPolicy) return projectPolicy;
+  try {
+    return existsSync2(globalPath) ? globalPath : null;
+  } catch {
+    return null;
+  }
+}
+function projectDirFrom(cwd) {
+  return process.env.CLAUDE_PROJECT_DIR || cwd || process.cwd();
+}
+function withoutTestWritingInstincts(items) {
+  return items.filter((i) => !TEST_WRITING_PATTERNS.includes(i.pattern));
+}
+
 // src/instinct-loader.ts
 var INJECT_THRESHOLD = 5;
 var MAX_INJECT = 10;
@@ -88,44 +126,47 @@ var MAX_GLOBAL_INJECT = 5;
 var TEAM_ERRORS_DAYS = 7;
 var MAX_TEAM_ERRORS = 5;
 function main() {
+  let cwd;
   try {
-    readFileSync2(0, "utf-8");
+    cwd = JSON.parse(readFileSync2(0, "utf-8")).cwd;
   } catch {
   }
-  const claudeDir = join2(homedir(), ".claude");
+  const scoped = activeTestingPolicy(projectDirFrom(cwd)) !== null;
+  const keep = (items) => scoped ? withoutTestWritingInstincts(items) : items;
+  const claudeDir = join3(homedir2(), ".claude");
   const identity = getProjectIdentity();
   const lines = [];
   let projectMature = [];
   if (identity) {
-    const projectMaturePath = join2(claudeDir, "projects", identity.hash, "instincts", "mature-instincts.json");
-    if (existsSync2(projectMaturePath)) {
+    const projectMaturePath = join3(claudeDir, "projects", identity.hash, "instincts", "mature-instincts.json");
+    if (existsSync3(projectMaturePath)) {
       try {
         projectMature = JSON.parse(readFileSync2(projectMaturePath, "utf-8"));
       } catch {
       }
     }
   }
-  const projectInjectable = projectMature.filter((i) => i.confidence >= INJECT_THRESHOLD).sort((a, b) => b.confidence - a.confidence).slice(0, MAX_INJECT);
+  const projectInjectable = keep(projectMature).filter((i) => i.confidence >= INJECT_THRESHOLD).sort((a, b) => b.confidence - a.confidence).slice(0, MAX_INJECT);
   let globalInstincts = [];
-  const globalPath = join2(claudeDir, "global-instincts.json");
-  if (existsSync2(globalPath)) {
+  const globalPath = join3(claudeDir, "global-instincts.json");
+  if (existsSync3(globalPath)) {
     try {
       globalInstincts = JSON.parse(readFileSync2(globalPath, "utf-8"));
     } catch {
     }
   }
-  const globalInjectable = globalInstincts.slice(0, MAX_GLOBAL_INJECT);
+  const globalInjectable = keep(globalInstincts).slice(0, MAX_GLOBAL_INJECT);
   let legacyMature = [];
   if (projectInjectable.length === 0) {
-    const legacyPath = join2(claudeDir, "mature-instincts.json");
-    if (existsSync2(legacyPath)) {
+    const legacyPath = join3(claudeDir, "mature-instincts.json");
+    if (existsSync3(legacyPath)) {
       try {
         legacyMature = JSON.parse(readFileSync2(legacyPath, "utf-8"));
       } catch {
       }
     }
   }
-  const legacyInjectable = legacyMature.filter((i) => i.confidence >= INJECT_THRESHOLD).sort((a, b) => b.confidence - a.confidence).slice(0, MAX_INJECT);
+  const legacyInjectable = keep(legacyMature).filter((i) => i.confidence >= INJECT_THRESHOLD).sort((a, b) => b.confidence - a.confidence).slice(0, MAX_INJECT);
   if (projectInjectable.length === 0 && globalInjectable.length === 0 && legacyInjectable.length === 0) {
     const teamErrorLines2 = loadTeamErrors();
     if (teamErrorLines2.length > 0) {
@@ -197,8 +238,8 @@ function main() {
   }));
 }
 function loadTeamErrors() {
-  const ledgerPath = join2(homedir(), ".claude", "canavar", "error-ledger.jsonl");
-  if (!existsSync2(ledgerPath)) return [];
+  const ledgerPath = join3(homedir2(), ".claude", "canavar", "error-ledger.jsonl");
+  if (!existsSync3(ledgerPath)) return [];
   const cutoff = /* @__PURE__ */ new Date();
   cutoff.setDate(cutoff.getDate() - TEAM_ERRORS_DAYS);
   const lines = readFileSync2(ledgerPath, "utf-8").split("\n").filter((l) => l.trim());

@@ -1,7 +1,7 @@
 // src/intent-classifier.ts
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
-import { join } from "path";
-import { homedir } from "os";
+import { readFileSync, writeFileSync, existsSync as existsSync2, mkdirSync } from "fs";
+import { join as join2 } from "path";
+import { homedir as homedir2 } from "os";
 
 // src/shared/task-detector.ts
 var IMPLEMENTATION_INDICATORS = [
@@ -129,7 +129,43 @@ function detectTask(prompt) {
   };
 }
 
+// src/shared/testing-policy.ts
+import { existsSync } from "fs";
+import { dirname, join, resolve } from "path";
+import { homedir } from "os";
+var GLOBAL_TESTING_POLICY = join(homedir(), ".claude", "rules", "testing-policy.md");
+var TESTING_POLICY_FILE = "TESTING_POLICY.md";
+function findTestingPolicy(startDir, stopDir = homedir()) {
+  try {
+    const stop = resolve(stopDir);
+    let dir = resolve(startDir);
+    for (; ; ) {
+      const candidate = join(dir, TESTING_POLICY_FILE);
+      if (existsSync(candidate)) return candidate;
+      const parent = dirname(dir);
+      if (dir === stop || parent === dir) return null;
+      dir = parent;
+    }
+  } catch {
+    return null;
+  }
+}
+function activeTestingPolicy(projectDir, globalPath = GLOBAL_TESTING_POLICY) {
+  const projectPolicy = findTestingPolicy(projectDir);
+  if (projectPolicy) return projectPolicy;
+  try {
+    return existsSync(globalPath) ? globalPath : null;
+  } catch {
+    return null;
+  }
+}
+function projectDirFrom(cwd) {
+  return process.env.CLAUDE_PROJECT_DIR || cwd || process.cwd();
+}
+
 // src/intent-classifier.ts
+var PLANNER_AGENTS = ["planner", "phoenix", "architect", "plan-reviewer"];
+var PLAN_WRITING_AGENTS = ["planner", "phoenix"];
 var DOMAIN_PATTERNS = [
   { regex: /\b(typescript|\.ts|\.tsx|react|next\.?js|node)\b/i, domain: "typescript" },
   { regex: /\b(python|\.py|django|flask|fastapi)\b/i, domain: "python" },
@@ -163,6 +199,10 @@ function detectPlannerAgent(prompt) {
   const reviewVerbs = /\b(review|incele|g[oö]zden\s+ge[cç]ir|de[gğ]erlendir|critique|eksik(lik|ler)?\s+(bul|yakala))/i;
   if (reviewVerbs.test(prompt)) {
     return "plan-reviewer";
+  }
+  const readVerbs = /(?:^|[^a-z])(oku|okudu[mk]?|okudun|[oö]zetle|a[cç][iı]kla|anlat|hat[iı]rlat|summari[sz]e|explain|describe|show\s+me|g[oö]ster|nerede|where\s+is|what\s+is)\b/i;
+  if (readVerbs.test(prompt)) {
+    return null;
   }
   const refactorSignals = /\b(refactor\w*|migrat\w*|tech[\s-]?debt|restructure|reorganize|cleanup|yeniden\s+(yaz|tasarla|kur|d[uü]zenle)|temizle|ay[iı]kla|consolidate|extract|split|ta[sş][iı]|d[uü]zenle)/i;
   if (refactorSignals.test(prompt)) {
@@ -265,7 +305,13 @@ function calculateComplexity(prompt, domains) {
   }
   return { score, signals };
 }
-function classifyIntent(input) {
+function planDirectiveAgent(intent) {
+  if (intent.needs_maestro) return null;
+  if (intent.is_pure_question) return null;
+  const hint = intent.agent_hint ?? "";
+  return PLAN_WRITING_AGENTS.includes(hint) ? hint : null;
+}
+function classifyIntent(input, opts = {}) {
   const prompt = input.prompt || "";
   const detection = detectTask(prompt);
   let taskType = "conversational";
@@ -281,6 +327,7 @@ function classifyIntent(input) {
   let agentHint = detectPlannerAgent(prompt);
   if (!agentHint) {
     for (const ah of AGENT_HINTS) {
+      if (opts.testingPolicy && ah.agent === "tdd-guide") continue;
       if (ah.regex.test(prompt)) {
         agentHint = ah.agent;
         break;
@@ -295,7 +342,7 @@ function classifyIntent(input) {
   }
   const complexity = calculateComplexity(prompt, domains);
   const isPureQuestion = /^(ne(\s|den|dir)|why|what|how|when|where|kim|nasil|nedir|nicin)\b.*\?\s*$/i.test(prompt.trim());
-  const isPlanningTask = agentHint !== null && ["phoenix", "architect", "planner", "plan-reviewer"].includes(agentHint);
+  const isPlanningTask = agentHint !== null && PLANNER_AGENTS.includes(agentHint);
   const needsMaestro = complexity.score >= 2 && !isPureQuestion && !isPlanningTask;
   const finalAgentHint = needsMaestro ? "maestro" : agentHint;
   return {
@@ -308,7 +355,8 @@ function classifyIntent(input) {
     agent_hint: finalAgentHint,
     complexity: complexity.score,
     complexity_signals: complexity.signals,
-    needs_maestro: needsMaestro
+    needs_maestro: needsMaestro,
+    is_pure_question: isPureQuestion
   };
 }
 function main() {
@@ -329,14 +377,17 @@ function main() {
     console.log("{}");
     return;
   }
-  const intent = classifyIntent(input);
-  const cacheDir = join(homedir(), ".claude", "cache");
-  if (!existsSync(cacheDir)) mkdirSync(cacheDir, { recursive: true });
-  const intentPath = join(cacheDir, "current-intent.json");
+  const intent = classifyIntent(input, {
+    testingPolicy: activeTestingPolicy(projectDirFrom(input.cwd)) !== null
+  });
+  const cacheDir = join2(homedir2(), ".claude", "cache");
+  if (!existsSync2(cacheDir)) mkdirSync(cacheDir, { recursive: true });
+  const intentPath = join2(cacheDir, "current-intent.json");
   try {
     writeFileSync(intentPath, JSON.stringify(intent, null, 2));
   } catch {
   }
+  const planAgent = planDirectiveAgent(intent);
   if (intent.needs_maestro) {
     const signals = intent.complexity_signals.join(", ");
     const domainList = intent.domain.length > 0 ? intent.domain.join(", ") : "n/a";
@@ -364,6 +415,27 @@ function main() {
       ""
     ];
     console.log(lines.join("\n"));
+  } else if (planAgent) {
+    const lines = [
+      "",
+      "\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501",
+      `\u{1F4CB} PLANNING TASK \u2192 @${planAgent} ZORUNLU`,
+      "\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501",
+      "Ana context'te INLINE PLAN YAZMA.",
+      `Agent tool ile @${planAgent} spawn et. Agent fresh context ile`,
+      "basliyor -- oturum baglamini brief olarak ona gecir.",
+      "",
+      "Plan DOSYA olarak yazilir. Hedefi ISIN KAPSAMINA gore SEC:",
+      "  <sub-repo>/docs/plans/    -> tek repoya ait, issue-sekilli is",
+      "  thoughts/shared/plans/    -> repo-asiri / tasinabilir is",
+      "  Isim: sectigin dizindeki mevcut konvansiyona uy.",
+      "",
+      "Sonra dosya yolunu + faz listesini rapor et.",
+      "Plani sohbette bastan sona tekrar yazma.",
+      "\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501",
+      ""
+    ];
+    console.log(lines.join("\n"));
   } else if (intent.agent_hint) {
     console.log(`
 \u2192 Suggested agent: @${intent.agent_hint}  (task: ${intent.task_type}, domain: ${intent.domain.join(",") || "n/a"})
@@ -371,3 +443,9 @@ function main() {
   }
 }
 main();
+export {
+  PLAN_WRITING_AGENTS,
+  classifyIntent,
+  detectPlannerAgent,
+  planDirectiveAgent
+};

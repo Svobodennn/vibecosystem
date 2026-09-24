@@ -60,6 +60,8 @@ const AMBIGUOUS_KEYWORDS = new Set([
   'document',
   'refactor',
   'optimize',
+  // 'spec' matches specific/special/specify once the right-hand boundary is gone
+  'spec',
 ]);
 
 /**
@@ -105,6 +107,7 @@ const TECHNICAL_CONTEXT_INDICATORS: Record<string, string[]> = {
   test: ['unit', 'integration', 'e2e', 'coverage', 'spec', 'jest', 'pytest', 'vitest'],
   validate: ['input', 'schema', 'data', 'form', 'field', 'type'],
   review: ['code', 'pr', 'pull request', 'changes', 'diff'],
+  spec: ['api', 'schema', 'contract', 'openapi', 'swagger', 'protocol', 'requirement', 'rfc'],
   analyze: ['code', 'codebase', 'performance', 'metrics', 'logs'],
   document: ['api', 'readme', 'docs', 'jsdoc', 'docstring', 'comments'],
   refactor: ['code', 'function', 'class', 'module', 'clean up', 'simplify'],

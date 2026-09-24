@@ -1,7 +1,7 @@
 // src/smart-search-router.ts
-import { existsSync as existsSync4, mkdirSync as mkdirSync3, writeFileSync as writeFileSync4 } from "fs";
+import { existsSync as existsSync4, mkdirSync as mkdirSync4, writeFileSync as writeFileSync5 } from "fs";
 import { execSync as execSync2 } from "child_process";
-import { join as join4 } from "path";
+import { join as join5 } from "path";
 
 // src/daemon-client.ts
 import { existsSync, readFileSync, writeFileSync, unlinkSync } from "fs";
@@ -402,8 +402,8 @@ function isRelevantForIntent(hookName) {
 }
 
 // src/shared/hook-profiler.ts
-import { mkdirSync as mkdirSync2, existsSync as existsSync3 } from "fs";
-import { join as join3 } from "path";
+import { mkdirSync as mkdirSync3, existsSync as existsSync3 } from "fs";
+import { join as join4 } from "path";
 import { homedir as homedir2 } from "os";
 
 // src/shared/log-rotation.ts
@@ -427,24 +427,49 @@ function appendWithRotation(filePath, line, maxBytes = 2 * 1024 * 1024, keepLine
   }
 }
 
+// src/shared/session-id.ts
+import { mkdirSync as mkdirSync2, readFileSync as readFileSync4, writeFileSync as writeFileSync4 } from "fs";
+import { join as join3 } from "path";
+var SESSION_ID_FILENAME = ".coordination-session-id";
+function getSessionIdFile(options = {}) {
+  const claudeDir = join3(process.env.HOME || "/tmp", ".claude");
+  if (options.createDir) {
+    try {
+      mkdirSync2(claudeDir, { recursive: true, mode: 448 });
+    } catch {
+    }
+  }
+  return join3(claudeDir, SESSION_ID_FILENAME);
+}
+function readSessionId() {
+  try {
+    const sessionFile = getSessionIdFile();
+    const id = readFileSync4(sessionFile, "utf-8").trim();
+    return id || null;
+  } catch {
+    return null;
+  }
+}
+
 // src/shared/hook-profiler.ts
-var PERF_LOG = join3(homedir2(), ".claude", "cache", "hook-perf.jsonl");
+var PERF_LOG = join4(homedir2(), ".claude", "cache", "hook-perf.jsonl");
 var MAX_LOG_SIZE = 1024 * 1024;
 function startTimer() {
   return process.hrtime.bigint();
 }
-function endTimer(start, hookName, eventType, sessionId = "unknown") {
+function endTimer(start, hookName, eventType, sessionId) {
+  const resolvedSession = sessionId || readSessionId() || "unknown";
   const elapsed = Number(process.hrtime.bigint() - start) / 1e6;
   const entry = {
     ts: (/* @__PURE__ */ new Date()).toISOString(),
     hook: hookName,
     event: eventType,
     duration_ms: Math.round(elapsed * 100) / 100,
-    session: sessionId.slice(0, 8)
+    session: resolvedSession.slice(0, 8)
   };
   try {
-    const cacheDir = join3(homedir2(), ".claude", "cache");
-    if (!existsSync3(cacheDir)) mkdirSync2(cacheDir, { recursive: true });
+    const cacheDir = join4(homedir2(), ".claude", "cache");
+    if (!existsSync3(cacheDir)) mkdirSync3(cacheDir, { recursive: true });
     appendWithRotation(PERF_LOG, JSON.stringify(entry) + "\n", MAX_LOG_SIZE, 3e3);
   } catch {
   }
@@ -455,9 +480,9 @@ var CONTEXT_DIR = "/tmp/claude-search-context";
 function storeSearchContext(sessionId, context) {
   try {
     if (!existsSync4(CONTEXT_DIR)) {
-      mkdirSync3(CONTEXT_DIR, { recursive: true });
+      mkdirSync4(CONTEXT_DIR, { recursive: true });
     }
-    writeFileSync4(
+    writeFileSync5(
       `${CONTEXT_DIR}/${sessionId}.json`,
       JSON.stringify(context, null, 2)
     );
@@ -497,7 +522,7 @@ function ripgrepFallback(pattern, projectDir) {
   }
 }
 function checkSemanticIndexExists(projectDir) {
-  const indexPath = join4(projectDir, ".tldr", "cache", "semantic", "index.faiss");
+  const indexPath = join5(projectDir, ".tldr", "cache", "semantic", "index.faiss");
   return existsSync4(indexPath);
 }
 function tldrSemantic(query, projectDir = ".") {

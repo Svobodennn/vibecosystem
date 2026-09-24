@@ -12,6 +12,7 @@ import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
 import { getProjectIdentity } from './shared/project-identity.js';
+import { activeTestingPolicy, projectDirFrom, withoutTestWritingInstincts } from './shared/testing-policy.js';
 
 interface MatureInstinct {
   pattern: string;
@@ -58,7 +59,13 @@ interface ErrorEntry {
 }
 
 function main() {
-  try { readFileSync(0, 'utf-8'); } catch { /* ok */ }
+  let cwd: string | undefined;
+  try { cwd = JSON.parse(readFileSync(0, 'utf-8')).cwd; } catch { /* ok */ }
+
+  // The testing policy scopes test writing; the learned test-writing habit must not override it.
+  const scoped = activeTestingPolicy(projectDirFrom(cwd)) !== null;
+  const keep = <T extends { pattern: string }>(items: T[]): T[] =>
+    (scoped ? withoutTestWritingInstincts(items) : items);
 
   const claudeDir = join(homedir(), '.claude');
   const identity = getProjectIdentity();
@@ -75,7 +82,7 @@ function main() {
     }
   }
 
-  const projectInjectable = projectMature
+  const projectInjectable = keep(projectMature)
     .filter(i => i.confidence >= INJECT_THRESHOLD)
     .sort((a, b) => b.confidence - a.confidence)
     .slice(0, MAX_INJECT);
@@ -89,7 +96,7 @@ function main() {
     } catch { /* skip */ }
   }
 
-  const globalInjectable = globalInstincts.slice(0, MAX_GLOBAL_INJECT);
+  const globalInjectable = keep(globalInstincts).slice(0, MAX_GLOBAL_INJECT);
 
   // 3. Fallback: legacy mature-instincts.json (proje-ozel yoksa)
   let legacyMature: MatureInstinct[] = [];
@@ -102,7 +109,7 @@ function main() {
     }
   }
 
-  const legacyInjectable = legacyMature
+  const legacyInjectable = keep(legacyMature)
     .filter(i => i.confidence >= INJECT_THRESHOLD)
     .sort((a, b) => b.confidence - a.confidence)
     .slice(0, MAX_INJECT);

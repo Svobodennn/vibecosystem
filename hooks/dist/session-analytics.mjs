@@ -2,6 +2,46 @@
 import { readFileSync, appendFileSync, existsSync, mkdirSync } from "fs";
 import { join } from "path";
 import { homedir } from "os";
+
+// src/shared/event-schema.ts
+function asString(value) {
+  return typeof value === "string" ? value : "";
+}
+function normalizeEvent(raw) {
+  if (!raw || typeof raw !== "object") {
+    return null;
+  }
+  const r = raw;
+  const meta = r.metadata && typeof r.metadata === "object" ? r.metadata : {};
+  const ts = asString(r.ts) || asString(r.timestamp);
+  const session = asString(r.session) || asString(r.sessionId);
+  const event = asString(r.event) || asString(r.type);
+  if (!ts && !session && !event) {
+    return null;
+  }
+  return {
+    ts,
+    // Yazanlar zaten 8 karaktere kirpiyor; idempotent, tuketici filtresiyle hizali
+    session: session.slice(0, 8),
+    event,
+    tool: asString(r.tool) || asString(meta.tool),
+    detail: asString(r.detail) || asString(meta.command) || asString(meta.promptSummary) || asString(meta.source),
+    agentType: asString(r.agent_type) || asString(r.agentType),
+    agentId: asString(r.agent_id) || asString(r.agentId)
+  };
+}
+function normalizeEvents(rawList) {
+  const out = [];
+  for (const raw of rawList) {
+    const normalized = normalizeEvent(raw);
+    if (normalized) {
+      out.push(normalized);
+    }
+  }
+  return out;
+}
+
+// src/session-analytics.ts
 function readJsonl(path) {
   if (!existsSync(path)) return [];
   const lines = readFileSync(path, "utf-8").split("\n").filter((l) => l.trim());
@@ -35,7 +75,7 @@ function main() {
   const perfPath = join(cacheDir, "hook-perf.jsonl");
   const ledgerPath = join(claudeDir, "canavar", "error-ledger.jsonl");
   const outputPath = join(cacheDir, "session-analytics.jsonl");
-  const allEvents = readJsonl(eventsPath);
+  const allEvents = normalizeEvents(readJsonl(eventsPath));
   const sessionEvents = allEvents.filter((e) => e.session === sessionId);
   const allPerf = readJsonl(perfPath);
   const sessionPerf = allPerf.filter((p) => p.session === sessionId);

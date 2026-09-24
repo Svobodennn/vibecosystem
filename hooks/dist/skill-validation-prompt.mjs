@@ -20,7 +20,9 @@ var AMBIGUOUS_KEYWORDS = /* @__PURE__ */ new Set([
   "analyze",
   "document",
   "refactor",
-  "optimize"
+  "optimize",
+  // 'spec' matches specific/special/specify once the right-hand boundary is gone
+  "spec"
 ]);
 var SPECIFIC_TECHNICAL_TERMS = /* @__PURE__ */ new Set([
   "sympy",
@@ -57,6 +59,7 @@ var TECHNICAL_CONTEXT_INDICATORS = {
   test: ["unit", "integration", "e2e", "coverage", "spec", "jest", "pytest", "vitest"],
   validate: ["input", "schema", "data", "form", "field", "type"],
   review: ["code", "pr", "pull request", "changes", "diff"],
+  spec: ["api", "schema", "contract", "openapi", "swagger", "protocol", "requirement", "rfc"],
   analyze: ["code", "codebase", "performance", "metrics", "logs"],
   document: ["api", "readme", "docs", "jsdoc", "docstring", "comments"],
   refactor: ["code", "function", "class", "module", "clean up", "simplify"],

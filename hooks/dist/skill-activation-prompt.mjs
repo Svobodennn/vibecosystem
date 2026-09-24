@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 // src/skill-activation-prompt.ts
-import { readFileSync as readFileSync3, existsSync as existsSync3 } from "fs";
-import { join as join3 } from "path";
+import { readFileSync as readFileSync4, existsSync as existsSync4 } from "fs";
+import { join as join5 } from "path";
 import { spawnSync } from "child_process";
 import { tmpdir as tmpdir2 } from "os";
 
@@ -43,8 +43,8 @@ function readResourceState() {
 }
 
 // src/shared/hook-profiler.ts
-import { mkdirSync, existsSync as existsSync2 } from "fs";
-import { join as join2 } from "path";
+import { mkdirSync as mkdirSync2, existsSync as existsSync2 } from "fs";
+import { join as join3 } from "path";
 import { homedir } from "os";
 
 // src/shared/log-rotation.ts
@@ -68,27 +68,97 @@ function appendWithRotation(filePath, line, maxBytes = 2 * 1024 * 1024, keepLine
   }
 }
 
+// src/shared/session-id.ts
+import { mkdirSync, readFileSync as readFileSync3, writeFileSync as writeFileSync2 } from "fs";
+import { join as join2 } from "path";
+var SESSION_ID_FILENAME = ".coordination-session-id";
+function getSessionIdFile(options = {}) {
+  const claudeDir = join2(process.env.HOME || "/tmp", ".claude");
+  if (options.createDir) {
+    try {
+      mkdirSync(claudeDir, { recursive: true, mode: 448 });
+    } catch {
+    }
+  }
+  return join2(claudeDir, SESSION_ID_FILENAME);
+}
+function readSessionId() {
+  try {
+    const sessionFile = getSessionIdFile();
+    const id = readFileSync3(sessionFile, "utf-8").trim();
+    return id || null;
+  } catch {
+    return null;
+  }
+}
+
 // src/shared/hook-profiler.ts
-var PERF_LOG = join2(homedir(), ".claude", "cache", "hook-perf.jsonl");
+var PERF_LOG = join3(homedir(), ".claude", "cache", "hook-perf.jsonl");
 var MAX_LOG_SIZE = 1024 * 1024;
 function startTimer() {
   return process.hrtime.bigint();
 }
-function endTimer(start, hookName, eventType, sessionId = "unknown") {
+function endTimer(start, hookName, eventType, sessionId) {
+  const resolvedSession = sessionId || readSessionId() || "unknown";
   const elapsed = Number(process.hrtime.bigint() - start) / 1e6;
   const entry = {
     ts: (/* @__PURE__ */ new Date()).toISOString(),
     hook: hookName,
     event: eventType,
     duration_ms: Math.round(elapsed * 100) / 100,
-    session: sessionId.slice(0, 8)
+    session: resolvedSession.slice(0, 8)
   };
   try {
-    const cacheDir = join2(homedir(), ".claude", "cache");
-    if (!existsSync2(cacheDir)) mkdirSync(cacheDir, { recursive: true });
+    const cacheDir = join3(homedir(), ".claude", "cache");
+    if (!existsSync2(cacheDir)) mkdirSync2(cacheDir, { recursive: true });
     appendWithRotation(PERF_LOG, JSON.stringify(entry) + "\n", MAX_LOG_SIZE, 3e3);
   } catch {
   }
+}
+
+// src/shared/testing-policy.ts
+import { existsSync as existsSync3 } from "fs";
+import { dirname, join as join4, resolve } from "path";
+import { homedir as homedir2 } from "os";
+var GLOBAL_TESTING_POLICY = join4(homedir2(), ".claude", "rules", "testing-policy.md");
+var TESTING_POLICY_FILE = "TESTING_POLICY.md";
+function findTestingPolicy(startDir, stopDir = homedir2()) {
+  try {
+    const stop = resolve(stopDir);
+    let dir = resolve(startDir);
+    for (; ; ) {
+      const candidate = join4(dir, TESTING_POLICY_FILE);
+      if (existsSync3(candidate)) return candidate;
+      const parent = dirname(dir);
+      if (dir === stop || parent === dir) return null;
+      dir = parent;
+    }
+  } catch {
+    return null;
+  }
+}
+function activeTestingPolicy(projectDir, globalPath = GLOBAL_TESTING_POLICY) {
+  const projectPolicy = findTestingPolicy(projectDir);
+  if (projectPolicy) return projectPolicy;
+  try {
+    return existsSync3(globalPath) ? globalPath : null;
+  } catch {
+    return null;
+  }
+}
+function projectDirFrom(cwd) {
+  return process.env.CLAUDE_PROJECT_DIR || cwd || process.cwd();
+}
+function withTddInsteadOfWorkflow(skills) {
+  const hasTdd = skills.some((s) => s.name === "tdd");
+  return skills.flatMap((s) => {
+    if (s.name !== "tdd-workflow") return [s];
+    if (hasTdd) return [];
+    return [{ ...s, name: "tdd", config: { ...s.config, description: "TDD within the project TESTING_POLICY.md scope" } }];
+  });
+}
+function withoutTddGuide(agents) {
+  return agents.filter((a) => a.name !== "tdd-guide");
 }
 
 // src/skill-validation-prompt.ts
@@ -113,7 +183,9 @@ var AMBIGUOUS_KEYWORDS = /* @__PURE__ */ new Set([
   "analyze",
   "document",
   "refactor",
-  "optimize"
+  "optimize",
+  // 'spec' matches specific/special/specify once the right-hand boundary is gone
+  "spec"
 ]);
 var SPECIFIC_TECHNICAL_TERMS = /* @__PURE__ */ new Set([
   "sympy",
@@ -150,6 +222,7 @@ var TECHNICAL_CONTEXT_INDICATORS = {
   test: ["unit", "integration", "e2e", "coverage", "spec", "jest", "pytest", "vitest"],
   validate: ["input", "schema", "data", "form", "field", "type"],
   review: ["code", "pr", "pull request", "changes", "diff"],
+  spec: ["api", "schema", "contract", "openapi", "swagger", "protocol", "requirement", "rfc"],
   analyze: ["code", "codebase", "performance", "metrics", "logs"],
   document: ["api", "readme", "docs", "jsdoc", "docstring", "comments"],
   refactor: ["code", "function", "class", "module", "clean up", "simplify"],
@@ -184,15 +257,24 @@ function shouldValidateWithLLM(match) {
 }
 
 // src/skill-activation-prompt.ts
-function orchestrationEnabled() {
-  try {
-    const runtimePath = join3(process.env.HOME || "", ".claude", "vibecosystem-runtime.json");
-    if (!existsSync3(runtimePath)) return false;
-    const runtime = JSON.parse(readFileSync3(runtimePath, "utf-8"));
-    return ["full", "orchestration"].includes(runtime.activeProfile);
-  } catch {
+var keywordRegexCache = /* @__PURE__ */ new Map();
+function matchesKeyword(prompt, keyword) {
+  const kw = keyword.toLowerCase().trim();
+  if (!kw) {
     return false;
   }
+  let regex = keywordRegexCache.get(kw);
+  if (!regex) {
+    const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const left = /^\w/.test(kw) ? "\\b" : "";
+    try {
+      regex = new RegExp(`${left}${escaped}`, "i");
+    } catch {
+      return false;
+    }
+    keywordRegexCache.set(kw, regex);
+  }
+  return regex.test(prompt);
 }
 var PATTERN_AGENT_MAP = {
   "swarm": "research-agent",
@@ -209,8 +291,8 @@ var PATTERN_AGENT_MAP = {
 };
 function runPatternInference(prompt, projectDir) {
   try {
-    const scriptPath = join3(projectDir, "scripts", "agentica_patterns", "pattern_inference.py");
-    if (!existsSync3(scriptPath)) {
+    const scriptPath = join5(projectDir, "scripts", "agentica_patterns", "pattern_inference.py");
+    if (!existsSync4(scriptPath)) {
       return null;
     }
     const pythonCode = `
@@ -318,8 +400,7 @@ Or use the /explore skill for guided exploration.
 async function main() {
   const _perfStart = startTimer();
   try {
-    if (!orchestrationEnabled()) return;
-    const input = readFileSync3(0, "utf-8");
+    const input = readFileSync4(0, "utf-8");
     let data;
     try {
       data = JSON.parse(input);
@@ -332,20 +413,20 @@ async function main() {
     const prompt = data.prompt.toLowerCase();
     const projectDir = process.env.CLAUDE_PROJECT_DIR || process.cwd();
     const homeDir = process.env.HOME || process.env.USERPROFILE || "";
-    const projectRulesPath = join3(projectDir, ".claude", "skills", "skill-rules.json");
-    const globalRulesPath = join3(homeDir, ".claude", "skills", "skill-rules.json");
+    const projectRulesPath = join5(projectDir, ".claude", "skills", "skill-rules.json");
+    const globalRulesPath = join5(homeDir, ".claude", "skills", "skill-rules.json");
     let rulesPath = "";
-    if (existsSync3(projectRulesPath)) {
+    if (existsSync4(projectRulesPath)) {
       rulesPath = projectRulesPath;
-    } else if (existsSync3(globalRulesPath)) {
+    } else if (existsSync4(globalRulesPath)) {
       rulesPath = globalRulesPath;
     } else {
       process.exit(0);
     }
-    const rules = JSON.parse(readFileSync3(rulesPath, "utf-8"));
+    const rules = JSON.parse(readFileSync4(rulesPath, "utf-8"));
     const patternInference = runPatternInference(data.prompt, projectDir);
     const semanticQuery = detectSemanticQuery(data.prompt);
-    const matchedSkills = [];
+    const rawSkills = [];
     for (const [skillName, config] of Object.entries(rules.skills)) {
       const triggers = config.promptTriggers;
       if (!triggers) {
@@ -353,7 +434,7 @@ async function main() {
       }
       if (triggers.keywords) {
         const matchedKeyword = triggers.keywords.find(
-          (kw) => prompt.includes(kw.toLowerCase())
+          (kw) => matchesKeyword(prompt, kw)
         );
         if (matchedKeyword) {
           const skillMatchForValidation = {
@@ -366,7 +447,7 @@ async function main() {
             enforcement: config.enforcement
           };
           const needsValidation = shouldValidateWithLLM(skillMatchForValidation);
-          matchedSkills.push({
+          rawSkills.push({
             name: skillName,
             matchType: "keyword",
             matchedTerm: matchedKeyword,
@@ -386,7 +467,7 @@ async function main() {
           }
         });
         if (intentMatch) {
-          matchedSkills.push({
+          rawSkills.push({
             name: skillName,
             matchType: "intent",
             config,
@@ -395,7 +476,7 @@ async function main() {
         }
       }
     }
-    const matchedAgents = [];
+    const rawAgents = [];
     if (rules.agents) {
       for (const [agentName, config] of Object.entries(rules.agents)) {
         const triggers = config.promptTriggers;
@@ -404,7 +485,7 @@ async function main() {
         }
         if (triggers.keywords) {
           const matchedKeyword = triggers.keywords.find(
-            (kw) => prompt.includes(kw.toLowerCase())
+            (kw) => matchesKeyword(prompt, kw)
           );
           if (matchedKeyword) {
             const skillMatchForValidation = {
@@ -416,7 +497,7 @@ async function main() {
               enforcement: config.enforcement
             };
             const needsValidation = shouldValidateWithLLM(skillMatchForValidation);
-            matchedAgents.push({
+            rawAgents.push({
               name: agentName,
               matchType: "keyword",
               matchedTerm: matchedKeyword,
@@ -437,7 +518,7 @@ async function main() {
             }
           });
           if (intentMatch) {
-            matchedAgents.push({
+            rawAgents.push({
               name: agentName,
               matchType: "intent",
               config,
@@ -448,6 +529,9 @@ async function main() {
         }
       }
     }
+    const hasTestingPolicy = activeTestingPolicy(projectDirFrom(data.cwd)) !== null;
+    const matchedSkills = hasTestingPolicy ? withTddInsteadOfWorkflow(rawSkills) : rawSkills;
+    const matchedAgents = hasTestingPolicy ? withoutTddGuide(rawAgents) : rawAgents;
     if (matchedSkills.length > 0 || matchedAgents.length > 0 || patternInference || semanticQuery.isSemanticQuery) {
       const skillsNeedingValidation = matchedSkills.filter((s) => s.needsValidation);
       const agentsNeedingValidation = matchedAgents.filter((a) => a.needsValidation);
@@ -546,10 +630,10 @@ async function main() {
     }
     const rawSessionId = data.session_id || process.env.CLAUDE_SESSION_ID || process.env.CLAUDE_PPID || "default";
     const sessionId = rawSessionId.slice(0, 8);
-    const contextFile = join3(tmpdir2(), `claude-context-pct-${sessionId}.txt`);
-    if (existsSync3(contextFile)) {
+    const contextFile = join5(tmpdir2(), `claude-context-pct-${sessionId}.txt`);
+    if (existsSync4(contextFile)) {
       try {
-        const pct = parseInt(readFileSync3(contextFile, "utf-8").trim(), 10);
+        const pct = parseInt(readFileSync4(contextFile, "utf-8").trim(), 10);
         let contextWarning = "";
         if (pct >= 90) {
           contextWarning = "\n" + "=".repeat(50) + "\n  CONTEXT CRITICAL: " + pct + "%\n  Run /create_handoff NOW before auto-compact!\n" + "=".repeat(50) + "\n";

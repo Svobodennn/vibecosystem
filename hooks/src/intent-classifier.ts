@@ -10,10 +10,21 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
 import { detectTask } from './shared/task-detector.js';
+import { activeTestingPolicy, projectDirFrom } from './shared/testing-policy.js';
+
+// detectPlannerAgent'in donus kumesi. Maestro'yu susturmak icin kullanilir:
+// plan uretmek tek-agent isi, multi-phase orchestration degil.
+const PLANNER_AGENTS = ['planner', 'phoenix', 'architect', 'plan-reviewer'];
+
+// PLANNER_AGENTS'in alt kumesi: yalnizca docs/plans/ altina DOSYA ureten agent'lar.
+// architect ADR yazar, plan-reviewer mevcut plani okur -- ikisi de plan dosyasi uretmez,
+// o yuzden zorunlu-dosya direktifini almazlar.
+export const PLAN_WRITING_AGENTS = ['planner', 'phoenix'];
 
 interface UserPromptSubmitInput {
   session_id: string;
   prompt: string;
+  cwd?: string;
 }
 
 interface ClassifiedIntent {
@@ -27,6 +38,9 @@ interface ClassifiedIntent {
   complexity: number;        // 0-5 signal count
   complexity_signals: string[];
   needs_maestro: boolean;
+  // main() disinda da gerekli: zorunlu direktif basan dallar salt-soru
+  // prompt'larinda susmak zorunda, aksi halde "plan nerede?" emir aliyor.
+  is_pure_question: boolean;
 }
 
 // Domain pattern'leri
@@ -66,7 +80,7 @@ const AGENT_HINTS: Array<{ regex: RegExp; agent: string }> = [
  *
  * Plan uretme YOK ise null doner (normal flow'a devam).
  */
-function detectPlannerAgent(prompt: string): string | null {
+export function detectPlannerAgent(prompt: string): string | null {
   // "plan" kelimesi - Turkce ekleri (plani, planli, planlama) ve snake_case
   // (REFACTOR_PLAN) dahil. \b sorunlu cunku _ word-char sayilir.
   const hasPlanWord =
@@ -85,6 +99,17 @@ function detectPlannerAgent(prompt: string): string | null {
   const reviewVerbs = /\b(review|incele|g[oö]zden\s+ge[cç]ir|de[gğ]erlendir|critique|eksik(lik|ler)?\s+(bul|yakala))/i;
   if (reviewVerbs.test(prompt)) {
     return 'plan-reviewer';
+  }
+
+  // Salt-okuma intent'i: "plani okudum", "plani ozetle", "plan nerede?".
+  // Plan uretme YOK, sadece mevcut plandan bahsediliyor. reviewVerbs'ten SONRA
+  // durur ki "plani incele" plan-reviewer'a gitmeye devam etsin.
+  // Bas sinirinda \b DEGIL: "ö" word-char olmadigi icin bosluk-ile-ö arasinda
+  // \b olusmuyor ve /\b[oö]zetle/ "özetle"yi kaciriyordu. Ustteki plan\w*
+  // regex'iyle ayni tuzak, ayni cozum.
+  const readVerbs = /(?:^|[^a-z])(oku|okudu[mk]?|okudun|[oö]zetle|a[cç][iı]kla|anlat|hat[iı]rlat|summari[sz]e|explain|describe|show\s+me|g[oö]ster|nerede|where\s+is|what\s+is)\b/i;
+  if (readVerbs.test(prompt)) {
+    return null;
   }
 
   // Refactor/migration planning
@@ -231,7 +256,24 @@ function calculateComplexity(prompt: string, domains: string[]): {
   return { score, signals };
 }
 
-function classifyIntent(input: UserPromptSubmitInput): ClassifiedIntent {
+/**
+ * Zorunlu plan-dosyasi direktifi hangi agent icin basilacak? null = basilmayacak.
+ *
+ * Ayri fonksiyon olmasinin sebebi: bu kapi bir kez yanlis yazildi (task_type ile
+ * AND'lenmisti, gercek plan isteklerinin cogunu dusuruyordu) ve main() icinde
+ * gomulu oldugu icin test edilemedi. Kapi burada, testi intent-classifier.test.ts'te.
+ */
+export function planDirectiveAgent(intent: ClassifiedIntent): string | null {
+  if (intent.needs_maestro) return null;   // maestro kutusu onceliklidir
+  if (intent.is_pure_question) return null; // "plan nerede?" emir almaz
+  const hint = intent.agent_hint ?? '';
+  return PLAN_WRITING_AGENTS.includes(hint) ? hint : null;
+}
+
+export function classifyIntent(
+  input: UserPromptSubmitInput,
+  opts: { testingPolicy?: boolean } = {},
+): ClassifiedIntent {
   const prompt = input.prompt || '';
   const detection = detectTask(prompt);
 
@@ -254,6 +296,7 @@ function classifyIntent(input: UserPromptSubmitInput): ClassifiedIntent {
   let agentHint: string | null = detectPlannerAgent(prompt);
   if (!agentHint) {
     for (const ah of AGENT_HINTS) {
+      if (opts.testingPolicy && ah.agent === 'tdd-guide') continue;
       if (ah.regex.test(prompt)) {
         agentHint = ah.agent;
         break;
@@ -280,7 +323,7 @@ function classifyIntent(input: UserPromptSubmitInput): ClassifiedIntent {
 
   // Plan uretme istekleri tek-agent isi (phoenix/architect/planner).
   // Maestro multi-phase EXECUTION icin, planning icin overkill.
-  const isPlanningTask = agentHint !== null && ['phoenix', 'architect', 'planner', 'plan-reviewer'].includes(agentHint);
+  const isPlanningTask = agentHint !== null && PLANNER_AGENTS.includes(agentHint);
 
   const needsMaestro = complexity.score >= 2 && !isPureQuestion && !isPlanningTask;
 
@@ -299,6 +342,7 @@ function classifyIntent(input: UserPromptSubmitInput): ClassifiedIntent {
     complexity: complexity.score,
     complexity_signals: complexity.signals,
     needs_maestro: needsMaestro,
+    is_pure_question: isPureQuestion,
   };
 }
 
@@ -310,7 +354,9 @@ function main() {
   let input: UserPromptSubmitInput;
   try { input = JSON.parse(raw); } catch { console.log('{}'); return; }
 
-  const intent = classifyIntent(input);
+  const intent = classifyIntent(input, {
+    testingPolicy: activeTestingPolicy(projectDirFrom(input.cwd)) !== null,
+  });
 
   // Cache'e yaz (session-specific dosya + current symlink)
   const cacheDir = join(homedir(), '.claude', 'cache');
@@ -324,6 +370,7 @@ function main() {
 
   // Hook output - Claude'a gorunen yonlendirme.
   // skill-activation-prompt pattern'i: raw stdout = additionalContext.
+  const planAgent = planDirectiveAgent(intent);
   if (intent.needs_maestro) {
     const signals = intent.complexity_signals.join(', ');
     const domainList = intent.domain.length > 0 ? intent.domain.join(', ') : 'n/a';
@@ -349,6 +396,37 @@ function main() {
       '  • Handle handoffs and conflict resolution',
       '',
       'Override ONLY if this is genuinely a single-file 1-shot fix.',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      '',
+    ];
+    console.log(lines.join('\n'));
+  } else if (planAgent) {
+    // Plan istekleri hafif satirda kayboluyordu: tek satirlik "Suggested agent"
+    // maestro'nun 12 satirlik kutusunun yaninda okunmuyor ve inline plan yaziliyor.
+    // Inline plan /clear'da kaybolur, review/diff edilemez, baska oturuma tasinamaz.
+    //
+    // task_type'a BAKMIYOR (bilincli): task_type detectTask'tan, agent_hint
+    // detectPlannerAgent'tan gelir -- iki ayri sozluk. detectTask'in /\bplan\b/'i
+    // "planla"yi kacirir ve "build/implement" (0.9) "plan"i (0.85) yenip task_type'i
+    // implementation'a cevirir. Ikisini AND'lemek gercek plan isteklerinin cogunu
+    // dusuruyordu. agent_hint'in PLAN_WRITING_AGENTS'ta olmasi zaten
+    // detectPlannerAgent'in atesledigi anlamina gelir; task_type ek sinyal katmaz.
+    const lines = [
+      '',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      `📋 PLANNING TASK → @${planAgent} ZORUNLU`,
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      "Ana context'te INLINE PLAN YAZMA.",
+      `Agent tool ile @${planAgent} spawn et. Agent fresh context ile`,
+      'basliyor -- oturum baglamini brief olarak ona gecir.',
+      '',
+      'Plan DOSYA olarak yazilir. Hedefi ISIN KAPSAMINA gore SEC:',
+      '  <sub-repo>/docs/plans/    -> tek repoya ait, issue-sekilli is',
+      '  thoughts/shared/plans/    -> repo-asiri / tasinabilir is',
+      '  Isim: sectigin dizindeki mevcut konvansiyona uy.',
+      '',
+      'Sonra dosya yolunu + faz listesini rapor et.',
+      'Plani sohbette bastan sona tekrar yazma.',
       '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
       '',
     ];

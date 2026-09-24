@@ -1,12 +1,12 @@
 // src/compiler-in-the-loop.ts
-import { readFileSync as readFileSync3, writeFileSync as writeFileSync3, existsSync as existsSync3, mkdirSync as mkdirSync3 } from "fs";
+import { readFileSync as readFileSync4, writeFileSync as writeFileSync4, existsSync as existsSync3, mkdirSync as mkdirSync4 } from "fs";
 import { execSync } from "child_process";
-import { join as join3 } from "path";
+import { join as join4 } from "path";
 import { tmpdir } from "os";
 
 // src/shared/hook-profiler.ts
-import { mkdirSync, existsSync } from "fs";
-import { join } from "path";
+import { mkdirSync as mkdirSync2, existsSync } from "fs";
+import { join as join2 } from "path";
 import { homedir } from "os";
 
 // src/shared/log-rotation.ts
@@ -30,48 +30,73 @@ function appendWithRotation(filePath, line, maxBytes = 2 * 1024 * 1024, keepLine
   }
 }
 
+// src/shared/session-id.ts
+import { mkdirSync, readFileSync as readFileSync2, writeFileSync as writeFileSync2 } from "fs";
+import { join } from "path";
+var SESSION_ID_FILENAME = ".coordination-session-id";
+function getSessionIdFile(options = {}) {
+  const claudeDir = join(process.env.HOME || "/tmp", ".claude");
+  if (options.createDir) {
+    try {
+      mkdirSync(claudeDir, { recursive: true, mode: 448 });
+    } catch {
+    }
+  }
+  return join(claudeDir, SESSION_ID_FILENAME);
+}
+function readSessionId() {
+  try {
+    const sessionFile = getSessionIdFile();
+    const id = readFileSync2(sessionFile, "utf-8").trim();
+    return id || null;
+  } catch {
+    return null;
+  }
+}
+
 // src/shared/hook-profiler.ts
-var PERF_LOG = join(homedir(), ".claude", "cache", "hook-perf.jsonl");
+var PERF_LOG = join2(homedir(), ".claude", "cache", "hook-perf.jsonl");
 var MAX_LOG_SIZE = 1024 * 1024;
 function startTimer() {
   return process.hrtime.bigint();
 }
-function endTimer(start, hookName, eventType, sessionId = "unknown") {
+function endTimer(start, hookName, eventType, sessionId) {
+  const resolvedSession = sessionId || readSessionId() || "unknown";
   const elapsed = Number(process.hrtime.bigint() - start) / 1e6;
   const entry = {
     ts: (/* @__PURE__ */ new Date()).toISOString(),
     hook: hookName,
     event: eventType,
     duration_ms: Math.round(elapsed * 100) / 100,
-    session: sessionId.slice(0, 8)
+    session: resolvedSession.slice(0, 8)
   };
   try {
-    const cacheDir = join(homedir(), ".claude", "cache");
-    if (!existsSync(cacheDir)) mkdirSync(cacheDir, { recursive: true });
+    const cacheDir = join2(homedir(), ".claude", "cache");
+    if (!existsSync(cacheDir)) mkdirSync2(cacheDir, { recursive: true });
     appendWithRotation(PERF_LOG, JSON.stringify(entry) + "\n", MAX_LOG_SIZE, 3e3);
   } catch {
   }
 }
 
 // src/shared/context-budget.ts
-import { readFileSync as readFileSync2, writeFileSync as writeFileSync2, existsSync as existsSync2, mkdirSync as mkdirSync2, statSync as statSync2 } from "fs";
-import { dirname, join as join2 } from "path";
+import { readFileSync as readFileSync3, writeFileSync as writeFileSync3, existsSync as existsSync2, mkdirSync as mkdirSync3, statSync as statSync2 } from "fs";
+import { dirname, join as join3 } from "path";
 import { homedir as homedir2 } from "os";
 var DEFAULT_LIMITS = {
   perEventChars: 4e3,
   sessionChars: 12e3
 };
 function budgetPath() {
-  return process.env.VIBECO_CONTEXT_BUDGET_PATH || join2(homedir2(), ".claude", "cache", "context-budget.json");
+  return process.env.VIBECO_CONTEXT_BUDGET_PATH || join3(homedir2(), ".claude", "cache", "context-budget.json");
 }
 function runtimePath() {
-  return process.env.VIBECO_RUNTIME_PATH || join2(homedir2(), ".claude", "vibecosystem-runtime.json");
+  return process.env.VIBECO_RUNTIME_PATH || join3(homedir2(), ".claude", "vibecosystem-runtime.json");
 }
 function getBudgetLimits() {
   try {
     const path = runtimePath();
     if (existsSync2(path)) {
-      const runtime = JSON.parse(readFileSync2(path, "utf-8"));
+      const runtime = JSON.parse(readFileSync3(path, "utf-8"));
       const perEventChars = Number(runtime.contextBudget?.perEventChars);
       const sessionChars = Number(runtime.contextBudget?.sessionChars);
       if (Number.isFinite(perEventChars) && Number.isFinite(sessionChars)) {
@@ -89,7 +114,7 @@ function loadBudget() {
   try {
     const path = budgetPath();
     if (existsSync2(path)) {
-      return JSON.parse(readFileSync2(path, "utf-8"));
+      return JSON.parse(readFileSync3(path, "utf-8"));
     }
   } catch {
   }
@@ -105,8 +130,8 @@ function saveBudget(budget) {
   try {
     const path = budgetPath();
     const cacheDir = dirname(path);
-    if (!existsSync2(cacheDir)) mkdirSync2(cacheDir, { recursive: true });
-    writeFileSync2(path, JSON.stringify(budget, null, 2));
+    if (!existsSync2(cacheDir)) mkdirSync3(cacheDir, { recursive: true });
+    writeFileSync3(path, JSON.stringify(budget, null, 2));
   } catch {
   }
 }
@@ -178,26 +203,26 @@ var GOEDEL_ENABLED = process.env.GOEDEL_ENABLED !== "false";
 var lmStudioAvailable = null;
 var lmStudioCheckedAt = 0;
 var AVAILABILITY_CACHE_MS = 6e4;
-var STATE_DIR = process.env.CLAUDE_PROJECT_DIR ? join3(process.env.CLAUDE_PROJECT_DIR, ".claude", "cache", "lean") : join3(tmpdir(), "claude-lean");
-var STATE_FILE = join3(STATE_DIR, "compiler-state.json");
+var STATE_DIR = process.env.CLAUDE_PROJECT_DIR ? join4(process.env.CLAUDE_PROJECT_DIR, ".claude", "cache", "lean") : join4(tmpdir(), "claude-lean");
+var STATE_FILE = join4(STATE_DIR, "compiler-state.json");
 function readStdin() {
-  return readFileSync3(0, "utf-8");
+  return readFileSync4(0, "utf-8");
 }
 function ensureStateDir() {
   if (!existsSync3(STATE_DIR)) {
-    mkdirSync3(STATE_DIR, { recursive: true });
+    mkdirSync4(STATE_DIR, { recursive: true });
   }
 }
 function saveState(state) {
   ensureStateDir();
-  writeFileSync3(STATE_FILE, JSON.stringify(state, null, 2));
+  writeFileSync4(STATE_FILE, JSON.stringify(state, null, 2));
 }
 function runLeanCompiler(filePath, cwd) {
   const home = process.env.HOME || process.env.USERPROFILE || "";
-  const elanBin = join3(home, ".elan", "bin");
+  const elanBin = join4(home, ".elan", "bin");
   const pathWithElan = `${elanBin}:${process.env.PATH}`;
   try {
-    const hasLakefile = existsSync3(join3(cwd, "lakefile.lean")) || existsSync3(join3(cwd, "lakefile.toml"));
+    const hasLakefile = existsSync3(join4(cwd, "lakefile.lean")) || existsSync3(join4(cwd, "lakefile.toml"));
     const cmd = hasLakefile ? `cd "${cwd}" && lake build 2>&1` : `lean "${filePath}" 2>&1`;
     const output = execSync(cmd, {
       encoding: "utf-8",
@@ -206,7 +231,7 @@ function runLeanCompiler(filePath, cwd) {
       env: { ...process.env, PATH: pathWithElan }
     });
     const sorries = [];
-    const fileContent = existsSync3(filePath) ? readFileSync3(filePath, "utf-8") : "";
+    const fileContent = existsSync3(filePath) ? readFileSync4(filePath, "utf-8") : "";
     const sorryMatches = fileContent.match(/sorry/g);
     if (sorryMatches) {
       const lines = fileContent.split("\n");
@@ -224,7 +249,7 @@ function runLeanCompiler(filePath, cwd) {
 }
 function extractSorries(filePath) {
   if (!existsSync3(filePath)) return [];
-  const content = readFileSync3(filePath, "utf-8");
+  const content = readFileSync4(filePath, "utf-8");
   const sorries = [];
   const lines = content.split("\n");
   lines.forEach((line, i) => {
@@ -360,7 +385,7 @@ async function main() {
   saveState(state);
   let goedelResult = { suggestion: null, unavailableMessage: null };
   if (!result.success || sorries.length > 0) {
-    const leanCode = existsSync3(filePath) ? readFileSync3(filePath, "utf-8") : "";
+    const leanCode = existsSync3(filePath) ? readFileSync4(filePath, "utf-8") : "";
     goedelResult = await getGoedelSuggestions(leanCode, result.output, sorries);
   }
   let goedelBlock = "";
