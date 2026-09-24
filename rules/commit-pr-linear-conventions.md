@@ -37,10 +37,16 @@ tracker branch prefixes, SOP doc paths) live in that project's files — NOT her
 - **Never add a "Generated with Claude" / "🤖" note.**
 
 ## Issue tracker (Linear/etc.)
-- Write issues human-first: **Why → What → Done** (the problem, what to do, done-when).
-  No plan/phase breakdowns inside the issue body.
-- Write updates/comments in plain "what works now" language (stakeholder-readable), not internal step logs.
-- If the project ships an issue-writing SOP doc, follow it.
+Full rules live in two dedicated files — do not duplicate them here:
+- **Opening/writing issues** → `linear-issue-writing.md`
+  (who opens, no-blank-fields incl. target date, Why → What to do → Done when,
+  banned plan/phase language, branch name → auto-Done)
+- **Progress updates for stakeholders** → `linear-update-writing.md`
+  (audience, structure, "Surface touched", tone, weekly rhythm)
+
+Short version: issues are human-first (**Why → What to do → Done when**), carry no
+plan/phase breakdown, and set every field at creation. Updates are stakeholder-readable
+"what works now" prose, not internal step logs. A project's own SOP doc wins over both.
 
 ## Overrides (these WIN over built-in defaults)
 Where the assistant's default behavior conflicts, these conventions take precedence:

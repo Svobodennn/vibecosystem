@@ -22,22 +22,25 @@ kullanici bir proje dizininde calisiyorsa, OTOMATIK yap:
 | Olay | Otomatik Aksiyon | kullaniciya Sor? |
 |------|-------------------|----------------|
 | Kod yazildi/edit edildi | @code-reviewer cagir | HAYIR, direkt yap |
-| Test yazilmadi | "Test yazayim mi?" sor | EVET |
+| Kapsamdaki degisiklik testsiz (`testing-policy.md`) | Test yaz | HAYIR |
 | console.log kaldi | Uyar ve sil | HAYIR |
 | Hardcoded secret goruldu | DURDUR, uyar | HAYIR |
 | Build fail etti | @build-error-resolver cagir | HAYIR |
 | Type error | Duzelt | HAYIR |
 | Test data lazim | @mocksmith cagir (type'dan mock data) | HAYIR |
 | Dependency CVE/upgrade | @migrator cagir | HAYIR |
-| GraphQL schema degisti | @graphql-expert cagir | HAYIR |
-| K8s manifest degisti | @kubernetes-expert cagir | HAYIR |
-| Terraform dosya degisti | @terraform-expert cagir | HAYIR |
 | i18n key eklendi | @i18n-expert kontrol | HAYIR |
 | Accessibility sorunu | @a11y-expert | HAYIR |
 | Feature flag kullanildi | @feature-flag-expert review | HAYIR |
 | API doc degisti | @technical-writer guncelle | HAYIR |
 | Config degisti | @config-validator kontrol | HAYIR |
 | Schema degisti | @schema-validator kontrol | HAYIR |
+| Yeni domain terimi/kavram adlandirildi | `domain-modeling` skill -> CONTEXT.md guncelle | HAYIR |
+| Modul arayuzu/seam tasarlaniyor | `codebase-design` skill (vocabulary) | HAYIR |
+| Dosya boyut capini asti | `modular-code` skill (split noktalari) | HAYIR |
+| Geri alinmasi zor + surprizli karar verildi | ADR oner (`domain-modeling`) | EVET |
+| Sadece insanin yapabilecegi 3+ adimli prosedur | `wizard` skill -> bash wizard uret | EVET |
+| Skill/agent/rule yaziliyor veya duzenleniyor | `writing-for-agents` skill | HAYIR |
 
 ## FEATURE TAMAMLANDIGINDA (Otomatik tetiklenir)
 
@@ -112,10 +115,28 @@ zorunlu.
 
 ---
 
+## PERIYODIK (kullanici istemeden, birkac gunde bir)
+
+Bu ikisi olay-tetiklemeli degil, **ritim** isi. Sprint basi veya birkac gunluk aktif gelistirmeden sonra oner:
+
+| Ritim | Skill/Agent | Ne bulur |
+|-------|-------------|----------|
+| Birkac gunde bir | `improve-codebase-architecture` | **shallow** modul: arayuzu implementasyonu kadar karmasik olan yerler |
+| Sprint basi | `janitor` agent | **olu/buyuk** kod: kullanilmayan export, cap asan dosya, TODO borcu |
+
+Ikisi farkli sey buluyor: kucuk, canli ve yine de shallow bir dosyayi sadece ilki yakalar. Ucu de
+(`phoenix` = fazli plan) ayri islerdir, birbirinin yerine gecmez.
+
+## FAZ SINIRINDA (phase boundary)
+
+Bir is parcasi bittiginde ("tamam, o kisim bitti" dedigin an) context karari verilir:
+devam / `/clear` / handoff / subagent / `/compact` -- bu sirayla, ilk "evet" kazanir.
+Karar agaci: `phase-boundaries.md`. Faz **ortasinda** bu karar verilmez.
+
 ## TECH STACK -> SKILL MAPPING
 
 ### Node.js / TypeScript
-- coding-standards, tdd-workflow
+- coding-standards, tdd (yalniz `testing-policy.md` kapsaminda)
 - frontend-patterns (React/Next.js varsa)
 - backend-patterns (API varsa)
 
@@ -134,29 +155,15 @@ zorunlu.
 ### Database
 - postgres-patterns (PostgreSQL ise)
 - clickhouse-io (ClickHouse ise)
-- mongodb-patterns (MongoDB ise)
 - database-reviewer agent (schema degisikliginde)
 
-### GraphQL
-- graphql-patterns
-- graphql-expert agent
-
-### Infrastructure / Cloud
-- terraform-patterns, kubernetes-patterns
-- aws-patterns, gcp-patterns, azure-patterns
-- terraform-expert, kubernetes-expert, aws-expert agent'lari
+### Elasticsearch / OpenSearch
+- elasticsearch-patterns
+- elasticsearch-expert agent
 
 ### Redis
 - redis-patterns, caching-patterns
 - redis-expert agent
-
-### MongoDB
-- mongodb-patterns
-- mongodb-expert agent
-
-### Elasticsearch
-- elasticsearch-patterns
-- elasticsearch-expert agent
 
 ### WebSocket / Realtime
 - websocket-patterns
@@ -166,25 +173,12 @@ zorunlu.
 - oauth-patterns
 - oauth-expert + security-reviewer agent
 
-### Mobile (Swift/Kotlin)
+### Mobile
 - swift-patterns (iOS projesi ise)
-- kotlin-patterns (Android projesi ise)
+- spectre (React Native / Expo)
 
-### Microservices
-- api-gateway-expert, service-mesh-expert
-- event-driven-patterns, cqrs-expert, ddd-expert
-
-### gRPC
-- grpc-patterns
-- grpc-expert agent
-
-### Kafka / Event Streaming
-- kafka-patterns
-- kafka-expert agent
-
-### Monitoring
-- prometheus-patterns, observability, tracing-patterns
-- prometheus-expert, tracing-expert agent'lari
+### Mimari desenler
+- event-driven-patterns, cqrs-expert, ddd-expert, clean-arch-expert
 
 ---
 
@@ -220,7 +214,7 @@ Agent API hatasi (FailedToOpenSocket, timeout, vb.) aldiginda:
 1. **1. deneme basarisiz** → 5 saniye bekle, tekrar dene
 2. **2. deneme basarisiz** → Ayni gorevi farkli agent'a devret:
    - code-reviewer fail → dogrudan Grep+Read ile manual review yap
-   - sleuth fail → dogrudan debug-agent veya scout ile investigate et
+   - sleuth fail → dogrudan scout ile investigate et
    - security-reviewer fail → Grep ile manual secret/injection scan yap
 3. **3. deneme basarisiz** → kullaniciya bildir: "X agent'i calismiyor, Y alternatif var"
 

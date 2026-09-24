@@ -16,7 +16,7 @@ yeniden düzenleme (structural churn) istenmez.
 
 ## Doğrulama disiplini (yapısal değişikliklerde)
 
-- Her fazı YEŞİL kapıyla bitir: typecheck + test + build + e2e. Sonraki faza öyle geç.
+- Her fazı YEŞİL kapıyla bitir: typecheck + test + build (+ projede `CRITICAL_FLOWS.md` varsa ilgili akış). Sonraki faza öyle geç.
 - Dosya/CSS-module/`import.meta.url` path taşımalarından sonra **her zaman build koş** — tsc bunların kırılmasını görmez, yalnız build/test yakalar.
 - Faz başına tek, scoped commit; commit/push öncesi onay al.
 

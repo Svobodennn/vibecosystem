@@ -80,7 +80,7 @@ Bir phase'den digerine gecmek icin TUM kriterler saglanmali:
 | 1 | Tum task'lar QA'den gecti | code-reviewer + verifier raporlari |
 | 2 | Critical/high bug yok | Bug listesi temiz |
 | 3 | Build basarili | verifier PASS |
-| 4 | Test coverage yeterli | Coverage raporu |
+| 4 | Kapsamdaki degisikliklerin testi var (`testing-policy.md`) | verifier raporu |
 | 5 | Security audit temiz | security-reviewer raporu |
 
 ## Maestro Entegrasyonu

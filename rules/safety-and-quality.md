@@ -48,22 +48,4 @@ Security sorunu bulunursa: DURDUR → security-reviewer cagir → CRITICAL duzel
 
 ## Testing
 
-### TDD Zorunlu
-1. Test yaz (RED)
-2. Test FAIL etmeli
-3. Minimal implementasyon (GREEN)
-4. Test PASS etmeli
-5. Refactor (IMPROVE)
-6. Coverage %80+
-
-### Bitti-Gate (her is icin)
-- Yapilan HER is icin test yaz.
-- Is sonunda SADECE yeni testi degil, TUM suite'i kostur (projenin test komutu: `npm test` / `vitest run` / vb.).
-- **Regresyon varsa is BITMEMISTIR** — kirilan testi duzeltmeden "tamam"/commit deme.
-
-### Test Tipleri
-- Unit: fonksiyonlar, utility'ler
-- Integration: API endpoint, DB
-- E2E: kritik kullanici akislari (Playwright)
-
-Agent'lar: tdd-guide (yeni feature), e2e-runner (Playwright)
+Test kurali: `testing-policy.md` (ne zaman test yazilir, suite ne zaman kosulur, kirilan test ne olur).
